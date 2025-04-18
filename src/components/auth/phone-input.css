@@ -1,0 +1,24 @@
+.phone-input-wrapper .rrui__input-field {
+    padding-left: 0px !important;
+  }
+  
+  .phone-input-wrapper .rrui__select__button {
+    left: 12px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  
+  .phone-input-wrapper .rrui__select__arrow {
+    margin-left: 8px;
+  }
+  
+  /* Dark mode support */
+  .dark .phone-input-wrapper .rrui__input-field {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #fff;
+  }
+  
+  .dark .phone-input-wrapper select {
+    color: #fff;
+  }
