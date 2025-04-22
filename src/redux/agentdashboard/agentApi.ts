@@ -30,8 +30,8 @@ export interface AgentDashboardInput {
 // }
 export interface PerformanceInput {
   agentId: any;
-  university:string,
-  batch: any;
+  university:string[],
+  batch: string[];
   startDate: any,
   endDate: any;  
 }
@@ -87,12 +87,6 @@ export const agentApi = api.injectEndpoints({
         formData.append('batch', data.batch);
         formData.append('start_date', data.startDate);
         formData.append('end_date', data.endDate);
-        //  formData.append('app', appNameCode)
-        // console.log("batch", formData.get("batch"));
-        // console.log("start_date", formData.get("start_date"));
-        // console.log("end_date", formData.get("end_date"));
-        // console.log("agent_id", formData.get("agent_id"));
-        // console.log("university", formData.get("university"));
         return {
           url: `/get_data_dashboard_for_marks`,
           method: 'POST',
