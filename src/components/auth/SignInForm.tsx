@@ -5,7 +5,7 @@ import { toast, Toaster } from "react-hot-toast";
 import * as Yup from "yup";
 import { ChangeUser, setCredentials } from "../../redux/auth/authSlice";
 import { useDispatch } from "react-redux";
-import { useVerifyLoginFeildsMutation } from "../../redux/auth/authApi";
+import { useVerifyLoginFeildsMutation, VerifyLoginBody } from "../../redux/auth/authApi";
 const validationSchema = Yup.object().shape({
   loginId: Yup.string().required("User ID or Email is required"),
   password: Yup.string()
@@ -28,18 +28,25 @@ export default function SignInForm() {
     validationSchema,
     onSubmit: async (values) => {
       try {
-        const body = new FormData();
+        // const body = new FormData();
 
-        body.append("agent_id", values.loginId);
-        body.append("agent_pass_key", values.password);
-        body.append("applicationtype", "Prf");
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        // Determine if userId is an email
-        if (emailRegex.test(values.loginId)) {
-          body.append("isemail", "2");
-        } else {
-          body.append("isemail", "1");
-        }
+        // body.append("agent_id", values.loginId);
+        // body.append("agent_pass_key", values.password);
+        // body.append("applicationtype", "Prf");
+        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // // Determine if userId is an email
+        // if (emailRegex.test(values.loginId)) {
+        //   body.append("isemail", "2");
+        // } else {
+        //   body.append("isemail", "1");
+        // }
+        // const res = await verifyLoginFeidls(body);
+        const body: VerifyLoginBody = {
+          agent_id: values.loginId,
+          agent_pass_key: values.password,
+          applicationtype: "Prf",
+          isemail: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.loginId) ? "2" : "1",
+        };
         const res = await verifyLoginFeidls(body);
         const { error, data: respData } = res || {};
         
