@@ -16,119 +16,7 @@ const OrderSummaryCard = () => {
   const fileInputRef = useRef(null);
   const [comment, setComment] = useState("");
   const [request, setRequest] = useState(false);
-  const cardDatas = [
-    {
-      id: 1,
-      batchName: "Batch 02",
-      fileCount: "2/4",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Paid",
-      statusColor: "#3BB537",
-      borderColor: "#FBB343",
-      percentage: 100,
-      clientName: "Client Name",
-      marks: 90,
-      topic:
-        "Lorem ipsum dolor sit amet consectetur. Nunc scelerisque varius amet feugiat lacus.",
-      level: "PHD",
-      type: "Assignment",
-      pages: 10,
-      category: "Business",
-    },
-    {
-      id: 2,
-      batchName: "Batch 02",
-      fileCount: "2/4",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "partially paid",
-      statusColor: "#3BB537",
-      borderColor: "#FBB343",
-      percentage: 47,
-      clientName: "Client Name",
-      marks: 90,
-      topic:
-        "Lorem ipsum dolor sit amet consectetur. Nunc scelerisque varius amet feugiat lacus.",
-      level: "PHD",
-      category: "Business",
-      type: "Assignment",
-      pages: 10,
-    },
-    {
-      id: 3,
-      batchName: "Batch 02",
-      fileCount: "2/4",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Paid",
-      statusColor: "#3BB537",
-      borderColor: "#FBB343",
-      percentage: 100,
-      clientName: "Client Name",
-      marks: 90,
-      topic:
-        "Lorem ipsum dolor sit amet consectetur. Nunc scelerisque varius amet feugiat lacus.",
-      level: "PHD",
-      category: "Business",
-      pages: 10,
-      type: "Assignment",
-    },
-    {
-      id: 4,
-      batchName: "Batch 02",
-      fileCount: "2/4",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Paid",
-      statusColor: "#3BB537",
-      borderColor: "#FBB343",
-      percentage: 100,
-      clientName: "Client Name",
-      marks: 90,
-      topic:
-        "Lorem ipsum dolor sit amet consectetur. Nunc scelerisque varius amet feugiat lacus.",
-      level: "PHD",
-      category: "Business",
-      pages: 10,
-      type: "Assignment",
-    },
-    {
-      id: 5,
-      batchName: "Batch 02",
-      fileCount: "2/4",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Paid",
-      statusColor: "#3BB537",
-      borderColor: "#FBB343",
-      percentage: 100,
-      clientName: "Client Name",
-      marks: 90,
-      topic:
-        "Lorem ipsum dolor sit amet consectetur. Nunc scelerisque varius amet feugiat lacus.",
-      type: "Assignment",
-      category: "Business",
-      level: "PHD",
-      pages: 10,
-    },
-  ];
-  const order = cardDatas.find((order) => order.id === Number(id));
+ 
   // console.log("order :", order);
   const location = useLocation();
 
@@ -196,7 +84,7 @@ const OrderSummaryCard = () => {
                 {card?.paymentStatus === "Paid" ? "Completed" : "Inprogress"}
               </h2>
               <p className="text-sm">
-                {order?.status === "Paid"
+                {card?.status === "Paid"
                   ? "Your Order has been completed!"
                   : "We are working on your order. Please wait."}
               </p>
@@ -238,7 +126,7 @@ const OrderSummaryCard = () => {
                 Download File
               </button>
               <div className="w-[55px] h-[55px] bg-[#157BA7] text-white rounded-full flex flex-col items-center justify-center text-sm font-bold">
-                <span>{order?.marks ? order?.marks : 12}</span>
+                <span>{card?.marks ? card?.marks : 12}</span>
                 <span className="text-[10px] font-normal">Marks</span>
               </div>
             </div>
@@ -253,9 +141,9 @@ const OrderSummaryCard = () => {
                 <span className="font-semibold text-lg">Paper Type:</span>{" "}
                 {data?.type} &nbsp;&nbsp;
                 <span className="font-semibold text-lg">Level:</span>{" "}
-                {order?.level} &nbsp;&nbsp;
+                {card?.level} &nbsp;&nbsp;
                 <span className="font-semibold text-lg">Category:</span>{" "}
-                {order?.category} &nbsp;&nbsp;
+                {card?.category} &nbsp;&nbsp;
                 <span className="font-semibold text-lg">Pages:</span>{" "}
                 {data?.qty}
               </p>
@@ -275,13 +163,13 @@ const OrderSummaryCard = () => {
             <p className="text-sm flex justify-between mb-1">
               Total Price:{" "}
               <span className="font-bold text-gray-700">
-                ${order?.price ? order?.price.toFixed(2) : 10}
+                ${card?.price ? card?.price.toFixed(2) : 10}
               </span>
             </p>
             <p className="text-sm flex justify-between">
               Status:{" "}
               <span className="font-medium text-green-600">
-                {order?.status ? order?.status : "Pending"}
+                {card?.status ? card?.status : "Pending"}
               </span>
             </p>
 
