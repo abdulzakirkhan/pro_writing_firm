@@ -3,30 +3,37 @@ import { api } from '../service';
 // src/types/agentApiTypes.ts
 
 export interface AgentDashboardInput {
-  agentId: string;
-  university: string;
-  batch: string;
-  startDate: string;
-  endDate: string;
+  agentId: any;
+  university: any;
+  batch: any;
+  startDate: any;
+  endDate: any;
 }
 
-export interface AgentOrdersInput {
-  agentId: string;
-  university: string;
-  batch: string;
-  paperSubject: string;
-}
+// export interface AgentOrdersInput {
+//   agentId: string;
+//   university: string;
+//   batch: string;
+//   paperSubject: string;
+// }
 
-export interface OrderFilterInput {
-  agentId: string;
-  selectedFilterOrder: string;
-  selectedTypePaper: string;
-  selectedCategory: string;
-}
+// export interface OrderFilterInput {
+//   agentId: string;
+//   selectedFilterOrder: string;
+//   selectedTypePaper: string;
+//   selectedCategory: string;
+// }
 
-export interface DeleteOrderInput {
-  orderId: string;
-  agentId: string;
+// export interface DeleteOrderInput {
+//   orderId: string;
+//   agentId: string;
+// }
+export interface PerformanceInput {
+  agentId: any;
+  university:string,
+  batch: any;
+  startDate: any,
+  endDate: any;  
 }
 
 
@@ -43,15 +50,229 @@ export const agentApi = api.injectEndpoints({
         return {
           url: `/get_Agent_dashboard_data`,
           method: 'POST',
+          body:formData
         };
       },
       providesTags: ['AgentCostData'],
     }),
 
+    getUniversityAndBatches: builder.query({
+      query: () => {
+        return {
+          url: `/get_Batch_and_university_data`,
+          method: 'POST',
+        };
+      },
+    }),
+
+    getCurrentMonthCost: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agent_id', id);
+        return {
+          url: `/get_Sum_of_current_month_cost`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['AgentCurrentMonthCost'],
+    }),
+
+
+    getPerformanceData: builder.query<any,PerformanceInput>({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('agent_id', data.agentId);
+        formData.append('university', data.university);
+        formData.append('batch', data.batch);
+        formData.append('start_date', data.startDate);
+        formData.append('end_date', data.endDate);
+        //  formData.append('app', appNameCode)
+        // console.log("batch", formData.get("batch"));
+        // console.log("start_date", formData.get("start_date"));
+        // console.log("end_date", formData.get("end_date"));
+        // console.log("agent_id", formData.get("agent_id"));
+        // console.log("university", formData.get("university"));
+        return {
+          url: `/get_data_dashboard_for_marks`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+
+
+    getAgentCreditLimits: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agency_id', id);
+        return {
+          url: `/get_Credit_limit_data`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['creditLimitAgent'],
+    }),
+
+    getAgentOrdersData: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('agent_id', data.agentId);
+        formData.append('university', data.university);
+        formData.append('batch', data.batch);
+        formData.append('paper_subject', data.paperSubject);
+        //  formData.append('app', appNameCode)
+        return {
+          url: `/get_Data_of_batch_wise_orders_and_graph`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['AgentOrdersData'],
+    }),
+
+
+    getPaperSubject: builder.query({
+      query: () => {
+        return {
+          url: `/get_Paper_subject_data`,
+          method: 'POST',
+        };
+      },
+    }),
+
+    getTypeOfPaper: builder.query({
+      query: () => {
+        return {
+          url: `/get_typeofpaper_Category_academiclevel`,
+          method: 'POST',
+        };
+      },
+    }),
+
+
+    getAgentOrdersListBatch: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('agent_id', data.agentId);
+        formData.append('payment_status', data.selectedFilters);
+        formData.append('type_of_paper', data.selectedSubject);
+        formData.append('categoty', data.selectedCategoryList);
+        for (const [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+        return {
+          url: `/get_batch_wise_order_list`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['AgentBatchOrders'],
+    }),
+
+    getOrderDetailsByIds: builder.mutation({
+      query: (body) => {
+        return {
+          url: `/get_data_against_orders_array`,
+          method: 'POST',
+          body,
+        };
+      },
+    }),
+    getAgentAllClients: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agent_id', id);
+        return {
+          url: `/get_client_against_agency`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['GetAllAgentClients'],
+    }),
+
+
+    getAllClientsForOrder: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agent_id', id);
+        return {
+          url: `/get_agent_clients`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['AgentOrderInititateClients'],
+    }),
+
+    getAgentOrdersDataMarks: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('agent_id', data.agentId);
+        formData.append('university', data.university);
+        formData.append('batch', data.batch);
+        formData.append('paper_subject', data.paperSubject);
+        //  formData.append('app', appNameCode)
+        return {
+          url: `/get_Data_of_average_marks_graph_annualy`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+
+
+
+
+
+
+
+
+
+
+    getAgentClientOrders: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('clientid', data.agentId);
+        formData.append('payment_status', data.selectedFilterOrder);
+        return {
+          url: `/get_individulas_client_wise_orders_data`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+    getAgentPaymentHistory: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('clientid', data.agentId);
+        return {
+          url: `/transactionhistory_agent`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
   }),
 });
 
 export const {
   useGetAgentCostDataQuery,
+  useGetUniversityAndBatchesQuery,
+  useGetCurrentMonthCostQuery,
+  useGetPerformanceDataQuery,
+  useGetAgentCreditLimitsQuery,
+  useGetAgentOrdersDataMarksQuery,
+  useGetAgentOrdersDataQuery,
+  useGetPaperSubjectQuery,
+  useGetTypeOfPaperQuery,
+  useGetAgentOrdersListBatchQuery,
+  useGetOrderDetailsByIdsMutation,
+  useGetAgentAllClientsQuery,
+  useGetAllClientsForOrderQuery,
+  useGetAgentClientOrdersQuery,
+
   // ... other hooks
 } = agentApi;

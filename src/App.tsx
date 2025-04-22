@@ -32,7 +32,7 @@ export default function App() {
 
             <Route path="/order-list" element={<OrderList  />} />
 
-            <Route path="/order/:id" element={<OrderDetails  />} />
+            <Route path="/order/order-details" element={<OrderDetails  />} />
             <Route path="/order/:id/order-summary" element={<OrderSummaryCard  />} />
             <Route path="/my-clients" element={<MyClients  />} />
             <Route path="/settings" element={<Settings  />} />

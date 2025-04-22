@@ -3,18 +3,19 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import completed from "../../assets/completed.png";
 import progress from "../../assets/progress.png";
-import { Link, useParams } from "react-router";
+import { Link, useLocation, useParams } from "react-router";
 import { RiArrowLeftSLine } from "react-icons/ri";
 import { useEffect, useRef, useState } from "react";
 import { CgAttachment } from "react-icons/cg";
 import { RxCrossCircled } from "react-icons/rx";
 import { MdClose } from "react-icons/md";
 const OrderSummaryCard = () => {
+  
   const { id } = useParams();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef(null);
   const [comment, setComment] = useState("");
-  const [request, setRequest] = useState(true);
+  const [request, setRequest] = useState(false);
   const cardDatas = [
     {
       id: 1,
@@ -128,8 +129,10 @@ const OrderSummaryCard = () => {
     },
   ];
   const order = cardDatas.find((order) => order.id === Number(id));
-  console.log("order :", order);
+  // console.log("order :", order);
+  const location = useLocation();
 
+  const {card, data} = location.state || [];
   const handleRequestRevision = () => {
     setRequest((prev) => !prev);
   };
@@ -137,6 +140,14 @@ const OrderSummaryCard = () => {
   const handleFileBoxClick = () => {
     fileInputRef.current.click();
   };
+
+  function decodeHTML(html: string) {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  }
+  
+  const percentage =card?.completePercentage === null || undefined ? 0 : card?.completePercentage
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -175,14 +186,14 @@ const OrderSummaryCard = () => {
             className={`flex justify-between h-48 w-full bg-center  px-6 pt-6 bg-no-repeat items-start`}
             style={{
               backgroundImage: `url(${
-                order?.status === "Paid" ? completed : progress
+                card?.paymentStatus === "Paid" ? completed : progress
               })`,
               backgroundSize: "100% 100%",
             }}
           >
             <div>
               <h2 className="text-lg font-semibold text-green-600">
-                {order?.status === "Paid" ? "Completed" : "Inprogress"}
+                {card?.paymentStatus === "Paid" ? "Completed" : "Inprogress"}
               </h2>
               <p className="text-sm">
                 {order?.status === "Paid"
@@ -192,11 +203,11 @@ const OrderSummaryCard = () => {
             </div>
             <div className="w-[79px] h-[79px]">
               <CircularProgressbar
-                value={order?.percentage}
-                text={`${order?.percentage}%`}
+                value={card?.completePercentage || 0}
+                text={`${percentage}%`}
                 styles={buildStyles({
-                  textColor: order?.status === "Paid" ? "#3BB537" : "#FCAE30", // red-500 or white
-                  pathColor: order?.status === "Paid" ? "#3BB537" : "#FCAE30",
+                  textColor: card?.status === "Paid" ? "#3BB537" : "#FCAE30", // red-500 or white
+                  pathColor: card?.status === "Paid" ? "#3BB537" : "#FCAE30",
                   trailColor: "#d4f1dc",
                   textSize: "28px",
                 })}
@@ -214,10 +225,10 @@ const OrderSummaryCard = () => {
             <div className="flex justify-between text-sm text-gray-600 ">
               <p>
                 <span className="font-semibold text-black">Order ID:</span>{" "}
-                {order?.orderId}
+                {data?.orderId}
               </p>
-              <p>Order placed: {order?.placedOn}</p>
-              <p>Order deadline: {order?.deadline}</p>
+              <p>Order placed: {data?.orderPlacedDate}</p>
+              <p>Order deadline: {data?.deadline}</p>
             </div>
 
             {/* Download + Marks */}
@@ -227,7 +238,7 @@ const OrderSummaryCard = () => {
                 Download File
               </button>
               <div className="w-[55px] h-[55px] bg-[#157BA7] text-white rounded-full flex flex-col items-center justify-center text-sm font-bold">
-                <span>{order?.marks}</span>
+                <span>{order?.marks ? order?.marks : 12}</span>
                 <span className="text-[10px] font-normal">Marks</span>
               </div>
             </div>
@@ -240,17 +251,18 @@ const OrderSummaryCard = () => {
               </p>
               <p className="mt-2 text-lg">
                 <span className="font-semibold text-lg">Paper Type:</span>{" "}
-                {order?.type} &nbsp;&nbsp;
+                {data?.type} &nbsp;&nbsp;
                 <span className="font-semibold text-lg">Level:</span>{" "}
                 {order?.level} &nbsp;&nbsp;
                 <span className="font-semibold text-lg">Category:</span>{" "}
                 {order?.category} &nbsp;&nbsp;
                 <span className="font-semibold text-lg">Pages:</span>{" "}
-                {order?.pages}
+                {data?.qty}
               </p>
-              <p className="mt-2 text-lg">
+              <p className="flex py-2 text-lg">
                 <span className="font-semibold text-lg">Description:</span>{" "}
-                {order?.topic} {/* re-used */}
+                <span className="font-normal m-0 p-0" dangerouslySetInnerHTML={{ __html: decodeHTML(data?.description || "") }} />
+                {/* {data?.description} */}
               </p>
             </div>
           </div>
@@ -263,13 +275,13 @@ const OrderSummaryCard = () => {
             <p className="text-sm flex justify-between mb-1">
               Total Price:{" "}
               <span className="font-bold text-gray-700">
-                ${order?.price.toFixed(2)}
+                ${order?.price ? order?.price.toFixed(2) : 10}
               </span>
             </p>
             <p className="text-sm flex justify-between">
               Status:{" "}
               <span className="font-medium text-green-600">
-                {order?.status}
+                {order?.status ? order?.status : "Pending"}
               </span>
             </p>
 
@@ -384,6 +396,7 @@ const OrderSummaryCard = () => {
         </div>
       </div>
     </>
+    
   );
 };
 

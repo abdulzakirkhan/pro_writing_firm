@@ -1,4 +1,4 @@
-import  { useRef } from 'react';
+import { useRef } from 'react';
 import {
   Chart as ChartJS,
   LineElement,
@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
+// Register necessary components
 ChartJS.register(
   LineElement,
   PointElement,
@@ -23,20 +24,40 @@ ChartJS.register(
   Title
 );
 
-export default function CostComparisonChart () {
+interface GraphDataPoint {
+  month: any;
+  TotalMonthlyCost: number;
+}
+
+interface Props {
+  graphData: GraphDataPoint[];
+}
+
+export default function CostComparisonChart({ graphData }: Props) {
+
+  const monthLabels = [
+    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
   const chartRef = useRef(null);
+  // console.log("graphData", graphData);
+
+  // Extract labels and data from props
+  const labels = graphData.map((entry) => monthLabels[entry.month]);
+  const costData = graphData.map((entry) => entry.TotalMonthlyCost);
+
 
   const data = {
-    labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July'],
+    labels: labels,
     datasets: [
       {
         label: 'Cost Comparison',
-        data: [0, 150, 50, 150, 50, 100,500],
+        data: costData,
         fill: true,
         borderColor: '#00A7C5',
-        backgroundColor: (context: { chart: any; }) => {
+        backgroundColor: (context: { chart: any }) => {
           const chart = context.chart;
-          const {ctx, chartArea} = chart;
+          const { ctx, chartArea } = chart;
 
           if (!chartArea) return null;
 
@@ -55,7 +76,7 @@ export default function CostComparisonChart () {
     responsive: true,
     plugins: {
       legend: {
-        display: false 
+        display: false
       },
       title: {
         display: true,
@@ -69,7 +90,7 @@ export default function CostComparisonChart () {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value) {
+          callback: function (value: number) {
             return value >= 1000 ? value / 1000 + 'k' : value;
           }
         }
@@ -77,6 +98,12 @@ export default function CostComparisonChart () {
     }
   };
 
-  return <Line ref={chartRef} data={data} options={options} className='w-full' />;
-};
-
+  return (
+    <Line
+      ref={chartRef}
+      data={data}
+      options={options}
+      className="w-full"
+    />
+  );
+}

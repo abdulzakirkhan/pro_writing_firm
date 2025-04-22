@@ -12,13 +12,13 @@ import { Bar } from 'react-chartjs-2';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ChartDataLabels);
 
-const BarChartOne = ({title =""}) => {
+const BarChartOne = ({title ="",labels, dataSet}) => {
   const data: ChartData<'bar'> = {
-    labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July'],
+    labels: labels,
     datasets: [
       {
         label: title,
-        data: [5, 20, 40, 10, 60, 90, 62],
+        data: dataSet,
         backgroundColor: (ctx) => {
           const index = ctx.dataIndex;
           return index === 6 ? '#13A09D' : '#006B9F'; // July is teal, others are blue

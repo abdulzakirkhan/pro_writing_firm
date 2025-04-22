@@ -8,24 +8,32 @@ import Badge from "../ui/badge/Badge";
 import { MdOutlineTrendingUp } from "react-icons/md";
 import { AiFillDollarCircle } from "react-icons/ai";
 import users from "../../assets/Icons.png"
-export default function EcommerceMetrics() {
+
+
+interface EcommerceMetricsProps {
+  total: number;
+  totalClient: number;
+  costIncreasePercentage: any;
+  clientsIncreasePercentage: any;
+}
+export default function EcommerceMetrics({total,totalClient,costIncreasePercentage,clientsIncreasePercentage}:EcommerceMetricsProps) {
   const cardsData = [
     {
       title: "Total Cost",
-      value: "1,040",
+      value: total,
       trendDescription: "Increased from last month",
-      changePercentage: "8.5%",
+      changePercentage: costIncreasePercentage,
       trendDirection: "up",
-      icon:<MdOutlineTrendingUp size={30} className="text-[#4DAA4A]" />,
+      icon:<MdOutlineTrendingUp size={30} className={`${typeof costIncreasePercentage === "number" && costIncreasePercentage >= 2 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
       badge:<AiFillDollarCircle size={35} className="text-primary" />,
     },
     {
       title: "Active Clients",
-      value: 30, // Using number type when possible
+      value: totalClient, // Using number type when possible
       trendDescription: "Slight increase from last month",
-      changePercentage: "0.5%",
+      changePercentage: clientsIncreasePercentage,
       trendDirection: "up",
-      icon:<MdOutlineTrendingUp size={30} className="text-[#4DAA4A]" />,
+      icon:<MdOutlineTrendingUp size={30} className={`${typeof clientsIncreasePercentage === "number" && clientsIncreasePercentage >= 2 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
       badge:<img src={users} className="w-10" />,
     },
   ];
@@ -45,7 +53,7 @@ export default function EcommerceMetrics() {
             <div className="mt-5">
               <div className="flex items-center gap-1">
                 {card.icon}
-                11.01%
+                {typeof card.changePercentage === 'number' ? card.changePercentage.toFixed(2) : 0}%
               </div>
 
             </div>

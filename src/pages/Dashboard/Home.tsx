@@ -16,40 +16,71 @@ import { useTitle } from "../../context/TitleContext.js";
 import { useSelector } from "react-redux";
 import {AppState} from "../../redux/store"
 // import { useGetAgentAllClientsQuery } from "../../redux/agentdashboard/agentDashboardApi";
-import {useGetStandardValuesQuery} from "../../redux/agentdashboard/agentApi";
+import {useGetAgentCreditLimitsQuery, useGetAgentOrdersDataMarksQuery, useGetCurrentMonthCostQuery, useGetPerformanceDataQuery, useGetStandardValuesQuery, useGetUniversityAndBatchesQuery} from "../../redux/agentdashboard/agentApi";
 import {useGetAgentCostDataQuery} from "../../redux/agentdashboard/agentApi";
+import { convertDateToYYYYMMDD } from "../../config/indext.js";
 export default function Home() {
+
+
+
+  
+  
+  
+  
+  const {data: universityAndBatchData,isLoading: universityAndBatchDataLoading, error: universityAndBatchDataError,} = useGetUniversityAndBatchesQuery();
+
+  
   const { setTitle  } = useTitle();
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const user = useSelector((state) => state.auth?.user);
   const token = useSelector((state: AppState) => state.auth.token);
-  const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  const [selectedBatches, setSelectedBatches] = useState(["All"]);
+  const [selectedUniversity, setSelectedUniversity] = useState(["All"]);
+  const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
+  const universities = universityAndBatchData?.result?.universities_data;
+  
+  const currentDate = new Date();
+  const toDate = currentDate;
+  const fromDate = new Date(toDate);
+  fromDate.setFullYear(toDate.getFullYear() - 1);
+  
+  // State to hold the selected dates
+  const [startDate, setStartDate] = useState(fromDate.toISOString().split("T")[0])
+  const [endDate, setEndDate] = useState(toDate.toISOString().split("T")[0])
   let payload = {
     agentId: user?.agent_user_id,
-    // university: selectedUniversity,
+    university: selectedUniversity,
     batch: selectedBatches,
-    startDate: startDate,
-    endDate: endDate,
+    startDate:convertDateToYYYYMMDD(startDate),
+    endDate: convertDateToYYYYMMDD(endDate),
   };
-  const batches = ["Batch 01", "Batch 05", "Batch 04", "Batch 10"];
-  const { data: agentCostData, isLoading: agentCostLoading,  error, } = useGetAgentCostDataQuery();
 
+console.log("user",user)
+
+  const {data: agentCreditLimit} = useGetAgentCreditLimitsQuery(user?.agent_user_id);
+  const { data: agentCostData, isLoading: agentCostLoading,  } = useGetAgentCostDataQuery(payload);
+  const graphData = agentCostData?.result?.graph_data || [];
+  const { data: currentMonthCost} = useGetCurrentMonthCostQuery(user?.agent_user_id);
+  const batches =universityAndBatchData?.result?.batch_data || "";
+  const {data: performaceData,isLoading: performaceDataLoading} = useGetPerformanceDataQuery(payload);
+  const performaneGraphData = performaceData?.result?.graph_data || [];
   const toggleBatch = (batch: string) => {
     setSelectedBatches((prev) =>
       prev.includes(batch) ? prev.filter((b) => b !== batch) : [...prev, batch]
     );
   };
-console.log("selectedBatches",selectedBatches)
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentMonthName = monthNames[new Date().getMonth()];
+
   const items = [
     {
       icon: <FaSyncAlt className="text-[#13A09D]" />,
       title: "Current Month",
-      subtitle: "July",
-      value: "$500",
+      subtitle: currentMonthName,
+      value: currentMonthCost?.result?.total_Current_month_cost,
       valueColor: "text-green-600",
     },
     {
@@ -62,16 +93,31 @@ console.log("selectedBatches",selectedBatches)
   ];
 
   
-
-
   const handleToggle = () => {
     setIsOpen((prev) => !prev);
   };
 
+  const creditLimit =
+    agentCreditLimit?.result?.credit_data?.total_credit_limit > 0
+      ? agentCreditLimit?.result?.credit_data?.total_credit_limit
+      : 0;
 
-  const getAgentDashboardData= async() => {
-    
-  }
+  const usedCredit =
+    agentCreditLimit?.result?.credit_data?.used_credit > 0
+      ? agentCreditLimit?.result?.credit_data?.used_credit
+      : 0; // Used credit
+
+  const availableCredit =
+    agentCreditLimit?.result?.credit_data?.avaible_limit > 0
+      ? agentCreditLimit?.result?.credit_data?.avaible_limit
+      : 0;
+
+
+
+  const total =agentCostData?.result?.total_cost;
+  const totalClient =agentCostData?.result?.total_client;
+  const costIncreasePercentage =agentCostData?.result?.cost_increase_percentage;
+  const clientsIncreasePercentage =agentCostData?.result?.cost_increase_percentage;
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = dropdownRef.current;
@@ -93,7 +139,6 @@ console.log("selectedBatches",selectedBatches)
   }, []);
   useEffect(() => {
     setTitle('Dashboard');
-    getAgentDashboardData()
   }, []);
   return (
     <>
@@ -136,23 +181,40 @@ console.log("selectedBatches",selectedBatches)
                   </button>
                 </div>
 
-                <div className="flex gap-2 mb-4">
+                <div className="flex z-50 gap-2 mb-4">
                   <input
                     type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-                    className="flex-1 px-3 py-1 border rounded shadow-sm text-sm"
-                    placeholder="From"
+                    className="flex-1 px-3 py-1 border z-50 rounded shadow-sm text-sm"
                   />
                   <input
                     type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
                     className="flex-1 px-3 py-1 border rounded shadow-sm text-sm"
-                    placeholder="To"
                   />
                 </div>
 
                 <div className="mb-4">
-                  <button className="flex items-center justify-between w-full text-sm font-medium">
-                    Any University <IoMdArrowDropdown />
+                  <button
+                    onClick={() => setShowUniversityDropdown(!showUniversityDropdown)}
+                    className="flex items-center justify-between w-full text-sm font-medium"
+                  >
+                    {selectedUniversity || "Any University"} <IoMdArrowDropdown />
                   </button>
+                  {showUniversityDropdown && (
+                    <div className="border max-h-48 overflow-y-auto rounded p-2 mt-1 space-y-1 bg-white shadow">
+                      {universities.map((uni) => (
+                        <div
+                          key={uni?.id}
+                          className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                          onClick={() => {
+                            setSelectedUniversity(uni?.id);
+                            setShowUniversityDropdown(false);
+                          }}
+                        >
+                          {uni?.uni_name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -169,14 +231,14 @@ console.log("selectedBatches",selectedBatches)
                     </div>
                     {batches.map((batch) => (
                       <div
-                        key={batch}
+                        key={batch?.id}
                         className="flex justify-between items-center cursor-pointer"
                         onClick={() => toggleBatch(batch)}
                       >
-                        <span>{batch}</span>
+                        <span>{batch?.batch_name}</span>
                         <span
                           className={`h-4 w-4 rounded ${
-                            selectedBatches.includes(batch)
+                            selectedBatches.includes(batch?.id)
                               ? "bg-gray-400"
                               : "border border-gray-300"
                           }`}
@@ -193,11 +255,11 @@ console.log("selectedBatches",selectedBatches)
 
       <div className="grid grid-cols-12 gap-2">
         <div className="col-span-12 space-y-3 xl:col-span-5">
-          <EcommerceMetrics />
+          <EcommerceMetrics total={total} totalClient={totalClient} costIncreasePercentage={costIncreasePercentage} clientsIncreasePercentage={clientsIncreasePercentage} />
 
           {/* <MonthlySalesChart /> */}
           <div className="bg-white p-3 rounded-lg">
-            <CostComparisonChart />
+            <CostComparisonChart graphData={graphData}  />
           </div>
 
           <div className="space-y-2">
@@ -225,7 +287,7 @@ console.log("selectedBatches",selectedBatches)
 
         <div className="col-span-12 space-y-4 xl:col-span-4">
           <div className="bg-white h-[240px] rounded-lg">
-            <OrdersBarChart />
+            <OrdersBarChart performaneGraphData={performaneGraphData} />
           </div>
 
           <div className="bg-white rounded-lg py-3 px-3">
@@ -235,7 +297,7 @@ console.log("selectedBatches",selectedBatches)
         </div>
 
         <div className="col-span-12 space-y-4 xl:col-span-3">
-          <CreditUsageChart />
+          <CreditUsageChart creditLimit={creditLimit} usedCredit={usedCredit} availableCredit={availableCredit}  />
           <BatchAverageOverview />
         </div>
       </div>

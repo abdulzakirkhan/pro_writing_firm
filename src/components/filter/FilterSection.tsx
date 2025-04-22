@@ -3,11 +3,53 @@ import { IoSearch } from "react-icons/io5";
 import { FaFilter } from "react-icons/fa";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import { Link } from "react-router";
-export default function ({navigate,title="Order List",btnTitle , onClick}) {
+import {
+  useGetAgentOrdersDataQuery,
+  useGetPaperSubjectQuery,
+  useGetUniversityAndBatchesQuery,
+} from "../../redux/agentdashboard/agentApi";
+import { useSelector } from "react-redux";
+export default function ({
+  navigate,
+  title = "Order List",
+  btnTitle,
+  onClick,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  
+  const {
+    data: universityAndBatchData,
+    isLoading: universityAndBatchDataLoading,
+    error: universityAndBatchDataError,
+  } = useGetUniversityAndBatchesQuery();
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [selectedUniversity, setSelectedUniversity] = useState(["Any University"]);
+  const user = useSelector((state) => state.auth?.user);
+  const {
+    data: paperSubjectData,
+    isLoading: paperSubjectDataLoading,
+    error: paperSubjectDataError,
+  } = useGetPaperSubjectQuery();
+  const subjects = paperSubjectData?.result?.All_Paper_subject;
+  // const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
+  // const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
+  // const [selectedSubject, setSelectedSubject] = useState(["Any Subject"]);
+  // const universities = universityAndBatchData?.result?.universities_data;
+
+  let payload = {
+    agentId: user?.agent_user_id,
+    university:selectedUniversity,
+    batch:"All",
+    paperSubject:selectedSubject
+  };
+
+
+  const {data: agentOrdersData,isLoading: agentOrdersDataLoading,error,} = useGetAgentOrdersDataQuery(payload);
+
+
 
   const toggleFilter = (filter: string) => {
     setSelectedFilters((prev) =>
@@ -31,6 +73,7 @@ export default function ({navigate,title="Order List",btnTitle , onClick}) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+
   const handleDropdownToggle = (section: string) => {
     setOpenDropdown((prev) => (prev === section ? null : section));
   };
@@ -41,15 +84,21 @@ export default function ({navigate,title="Order List",btnTitle , onClick}) {
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-bold text-black">{title}</h2>
           {navigate && (
-            <Link to={"/order-list"} className="text-sm text-teal-600 underline">
-                See all
+            <Link
+              to={"/order-list"}
+              className="text-sm text-teal-600 underline"
+            >
+              See all
             </Link>
           )}
         </div>
 
         {/* Right Side: Buttons + Search */}
         <div className="flex items-center flex-wrap gap-3">
-          <button onClick={onClick} className="bg-[#157BA7] text-white text-sm px-4 py-1.5 min-w-[96px] max-w-[150px] h-[39px] rounded">
+          <button
+            onClick={onClick}
+            className="bg-[#157BA7] text-white text-sm px-4 py-1.5 min-w-[96px] max-w-[150px] h-[39px] rounded"
+          >
             {btnTitle}
           </button>
 
@@ -99,31 +148,60 @@ export default function ({navigate,title="Order List",btnTitle , onClick}) {
                   )
                 )}
 
-                {/* Dropdown Categories */}
-                <div className="pt-3 space-y-2 text-sm">
-                  {["Type of Paper", "Category", "Academic Level"].map(
-                    (item) => (
-                      <div key={item}>
-                        <button
-                          onClick={() => handleDropdownToggle(item)}
-                          className="flex items-center justify-between w-full font-medium"
+                {/* Dropdown Subjects */}
+                <div className="mb-4">
+                  <button
+                    onClick={() => setShowSubjectDropdown(!showSubjectDropdown)}
+                    className="flex items-center justify-between w-full text-sm font-medium"
+                  >
+                    {selectedSubject || "Any University"}{" "}
+                    <IoMdArrowDropdown />
+                  </button>
+                  {showSubjectDropdown && (
+                    <div className="border max-h-48 overflow-y-auto rounded p-2 mt-1 space-y-1 bg-white shadow">
+                      {subjects.map((subject) => (
+                        <div
+                          key={subject?.id}
+                          className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                          onClick={() => {
+                            setSelectedSubject(subject?.id);
+                            setShowSubjectDropdown(false);
+                          }}
                         >
-                          {item}{" "}
-                          {openDropdown === item ? (
-                            <IoMdArrowDropup />
-                          ) : (
-                            <IoMdArrowDropdown />
-                          )}
-                        </button>
-                        {openDropdown === item && (
-                          <div className="pl-4 pt-2 text-xs text-gray-600">
-                            <p>Option 1</p>
-                            <p>Option 2</p>
-                            <p>Option 3</p>
-                          </div>
-                        )}
-                      </div>
-                    )
+                          {subject?.subject_name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Dropdown universities */}
+
+                <div className="mb-4">
+                  <button
+                    onClick={() =>
+                      setShowUniversityDropdown(!showUniversityDropdown)
+                    }
+                    className="flex items-center justify-between w-full text-sm font-medium"
+                  >
+                    {selectedUniversity || "Any University"}{" "}
+                    <IoMdArrowDropdown />
+                  </button>
+                  {showUniversityDropdown && (
+                    <div className="border max-h-48 overflow-y-auto rounded p-2 mt-1 space-y-1 bg-white shadow">
+                      {universities.map((uni) => (
+                        <div
+                          key={uni?.id}
+                          className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                          onClick={() => {
+                            setSelectedUniversity(uni?.id);
+                            setShowUniversityDropdown(false);
+                          }}
+                        >
+                          {uni?.uni_name}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>

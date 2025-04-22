@@ -47,7 +47,7 @@ const SubjectPieChart = () => {
   }));
 
   return (
-    <div className="flex flex-wrap items-start lg:gap-6">
+    <div className="flex items-start lg:gap-6">
       {/* Chart */}
       <div className="lg:h-[310px]">
         <Pie data={data} options={options} />

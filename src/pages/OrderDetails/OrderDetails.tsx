@@ -2,11 +2,16 @@ import { useEffect } from "react";
 import { useTitle } from "../../context/TitleContext";
 import FilterSection from "../../components/filter/FilterSection";
 import { RiArrowLeftSLine } from "react-icons/ri";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import Order from "../../components/Order/Order";
 import OrderStatusCard from "../../components/OrderStatusCard/OrderStatusCard";
+interface OrderItem {
+  orders:OrderItem[];
+}
+
 export default function OrderDetails() {
+  
   const { setTitle } = useTitle();
   const { id } = useParams();
   const cardData = [
@@ -128,12 +133,21 @@ export default function OrderDetails() {
       borderColor: "#F76631",
     },
   ];
+  const location = useLocation();
 
-  const order= cardData.find(order=>order.id === Number(id));
+  const card = location.state?.card as OrderItem | undefined;
+
+
+
+
+  const order= cardData[0];
 
   useEffect(() => {
     setTitle("Order List");
   }, [setTitle]);
+
+  
+ 
 
   const cardDatas = [
     {
@@ -217,10 +231,15 @@ export default function OrderDetails() {
       marks:90,
     },
   ];
-
+  const data =card || [];
+  console.log("cardddd",data)
+  
+  const orders=card?.orders || []
   return (
     <>
-    <div className="">
+    <div className="flex">
+      <div className="">
+
         <Link
           to={"/order-list"}
           className="flex items-center text-xl text-[#13A09D]"
@@ -228,14 +247,15 @@ export default function OrderDetails() {
           <RiArrowLeftSLine size={30} /> Back
         </Link>
       </div>
-      <FilterSection navigate={false} />
+      </div>
+      {/* <FilterSection navigate={false} /> */}
       <div className="py-8">
-        <Order order={order} />
+        <Order order={card} />
       </div>
 
       <div className="grid grid-cols-3 gap-2 py-8">
-        {cardDatas.map((card, idx) => (
-          <OrderStatusCard card={card} />
+        {orders.map((card, idx) => (
+          <OrderStatusCard card={ card} key={idx} data={data} />
         ))}
       </div> 
     </>

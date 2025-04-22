@@ -9,11 +9,15 @@ import {
 import { FaSyncAlt, FaChartBar } from 'react-icons/fa';
 import { HiMiniChartBarSquare } from "react-icons/hi2";
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-const CreditUsageChart = () => {
-    const used = 100;
-    const limit = 800;
-    const remaining = limit - used;
+interface CreditUsageChartProps {
+  creditLimit: number;
+  usedCredit: number;
+  availableCredit: number;
+}
+const CreditUsageChart : React.FC<CreditUsageChartProps>  = ({creditLimit,usedCredit,availableCredit}) => {
+    const used = usedCredit;
+    const limit = creditLimit;
+    const remaining = availableCredit;
   
     const data = {
       datasets: [
@@ -35,7 +39,7 @@ const CreditUsageChart = () => {
             gradient.addColorStop(0.28, '#254E5C');
             gradient.addColorStop(0.7, '#13A09D');
   
-            return ['#E5E5E5',gradient]; // used, remaining
+            return [gradient,"#E5E5E5"]; // used, remaining
           },
           borderWidth: 0,
           cutout: '80%'

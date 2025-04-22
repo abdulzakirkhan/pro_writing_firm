@@ -25,7 +25,12 @@ import FilterSection from "../../components/ClientFilter/ClientFilter";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
 import MyClientOrders from "../../components/MyClientOrders/MyClientOrders";
+import { useGetAgentAllClientsQuery } from "../../redux/agentdashboard/agentApi";
+import { useSelector } from "react-redux";
+import Calendar from "../../assets/icons/calendar.png"
 export default function MyClients() {
+  const user = useSelector((state) => state.auth?.user);
+
   const [clientProfile, setClientProfile] = useState(false);
   const [myClientOrders, setMyClientOrders] = useState(false);
   const { setTitle } = useTitle();
@@ -78,7 +83,6 @@ export default function MyClients() {
       badge: <MdOutlineTrendingUp size={28} className="text-[#3BB537]" />,
     },
   ];
-  console.log("clientData :", clientData);
 
   const Mainlabels = ["Jan", "Feb", "March", "April", "May", "June", "July"];
   const Maindatasets = [
@@ -176,6 +180,21 @@ export default function MyClients() {
       status: "unpaid",
     },
   ];
+
+
+
+
+
+  const {data: agentClients,isLoading: agentClientsLoading,error: agentClientsError,} =  useGetAgentAllClientsQuery(user?.agent_user_id);
+
+
+  // console.log("agentClients",agentClients)
+
+  const clientsData =agentClients?.result?.clientsListData || [];
+
+console.log("clientsData",clientsData)
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -322,17 +341,17 @@ export default function MyClients() {
                   {/* Avatar & Basic Info */}
                   <div className="flex justify-center gap-8 mt-12 items-center">
                     <img
-                      src={clientData?.avatar}
+                      src={clientData?.avatar ? clientData?.avatar : "https://randomuser.me/api/portraits/men/3.jpg"}
                       alt="Client"
                       className="w-[100px] h-[100px] rounded-full border-3 border-teal-500 object-cover"
                     />
                     <div className="">
                       <p className="mt-3 font-bold text-lg text-black">
-                        {clientData?.name}
+                        {clientData?.name ? clientData?.name : "John Doe"}
                       </p>
                       <p className="text-sm text-gray-500 flex items-center gap-1">
                         <img
-                          src={clientData?.icon}
+                          src={Calendar}
                           alt=""
                           className="w-[24px] h-[24px]"
                         />
@@ -341,8 +360,8 @@ export default function MyClients() {
                         </span>
                       </p>
                       <p className="text-sm text-gray-500 mt-2 flex items-center gap-1">
-                        <PiGraduationCapDuotone size={27} />{" "}
-                        <span className="text-lg">{clientData?.education}</span>
+                        <PiGraduationCapDuotone size={30} />{" "}
+                        <span className="text-sm">{clientData?.program}</span>
                       </p>
                     </div>
                   </div>
@@ -358,13 +377,13 @@ export default function MyClients() {
                           <MdOutlineTrendingUp
                             size={28}
                             className={`${
-                              clientData?.performance >= 5
+                              clientData?.up_or_down >= 5
                                 ? "text-green-500"
                                 : "text-red-500"
                             }`}
                           />{" "}
                           <span className="font-bold">
-                            {clientData?.performance}%
+                            {clientData?.up_or_down.type}%
                           </span>
                         </span>{" "}
                         <span className="font-bold">Up from last month</span>{" "}
@@ -483,7 +502,7 @@ export default function MyClients() {
           <ClientFilter title="Client List" />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 py-8">
             <div className="w-full lg:col-span-5">
-              <div className="grid grid-cols-1 lg:grid-cols-2">
+              <div className="grid grid-cols-1 lg:grid-cols-1">
                 <div className="bg-white rounded-xl p-4 shadow h-[380px]">
                   <OrderSubjectChart
                     labels={Mainlabels}
@@ -498,11 +517,16 @@ export default function MyClients() {
               </div>
             </div>
             <div className="w-full lg:col-span-7">
-              <ClientList
-                handleClickProfile={handleClickProfile}
-                clientProfileOpen={setClientProfile}
-                clientProfile={clientProfile}
-              />
+              <div className="bg-white rounded-xl p-4 shadow max-h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-tealish scrollbar-track-gray-100" style={{scrollbarColor:"#13A09D !important"}}>
+                {clientsData.map((client,index) => (
+                  <ClientList
+                    handleClickProfile={handleClickProfile}
+                    clientProfileOpen={setClientProfile}
+                    clientProfile={clientProfile}
+                    client={client}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </>

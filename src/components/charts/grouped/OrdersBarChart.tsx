@@ -18,23 +18,46 @@ ChartJS.register(
   Title
 );
 
-const OrdersBarChart = () => {
+// Define a single performance item
+interface PerformanceGraphItem {
+  month: number; // 1 = Jan, 2 = Feb, etc.
+  Totalorderforthisclient: number;
+  passorders: number;
+  totalfailorders: number;
+}
+
+// Component props
+interface OrdersBarChartProps {
+  performaneGraphData: PerformanceGraphItem[];
+}
+
+const OrdersBarChart = ({ performaneGraphData }: OrdersBarChartProps) => {
+  const monthLabels = [
+    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
+  const labels = performaneGraphData.map((item) => monthLabels[item.month]);
+  const totalOrders = performaneGraphData.map(item => item.Totalorderforthisclient);
+  const passOrders = performaneGraphData.map(item => item.passorders);
+  const failOrders = performaneGraphData.map(item => item.totalfailorders);
+
   const data = {
-    labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July'],
+    labels,
     datasets: [
       {
         label: 'Total orders',
-        data: [20, 40, 60, 90, 15, 50, 60],
+        data: totalOrders,
         backgroundColor: '#007bff'
       },
       {
         label: 'Pass orders',
-        data: [15, 40, 45, 80, 15, 30, 60],
+        data: passOrders,
         backgroundColor: '#28a745'
       },
       {
         label: 'Fail orders',
-        data: [5, 0, 15, 5, 0, 10, 0],
+        data: failOrders,
         backgroundColor: '#dc3545'
       }
     ]
@@ -44,7 +67,7 @@ const OrdersBarChart = () => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top'  as const
+        position: 'top' as const
       },
       title: {
         display: true,
