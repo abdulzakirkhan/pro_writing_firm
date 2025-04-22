@@ -33,7 +33,9 @@ const BarChartOne = ({title ="",labels, dataSet}) => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
+      legend: { 
+        display: false,
+       },
       datalabels: {
         anchor: 'end',
         align: 'end',

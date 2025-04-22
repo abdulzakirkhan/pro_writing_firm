@@ -4,7 +4,7 @@ import { ApexOptions } from "apexcharts";
 export default function LineChartOne() {
   const options: ApexOptions = {
     legend: {
-      show: false, // Hide legend
+      display: false,
       position: "top",
       horizontalAlign: "left",
     },

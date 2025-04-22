@@ -76,7 +76,7 @@ export default function CostComparisonChart({ graphData }: Props) {
     responsive: true,
     plugins: {
       legend: {
-        display: false
+        display: false,
       },
       title: {
         display: true,

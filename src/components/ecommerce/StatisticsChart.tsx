@@ -5,7 +5,7 @@ import ChartTab from "../common/ChartTab";
 export default function StatisticsChart() {
   const options: ApexOptions = {
     legend: {
-      show: false, // Hide legend
+      display: false, // Hide legend
       position: "top",
       horizontalAlign: "left",
     },

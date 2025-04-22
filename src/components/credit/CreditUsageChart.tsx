@@ -52,7 +52,7 @@ const CreditUsageChart : React.FC<CreditUsageChartProps>  = ({creditLimit,usedCr
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false
+          display: false,
         },
         tooltip: {
           enabled: false
