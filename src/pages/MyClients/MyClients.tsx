@@ -1,6 +1,6 @@
 import { SetStateAction, useEffect, useRef, useState } from "react";
 import { useTitle } from "../../context/TitleContext";
-import ClientFilter from "../../components/ClientFilter/ClientFilter";
+import ClientFilter from "../../components/clientFilter/ClientFilter";
 import OrderSubjectChart from "../../components/OrderSubjectChart/OrderSubjectChart";
 import SubjectPieChart from "../../components/charts/SubjectPieChart/SubjectPieChart";
 import ClientList from "../../components/ClientList/ClientList";
