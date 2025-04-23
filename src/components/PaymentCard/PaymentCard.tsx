@@ -1,11 +1,12 @@
 import { FaDownload } from "react-icons/fa";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { Link } from "react-router";
-const PaymentCard = ({ order, onClick, isSelected }) => {
+const PaymentCard = ({ order, onClick, isSelected , index}) => {
+  // console.log("order",order)
   return (
     <div
-      className={`${isSelected ? "bg-[#ACD6D4]" :"bg-white"} rounded-xl flex flex-col gap-4 shadow px-5 pt-8 w-full h-[210px] relative overflow-hidden`}
-      style={{ borderLeft: `4px solid ${order?.borderColor}` }}
+      className={`${isSelected && order?.paymentStatus !== "Paid" ? "bg-[#ACD6D4]" :"bg-white"} ${order?.paymentStatus === "Paid" ? "cursor-not-allowed" :""} rounded-xl flex flex-col gap-4 shadow px-5 pt-8 w-full h-[210px] relative overflow-hidden`}
+      style={{ borderLeft: `4px solid ${index % 2 ? "#FBB343" : "#57C063"}` }}
     >
       {/* Header Row */}
       <div>
@@ -18,8 +19,8 @@ const PaymentCard = ({ order, onClick, isSelected }) => {
               <input
                 type="checkbox"
                 checked={isSelected}
-                onChange={() => onClick(order?.id)}
-                className="sr-only peer"
+                onChange={order.paymentStatus === "Paid" ? null : () => onClick(index)}
+                className={`sr-only peer`}
               />
               <div className="w-5 h-5 rounded-full border border-gray-400 peer-checked:bg-teal-600 transition" />
             </label>
@@ -57,7 +58,7 @@ const PaymentCard = ({ order, onClick, isSelected }) => {
           <p className="text-sm font-bold text-gray-600">
             Status:{" "}
             <span className="font-medium" style={{ color: order?.statusColor }}>
-              {order?.status}
+              {order?.paymentStatus}
             </span>
           </p>
         </div>

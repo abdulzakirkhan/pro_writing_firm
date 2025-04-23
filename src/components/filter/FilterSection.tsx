@@ -36,7 +36,7 @@ export default function ({
   const subjects = paperSubjectData?.result?.All_Paper_subject;
   // const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
   // const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
-  // const [selectedSubject, setSelectedSubject] = useState(["Any Subject"]);
+  const [selectedSubject, setSelectedSubject] = useState(["Any Subject"]);
   // const universities = universityAndBatchData?.result?.universities_data;
 
   let payload = {

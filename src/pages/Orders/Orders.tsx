@@ -281,11 +281,22 @@ const {
   const makePaymentHandle = () => {
     setMakePayment(!makePayment);
   };
-  const toggleSelect = (id: number) => {
+  const toggleSelect = (index: number) => {
     setSelectedOrders((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
+  const selectOrders = selectedOrders.map(index => newCardDAta[index]);
+
+  
+  const total = selectOrders.reduce((sum, order) => {
+    const price = Number(order?.price) || 0;
+    return sum + price;
+  }, 0);
+  const fourPercent = Number((total * 0.04).toFixed(2));
+  const vatPercent = Number((total * 0.20).toFixed(2));
+  console.log("total :",total)
+  console.log("selectOrders :",selectOrders)
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-12">
@@ -374,22 +385,22 @@ const {
           <div className="text-sm space-y-2">
             <div className="flex justify-between">
               <span className="text-[#6D6D6D] text-lg">Price:</span>
-              <span>$150</span>
+              <span>{total}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#6D6D6D] text-lg">
                 Processing fee (4%):
               </span>
-              <span>$6</span>
+              <span>${fourPercent}</span>
             </div>
             <div className="flex justify-between line-through text-gray-400">
               <span>VAT (20%):</span>
-              <span>$30</span>
+              <span>${vatPercent}</span>
             </div>
             <hr />
             <div className="flex text-[#13A09D] justify-between font-bold text-lg">
               <span>Total:</span>
-              <span>$156</span>
+              <span>{total+fourPercent}</span>
             </div>
           </div>
         </div>
@@ -412,13 +423,13 @@ const {
           <div className="text-sm space-y-2">
             <div className="flex justify-between">
               <span className="text-[#6D6D6D] text-lg">Price:</span>
-              <span>$150</span>
+              <span>${total}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#6D6D6D] text-lg">
                 Processing fee (4%):
               </span>
-              <span>$6</span>
+              <span>${fourPercent}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Wallet:</span>
@@ -427,7 +438,7 @@ const {
             <hr />
             <div className="flex border-b justify-between text-lg font-bold">
               <span className="text-[#13A09D]">Total:</span>
-              <span className="text-[#13A09D]">$56</span>
+              <span className="text-[#13A09D]">${total+fourPercent}</span>
             </div>
             <div className="text-sm flex justify-between items-center text-gray-500 mt-2">
               Payment Method: <span> **** **** **** 1234</span>
@@ -601,14 +612,14 @@ const {
                 />
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-12">
-                {cardData.map((order, index) => {
-                  const isSelected = selectedOrders.includes(order?.id);
+                {newCardDAta.map((order, index) => {
+                  const isSelected = selectedOrders.includes(index);
                   return (
                     <PaymentCard
                       key={index}
                       order={order}
                       onClick={toggleSelect}
-                      isSelected={isSelected}
+                      isSelected={isSelected} index={index}
                     />
                   );
                 })}
@@ -672,11 +683,6 @@ const {
           </div>
 
           <div className="mt-12">
-            {/* <FilterSection
-              onClick={makePaymentHandle}
-              navigate={true}
-              btnTitle={"Payment"}
-            /> */}
             <div className="w-full flex-wrap flex justify-between items-center px-2">
               {/* Left Side: Title + See All */}
               <div className="flex items-center gap-2">

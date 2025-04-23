@@ -54,7 +54,7 @@ const SubjectPieChart = () => {
       </div>
 
       {/* Custom Legend */}
-      <div className="bg-white px-4 w-[259px] py-2 rounded-lg text-sm space-y-1 lg:mt-16">
+      <div className="bg-white px-4 w-[180px] py-2 rounded-lg text-sm space-y-1 lg:mt-16">
         {legendData.map((item, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <span

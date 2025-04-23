@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTitle } from "../../context/TitleContext";
 import TopUpModal from "../../components/TopUpModal/TopUpModal";
+import { useAddWalletCardMutation, useGetAllCardsQuery, useGetpaymentHistryQuery, useGetWalletAmountQuery, useMakeWalletPaymentMutation } from "../../redux/paymentApi/paymentApi";
+import { useSelector } from "react-redux";
+import { getCurrency } from "../../config/indext";
+import toast, { Toaster } from "react-hot-toast";
 
-const paymentHistory = [
+const History = [
   {
     id: 1,
     method: "**** **** **** 1234",
@@ -39,12 +43,87 @@ const paymentHistory = [
     amount: "$1,000",
   },
 ];
-
 export default function Wallet() {
   const { setTitle } = useTitle();
   const [showModal, setShowModal] = useState(false)
+  const user = useSelector((state) => state.auth?.user);
+  const {data: getAllCards = { result: { result: {} } },isLoading: allCardsLoading,refetch: getAllCardsRefech,} = useGetAllCardsQuery(user?.userid);
+  const allCards = Array.isArray(getAllCards) ? getAllCards : [];
+  // const {data: walletAmount,isLoading: walletAmountLoading,refetch: walletAmountRefech,} = useGetWalletAmountQuery(
+  //   {
+  //      clientId:user?.agent_id,
+  //      currency: getCurrency(user?.currency),
+  //   },
+  // );
+  const {data: paymentHistory,isLoading: paymentHistoryLoading,refetch: paymentHistoryRefech,} = useGetpaymentHistryQuery(user?.agent_user_id);
+  const [addCard, { isLoading: addCardLoading }] = useAddWalletCardMutation();
+  const [makePayment, { isLoading: makePaymentLoading }] = useMakeWalletPaymentMutation();
+  const [selectedId, setSelectedId] = useState();
 
+  // console.log("user", user)
   
+  const handleAddCard = async (formData) => {
+    // console.log("formData :" , formData)
+    const res = await addCard({
+      clientid:user?.agent_user_id,
+      cardtype: formData?.cardDetails?.brand,
+      Lastfourdigit: formData?.cvc,
+      Stripekey: formData?.token,
+    });
+
+    const { data: respData, error } = res;
+    if (respData) {
+      if (respData?.result == 'Client Card Detail Added Successfully') {
+        console.log("object")
+        return true;
+      } else{
+        console.log("error")
+      }
+    }
+
+    if (error){
+
+      console.log("object")
+    }
+      toast.error("Error")
+
+    return false;
+  };
+
+  const PAYMENT_ERROR = 'Stripe API Error: Your card was declined.';
+  const handlePayment= async ({card,amount}) => {
+    console.log("object",card)
+    console.log("amount",amount)
+    setSelectedId(card?.id)
+    try {
+      const selectedCard = allCards?.find((card) => card?.id == selectedId);
+      const res = await makePayment({
+        currency: getCurrency(user?.currency),
+        amount: amount,
+        userId: user?.agent_user_id,
+        token: card?.stripekey,
+        viafrom: 'stripe',
+      });
+
+      const { data: respData, error } = res || {};
+      if (respData) {
+        if (respData?.result == 'Successfully Added Into Wallet') {
+          console.log("Payment successful");
+          toast.success("To up Successfull !")
+          setShowModal(false)
+        }else if (respData?.result == PAYMENT_ERROR) {
+          toast.error(respData?.result)
+          setShowModal(false)
+        } else
+          toast.error(respData?.result)
+          setShowModal(false)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error("Something Went wrong")
+    }
+  }
+  // console.log("walletAmount", walletAmount)
   const Modal = ({onCancel}) => (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Only dim the background without blur */}
@@ -79,6 +158,8 @@ export default function Wallet() {
       </div>
     </div>
   )
+  const oldHistory= paymentHistory || []
+  console.log("oldHistory",oldHistory)
   useEffect(() => {
     setTitle("Wallet");
   }, [setTitle]);
@@ -115,7 +196,7 @@ export default function Wallet() {
                 </tr>
             </thead>
             <tbody className="text-gray-700">
-                {paymentHistory.map((entry, index) => (
+                {History.map((entry, index) => (
                 <tr key={entry.id} className="border-b last:border-none">
                     <td className="py-2 min-w-[40px]">{index + 1}.</td>
                     <td className="py-2 !min-w-[160px]">{entry.method}</td>
@@ -131,8 +212,9 @@ export default function Wallet() {
     </div>
 
     {showModal && (
-        <TopUpModal onCancel={() => setShowModal(false)} />
+        <TopUpModal onCancel={() => setShowModal(false)} onClick={handleAddCard} handlePayment={handlePayment} />
     )}
+    <Toaster position="top-right" reverseOrder={false} />
     </>
   );
 }

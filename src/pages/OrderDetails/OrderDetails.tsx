@@ -235,13 +235,20 @@ export default function OrderDetails() {
   console.log("cardddd",data)
   
   const orders=card?.orders || []
+
+  console.log("orders",orders)
+  // if(orders.length < 0) {
+  //   return(
+  //     <p>No Orders</p>
+  //   )
+  // }
   return (
     <>
     <div className="flex">
       <div className="">
 
         <Link
-          to={"/order-list"}
+          to={"/orders"}
           className="flex items-center text-xl text-[#13A09D]"
         >
           <RiArrowLeftSLine size={30} /> Back
@@ -254,9 +261,9 @@ export default function OrderDetails() {
       </div>
 
       <div className="grid grid-cols-3 gap-2 py-8">
-        {orders.map((card, idx) => (
+        {orders.length > 0 ? orders.map((card, idx) => (
           <OrderStatusCard card={ card} key={idx} data={data} />
-        ))}
+        )) : <p className="text-center w-full md:col-span-12">No Orders</p>}
       </div> 
     </>
   );

@@ -219,7 +219,19 @@ export const agentApi = api.injectEndpoints({
 
 
 
-
+    getAgentClientOrdersPieChart: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('agent_id', data.agentId);
+        formData.append('paper_subject', data.paper_subject);
+        formData.append('batch', data.batch);
+        return {
+          url: `/pie_chart_graph_data_subject_wise_agent`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
 
 
 
@@ -267,6 +279,6 @@ export const {
   useGetAgentAllClientsQuery,
   useGetAllClientsForOrderQuery,
   useGetAgentClientOrdersQuery,
-
+  useGetAgentClientOrdersPieChartQuery
   // ... other hooks
 } = agentApi;

@@ -25,7 +25,7 @@ import FilterSection from "../../components/ClientFilter/ClientFilter";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
 import MyClientOrders from "../../components/MyClientOrders/MyClientOrders";
-import { useGetAgentAllClientsQuery } from "../../redux/agentdashboard/agentApi";
+import { useGetAgentAllClientsQuery, useGetAgentClientOrdersPieChartQuery, useGetAgentClientOrdersQuery, useGetAllClientsForOrderQuery } from "../../redux/agentdashboard/agentApi";
 import { useSelector } from "react-redux";
 import Calendar from "../../assets/icons/calendar.png"
 export default function MyClients() {
@@ -45,10 +45,29 @@ export default function MyClients() {
   const handleClickProfile = (client: SetStateAction<never[]>) => {
     setClientData(client);
   };
+
+
+  let payloadorders = {
+    agentId: user?.agent_user_id,
+    selectedFilterOrder: "All",
+  };
+  const {
+    data: clientsOrders,
+    isLoading: clientsOrdersLoading,
+    error: clientsOrderssError,
+  } = useGetAgentClientOrdersQuery(payloadorders);
+
+  const orderCount =clientsOrders?.result?.orders_count;
+
+  const total= orderCount?.totalorders || 0
+  const inProgress =orderCount?.total_inprogress || 0
+  const completed= orderCount?.total_completed || 0
+
+  // const total = 
   const orderSummary = [
     {
       title: "Total Order",
-      value: 50,
+      value: total,
       icon: <MdShoppingCartCheckout size={25} />, // or use your own icon mapping
       trend: {
         percent: "8.5%",
@@ -60,7 +79,7 @@ export default function MyClients() {
     },
     {
       title: "In Progress",
-      value: 5,
+      value: inProgress,
       icon: <MdWorkHistory className="text-[#FCAE30]" size={25} />, // assuming camera icon in orange
       trend: {
         percent: "1.3%",
@@ -72,7 +91,7 @@ export default function MyClients() {
     },
     {
       title: "Complete",
-      value: 45,
+      value: completed,
       icon: <FaClipboardList className="text-[#3BB537]" size={25} />, // green clipboard icon
       trend: {
         percent: "1.8%",
@@ -148,38 +167,7 @@ export default function MyClients() {
         : [...prev, filter]
     );
   };
-  const orders = [
-    {
-      percentage: 100,
-      topic: "Impact Of Artificial Intelligence...",
-      orderId: "1434323",
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      marks: 90,
-      price: 10.0,
-      status: "paid",
-    },
-    {
-      percentage: 47,
-      topic: "Impact Of Artificial Intelligence...",
-      orderId: "1434323",
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      marks: 90,
-      price: 10.0,
-      status: "unpaid",
-    },
-    {
-      percentage: 20,
-      topic: "Impact Of Artificial Intelligence...",
-      orderId: "1434323",
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      marks: 90,
-      price: 10.0,
-      status: "unpaid",
-    },
-  ];
+  const orders = clientsOrders?.result?.order_detail || []
 
 
 
@@ -191,8 +179,16 @@ export default function MyClients() {
   // console.log("agentClients",agentClients)
 
   const clientsData =agentClients?.result?.clientsListData || [];
+  const {
+    data: allAgentClients,
+    isLoading: allAgentClientsLoading,
+    error: allAgentClientsError,
+  } = useGetAllClientsForOrderQuery(user?.agent_user_id);
+  
 
-console.log("clientsData",clientsData)
+
+
+
 
 
   useEffect(() => {
@@ -315,7 +311,7 @@ console.log("clientsData",clientsData)
                   <h1 className="text-3xl font-bold">Orders List</h1>
                 </div>
                 {orders.map((order,index) =>(
-                  <MyClientOrders key={index} {...order} />
+                  <MyClientOrders key={index} order={order} />
                 ))}
               </div>
 
@@ -510,7 +506,7 @@ console.log("clientsData",clientsData)
                     datasets={Maindatasets}
                   />
                 </div>
-                <div className="lg:h-[380px]  flex justify-center items-center">
+                <div className="lg:h-[380px] overflow-auto  flex justify-center items-center">
                   <SubjectPieChart />
                 </div>
 

@@ -11,4 +11,14 @@ const convertDateToYYYYMMDD = (dateString) => {
   // Return the date in YYYY-MM-DD format
   return dateObj.toFormat("yyyy-MM-dd");
 };
-export { baseUrl, convertDateToYYYYMMDD };
+
+
+const getCurrency = (inputString) => {
+  if (inputString) {
+    inputString = inputString.trim();
+    let lastSpaceIndex = inputString.lastIndexOf(' ');
+    let lastWord = inputString.substring(lastSpaceIndex + 1);
+    return lastWord;
+  } else return '';
+};
+export { baseUrl, convertDateToYYYYMMDD , getCurrency};
