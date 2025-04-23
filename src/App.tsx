@@ -15,10 +15,13 @@ import Wallet from "./pages/Wallet/Wallet";
 import PaymentHistory from "./pages/PaymentHistory/PaymentHistory";
 import Chat from "./pages/Chat/Chat";
 import PageMeta from "./components/common/PageMeta";
+import { useSelector } from "react-redux";
+import PublicRoute from "./PrivateRoute";
 
 
 
 export default function App() {
+    const user = useSelector((state) => state.auth?.user);
   return (
     <>
     <PageMeta title="Pro Writng Firm"
@@ -27,7 +30,9 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
+          <Route element={<PublicRoute type="private">
+      <AppLayout />
+    </PublicRoute>}>
             <Route index path="/" element={<Home />} />
 
             <Route path="/orders" element={<Orders  />} />
@@ -46,8 +51,8 @@ export default function App() {
           </Route>
 
           {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/signin" element={<PublicRoute type="public"><SignIn /> </PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute type="public"><SignUp /></PublicRoute>} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />

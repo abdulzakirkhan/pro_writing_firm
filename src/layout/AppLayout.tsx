@@ -8,17 +8,22 @@ import LogoutModal from "../components/LogoutModal/LogoutModal";
 import { useState } from "react";
 import ChatSidebar from "./ChatSidebar";
 import { ChatProvider } from "../context/ChatContext";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/auth/authSlice";
 
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
-
+  const user = useSelector((state) => state.auth?.user);
+  const dispatch = useDispatch();
+  
   // Define routes where you want to hide or change sidebar
   const isChatPage = location.pathname.startsWith('/chat');
   const handleLogout = () => {
     // clear user state/token if needed
+    dispatch(logout());
     navigate("/signin");
   };
 
