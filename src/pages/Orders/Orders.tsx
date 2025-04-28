@@ -20,7 +20,9 @@ import {
 } from "../../redux/agentdashboard/agentApi.js";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { useSelector } from "react-redux";
-
+import Loader from "../../components/Loader/Loader.js";
+import { getCurrency, getCurrencyNameFromPhone } from "../../config/indext.js";
+import { useGetWalletAmountQuery } from "../../redux/paymentApi/paymentApi.js";
 
 interface Category {
   id: any;
@@ -36,8 +38,19 @@ export default function Orders() {
   const { data: TypeOfPaperData } = useGetTypeOfPaperQuery();
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
-  const [categories, setCategories] = useState<Category[]>(TypeOfPaperData?.result?.Category_list || ["All"]);
-  const firstCategory =categories[0].ordercategoryname || ["All"]
+  const [categories, setCategories] = useState<Category[]>(
+    TypeOfPaperData?.result?.Category_list || ["All"]
+  );
+
+
+  const {data: walletAmount,isLoading: walletAmountLoading,refetch: walletAmountRefech,} = useGetWalletAmountQuery(
+    {
+      clientId: user?.agent_user_id,
+      currency: getCurrency(user?.currency),
+    });
+
+  
+  const firstCategory = categories[0].ordercategoryname || ["All"];
   // const categories = TypeOfPaperData?.result?.Category_list;
   const subjects = TypeOfPaperData?.result?.Type_of_paperlist || [];
   // const {data: agentOrdersData,isLoading: agentOrdersDataLoading,error,} = useGetAgentOrdersDataQuery();
@@ -53,10 +66,11 @@ export default function Orders() {
   const [paymentMethod, setPaymentMethod] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [step, setStep] = useState(1);
-  const [showUniversityDropdown, setShowUniversityDropdown] = useState <boolean>(false);
+  const [showUniversityDropdown, setShowUniversityDropdown] =
+    useState<boolean>(false);
   const goNext = () => setStep((prev) => prev + 1);
   const goBack = () => setStep((prev) => prev - 1);
-  const [isOpen, setIsOpen] = useState <boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const {
@@ -65,14 +79,17 @@ export default function Orders() {
     error: paperSubjectDataError,
   } = useGetPaperSubjectQuery();
 
-  const [showSubjectDropdown, setShowSubjectDropdown] = useState <boolean>(false);
+  const [showSubjectDropdown, setShowSubjectDropdown] =
+    useState<boolean>(false);
   const firstSubjectValue = subjects?.[0]?.value || ["All"];
-  const [selectedSubject, setSelectedSubject] = useState<any>(firstSubjectValue);
+  const [selectedSubject, setSelectedSubject] =
+    useState<any>(firstSubjectValue);
 
-  const [selectedAcademicLevel, setSelectedAcademicLevel] = useState <string[]>([
+  const [selectedAcademicLevel, setSelectedAcademicLevel] = useState<string[]>([
     "Academic Level",
   ]);
-  const [selectedCategoryList, setSelectedCategoryList] = useState <any[]>(firstCategory);
+  const [selectedCategoryList, setSelectedCategoryList] =
+    useState<any[]>(firstCategory);
 
   let payload = {
     agentId: user?.agent_user_id,
@@ -92,67 +109,76 @@ export default function Orders() {
   } = useGetAgentOrdersDataMarksQuery(payload);
   const academicLevels = TypeOfPaperData?.result?.Academic_level;
 
-
-  const [showAcademicLevel, setShowAcademicLevel] = useState <boolean>(false);
-  const [showCategory, setShowCategory] = useState <boolean>(false);
+  const [showAcademicLevel, setShowAcademicLevel] = useState<boolean>(false);
+  const [showCategory, setShowCategory] = useState<boolean>(false);
 
   const totalOrders = agentOrdersData?.result?.Order_count[0]?.Total_orders;
   const completed = agentOrdersData?.result?.Order_count[0]?.total_completed;
   const inProgress = agentOrdersData?.result?.Order_count[0]?.total_inprogress;
 
-
-
   const graphData = agentOrdersData?.result?.graph_data || [];
 
-  const monthNames = [ "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
-// Sort by numeric month
-const sortedData = [...graphData].sort((a, b) => {
-  const monthA = parseInt(a.Month, 10);
-  const monthB = parseInt(b.Month, 10);
-  return monthA - monthB;
-});
+  // Sort by numeric month
+  const sortedData = [...graphData].sort((a, b) => {
+    const monthA = parseInt(a.Month, 10);
+    const monthB = parseInt(b.Month, 10);
+    return monthA - monthB;
+  });
 
+  const labels = sortedData.map((item: any) => {
+    const monthIndex = parseInt(item.Month, 10);
+    return monthNames[monthIndex];
+  });
+  const data = sortedData.map((item: any) =>
+    parseInt(item.Total_order_month_wise, 10)
+  );
 
-const labels = sortedData.map((item: any) => {
-  const monthIndex = parseInt(item.Month, 10);
-  return monthNames[monthIndex];
-});
-const data = sortedData.map((item: any) => parseInt(item.Total_order_month_wise, 10));
+  const makrsGraph = agentOrdersDataMarks?.result?.marks_graph_data || [];
+  // Sort by numeric month for marks
+  const sortedMarksData = [...makrsGraph].sort((a, b) => {
+    const monthA = parseInt(a.Month, 10);
+    const monthB = parseInt(b.Month, 10);
+    return monthA - monthB;
+  });
 
-const makrsGraph = agentOrdersDataMarks?.result?.marks_graph_data || [];
-// Sort by numeric month for marks
-const sortedMarksData = [...makrsGraph].sort((a, b) => {
-  const monthA = parseInt(a.Month, 10);
-  const monthB = parseInt(b.Month, 10);
-  return monthA - monthB;
-});
+  const marksLabels = sortedMarksData.map((item: any) => {
+    const monthIndex = parseInt(item.Month, 10);
+    return monthNames[monthIndex];
+  });
 
+  const marksData = sortedMarksData.map((item: any) =>
+    parseInt(item.average_marks, 10)
+  );
+  const [selectedOrdersFilter, setSelectedOrdersFilter] = useState<string[]>(
+    []
+  );
 
+  let batchPayload = {
+    agentId: user?.agent_user_id,
+    selectedFilters,
+    selectedSubject,
+    selectedCategoryList,
+  };
 
-const marksLabels = sortedMarksData.map((item: any) => {
-  const monthIndex = parseInt(item.Month, 10);
-  return monthNames[monthIndex];
-});;
-
-const marksData = sortedMarksData.map((item: any) => parseInt(item.average_marks, 10));;
-const [selectedOrdersFilter, setSelectedOrdersFilter] = useState <string[]>([])
-
-let batchPayload = {
-  agentId: user?.agent_user_id,
-  selectedFilters,
-  selectedSubject,
-  selectedCategoryList
-};
-
-const {
-  data: agentBatchOrderList,
-  isLoading: agentCostLoading,
-  error: agentBatchError,
-} = useGetAgentOrdersListBatchQuery(batchPayload);
-
-
+  const {
+    data: agentBatchOrderList,
+    isLoading: agentCostLoading,
+    error: agentBatchError,
+  } = useGetAgentOrdersListBatchQuery(batchPayload);
 
   const orderSummary = [
     {
@@ -273,7 +299,7 @@ const {
     },
   ];
 
-  const newCardDAta =agentBatchOrderList?.result?.batchesData || []
+  const newCardDAta = agentBatchOrderList?.result?.batchesData || [];
   const togglePaymentMethod = () => {
     setPaymentMethod(!paymentMethod);
   };
@@ -286,17 +312,14 @@ const {
       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
-  const selectOrders = selectedOrders.map(index => newCardDAta[index]);
+  const selectOrders = selectedOrders.map((index) => newCardDAta[index]);
 
-  
   const total = selectOrders.reduce((sum, order) => {
     const price = Number(order?.price) || 0;
     return sum + price;
   }, 0);
   const fourPercent = Number((total * 0.04).toFixed(2));
-  const vatPercent = Number((total * 0.20).toFixed(2));
-  console.log("total :",total)
-  console.log("selectOrders :",selectOrders)
+  const vatPercent = Number((total * 0.2).toFixed(2));
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-12">
@@ -400,7 +423,7 @@ const {
             <hr />
             <div className="flex text-[#13A09D] justify-between font-bold text-lg">
               <span>Total:</span>
-              <span>{total+fourPercent}</span>
+              <span>{total + fourPercent}</span>
             </div>
           </div>
         </div>
@@ -438,7 +461,7 @@ const {
             <hr />
             <div className="flex border-b justify-between text-lg font-bold">
               <span className="text-[#13A09D]">Total:</span>
-              <span className="text-[#13A09D]">${total+fourPercent}</span>
+              <span className="text-[#13A09D]">${total + fourPercent}</span>
             </div>
             <div className="text-sm flex justify-between items-center text-gray-500 mt-2">
               Payment Method: <span> **** **** **** 1234</span>
@@ -494,12 +517,9 @@ const {
     );
   };
 
+  console.log("walletAmount",walletAmount)
 
-  // console.log("agentBatchOrderList",agentBatchOrderList?.result?.batchesData)
-
-
-// const data=agentBatchOrderList?.result
-
+  // const data=agentBatchOrderList?.result
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -619,7 +639,8 @@ const {
                       key={index}
                       order={order}
                       onClick={toggleSelect}
-                      isSelected={isSelected} index={index}
+                      isSelected={isSelected}
+                      index={index}
                     />
                   );
                 })}
@@ -674,11 +695,18 @@ const {
             </div>
 
             <div className="col-span-12 lg:col-span-4 border-2 bg-white rounded-xl shadow">
-              <BarChartOne title="Orders" labels={labels} dataSet={data} />
+              {agentCostLoading ? <Loader /> : <BarChartOne title="Orders" labels={labels} dataSet={data} />}
+              
             </div>
 
             <div className="col-span-12 lg:col-span-4 border-2 bg-white rounded-xl shadow">
-              <BarChartOne title="Marks" labels={marksLabels} dataSet={marksData} />
+              {agentCostLoading ? <Loader /> : <BarChartOne
+                title="Marks"
+                labels={marksLabels}
+                dataSet={marksData}
+              />
+              }
+              
             </div>
           </div>
 
@@ -841,9 +869,16 @@ const {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-8">
-            {newCardDAta.map((card, idx) => (
-              <OrderCard key={idx} card={card} />
-            ))}
+            {agentCostLoading ? (
+              <div className="w-full col-span-12">
+                <Loader />
+
+              </div>
+            ) : (
+              newCardDAta.map((card, idx) => (
+                <OrderCard key={idx} card={card} />
+              ))
+            )}
           </div>
         </>
       )}

@@ -25,9 +25,15 @@ import FilterSection from "../../components/ClientFilter/ClientFilter";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
 import MyClientOrders from "../../components/MyClientOrders/MyClientOrders";
-import { useGetAgentAllClientsQuery, useGetAgentClientOrdersPieChartQuery, useGetAgentClientOrdersQuery, useGetAllClientsForOrderQuery } from "../../redux/agentdashboard/agentApi";
+import {
+  useGetAgentAllClientsQuery,
+  useGetAgentClientOrdersPieChartQuery,
+  useGetAgentClientOrdersQuery,
+  useGetAllClientsForOrderQuery,
+} from "../../redux/agentdashboard/agentApi";
 import { useSelector } from "react-redux";
-import Calendar from "../../assets/icons/calendar.png"
+import Calendar from "../../assets/icons/calendar.png";
+import Loader from "../../components/Loader/Loader";
 export default function MyClients() {
   const user = useSelector((state) => state.auth?.user);
 
@@ -46,7 +52,6 @@ export default function MyClients() {
     setClientData(client);
   };
 
-
   let payloadorders = {
     agentId: user?.agent_user_id,
     selectedFilterOrder: "All",
@@ -57,13 +62,13 @@ export default function MyClients() {
     error: clientsOrderssError,
   } = useGetAgentClientOrdersQuery(payloadorders);
 
-  const orderCount =clientsOrders?.result?.orders_count;
+  const orderCount = clientsOrders?.result?.orders_count;
 
-  const total= orderCount?.totalorders || 0
-  const inProgress =orderCount?.total_inprogress || 0
-  const completed= orderCount?.total_completed || 0
+  const total = orderCount?.totalorders || 0;
+  const inProgress = orderCount?.total_inprogress || 0;
+  const completed = orderCount?.total_completed || 0;
 
-  // const total = 
+  // const total =
   const orderSummary = [
     {
       title: "Total Order",
@@ -167,28 +172,22 @@ export default function MyClients() {
         : [...prev, filter]
     );
   };
-  const orders = clientsOrders?.result?.order_detail || []
+  const orders = clientsOrders?.result?.order_detail || [];
 
-
-
-
-
-  const {data: agentClients,isLoading: agentClientsLoading,error: agentClientsError,} =  useGetAgentAllClientsQuery(user?.agent_user_id);
-
+  const {
+    data: agentClients,
+    isLoading: agentClientsLoading,
+    error: agentClientsError,
+  } = useGetAgentAllClientsQuery(user?.agent_user_id);
 
   // console.log("agentClients",agentClients)
 
-  const clientsData =agentClients?.result?.clientsListData || [];
+  const clientsData = agentClients?.result?.clientsListData || [];
   const {
     data: allAgentClients,
     isLoading: allAgentClientsLoading,
     error: allAgentClientsError,
   } = useGetAllClientsForOrderQuery(user?.agent_user_id);
-  
-
-console.log("agentClients",agentClients)
-
-
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -213,7 +212,10 @@ console.log("agentClients",agentClients)
           {myClientOrders ? (
             <>
               <div className="flex px-6 justify-between items-center w-full">
-                <button onClick={() => setMyClientOrders(!myClientOrders)} className="flex items-center text-[#13A09D] gap-1 text-xl">
+                <button
+                  onClick={() => setMyClientOrders(!myClientOrders)}
+                  className="flex items-center text-[#13A09D] gap-1 text-xl"
+                >
                   <MdKeyboardArrowLeft size={30} />
                   Back
                 </button>
@@ -309,12 +311,10 @@ console.log("agentClients",agentClients)
                 <div className="col-span-2">
                   <h1 className="text-3xl font-bold">Orders List</h1>
                 </div>
-                {orders.map((order,index) =>(
+                {orders.map((order, index) => (
                   <MyClientOrders key={index} order={order} />
                 ))}
               </div>
-
-
             </>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
@@ -336,7 +336,11 @@ console.log("agentClients",agentClients)
                   {/* Avatar & Basic Info */}
                   <div className="flex justify-center gap-8 mt-12 items-center">
                     <img
-                      src={clientData?.avatar ? clientData?.avatar : "https://randomuser.me/api/portraits/men/3.jpg"}
+                      src={
+                        clientData?.avatar
+                          ? clientData?.avatar
+                          : "https://randomuser.me/api/portraits/men/3.jpg"
+                      }
                       alt="Client"
                       className="w-[100px] h-[100px] rounded-full border-3 border-teal-500 object-cover"
                     />
@@ -508,19 +512,26 @@ console.log("agentClients",agentClients)
                 <div className="lg:h-[380px] overflow-auto  flex justify-center items-center">
                   <SubjectPieChart />
                 </div>
-
               </div>
             </div>
             <div className="w-full lg:col-span-7">
-              <div className="bg-white rounded-xl p-4 shadow max-h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-tealish scrollbar-track-gray-100" style={{scrollbarColor:"#13A09D !important"}}>
-                {clientsData.map((client,index) => (
-                  <ClientList
-                    handleClickProfile={handleClickProfile}
-                    clientProfileOpen={setClientProfile}
-                    clientProfile={clientProfile}
-                    client={client}
-                  />
-                ))}
+              <div
+                className="bg-white rounded-xl p-4 shadow max-h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-tealish scrollbar-track-gray-100"
+                style={{ scrollbarColor: "#13A09D !important" }}
+              >
+                {agentClientsLoading ? (
+                  <Loader />
+                ) : (
+                  clientsData.map((client, index) => (
+                    <ClientList
+                      key={index}
+                      handleClickProfile={handleClickProfile}
+                      clientProfileOpen={setClientProfile}
+                      clientProfile={clientProfile}
+                      client={client}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </div>

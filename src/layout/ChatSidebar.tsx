@@ -75,7 +75,7 @@ const ChatSidebar: React.FC = () => {
                   >
                     Customer Support
                   </p>
-                  <p className="text-xs text-gray-500">assa</p>
+                  <p className="text-xs text-gray-500">Chat With Customer Support</p>
                 </div>
               </div>
             </li>

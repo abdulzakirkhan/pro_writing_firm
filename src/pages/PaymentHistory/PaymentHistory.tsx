@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTitle } from "../../context/TitleContext";
 import { useGetpaymentHistryQuery } from "../../redux/paymentApi/paymentApi";
 import { useSelector } from "react-redux";
+import Loader from "../../components/Loader/Loader";
 
 const payments = [
   {
@@ -46,11 +47,9 @@ export default function PaymentHistory() {
   const user = useSelector((state) => state.auth?.user);
   const {data: paymentHistory,isLoading: paymentHistoryLoading,refetch: paymentHistoryRefech,} = useGetpaymentHistryQuery(user?.agent_user_id);
 
-
 const history =paymentHistory || []
 
 
-  console.log("paymentHistory : ",paymentHistory)
   
   useEffect(() => {
     setTitle("Payment History");
@@ -58,7 +57,7 @@ const history =paymentHistory || []
 
   return (
     <div className="p-6 space-y-6">
-      {history.map((payment, idx) => (
+      {paymentHistoryLoading ? <div className="h-[50vh] w-full flex justify-center items-center"> <Loader /></div> : history.map((payment, idx) => (
         <div key={idx} className="bg-white rounded-xl shadow p-4">
           {/* Amount */}
           <div className="flex justify-between items-center border-b pb-2">

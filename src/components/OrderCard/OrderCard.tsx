@@ -23,7 +23,6 @@ interface OrderCardProps {
 const OrderCard : React.FC<OrderCardProps>  = ({card}) => {
  const statusColor="#3BB537";
   const borderColor ="#FBB343";
-  console.log("card",card)
   const lastChar = card?.batchNo?.slice(-1); 
  
   return (

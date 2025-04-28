@@ -19,6 +19,7 @@ import {AppState} from "../../redux/store"
 import {useGetAgentClientOrdersBarChartSubjectWiseQuery, useGetAgentCreditLimitsQuery, useGetAgentOrdersDataMarksQuery, useGetAgentOrdersDataQuery, useGetCurrentMonthCostQuery, useGetPerformanceDataQuery, useGetStandardValuesQuery, useGetTopClientsDataQuery, useGetUniversityAndBatchesQuery} from "../../redux/agentdashboard/agentApi";
 import {useGetAgentCostDataQuery} from "../../redux/agentdashboard/agentApi";
 import { convertDateToYYYYMMDD } from "../../config/indext.js";
+import Loader from "../../components/Loader/Loader.js";
 export default function Home() {
 
 
@@ -282,7 +283,7 @@ export default function Home() {
 
           {/* <MonthlySalesChart /> */}
           <div className="bg-white p-3 rounded-lg">
-            <CostComparisonChart graphData={graphData}  />
+            {graphData ? <CostComparisonChart graphData={graphData}  /> : <Loader />}
           </div>
 
           <div className="space-y-2">
