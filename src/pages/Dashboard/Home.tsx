@@ -38,7 +38,7 @@ export default function Home() {
   const user = useSelector((state) => state.auth?.user);
   const token = useSelector((state: AppState) => state.auth.token);
   const [selectedBatches, setSelectedBatches] = useState([]);
-  const [selectedUniversity, setSelectedUniversity] = useState();
+  const [selectedUniversity, setSelectedUniversity] = useState(universityAndBatchData?.result?.universities_data[0] || "All");
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
   const universities = universityAndBatchData?.result?.universities_data;
   const [showBatches, setShowBatches] = useState(false)
@@ -53,7 +53,7 @@ export default function Home() {
   let payload = {
     agentId: user?.agent_user_id,
     university: selectedUniversity,
-    batch: selectedBatches,
+    batch: selectedBatches || "All",
     startDate:convertDateToYYYYMMDD(startDate),
     endDate: convertDateToYYYYMMDD(endDate),
   };
@@ -89,7 +89,7 @@ export default function Home() {
       );
     }
   };
-  console.log("selectedBatches",selectedBatches)
+
   // const {data: agentOrdersData,isLoading: agentOrdersDataLoading,error,} = useGetAgentOrdersDataQuery(payload1);
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -113,7 +113,6 @@ export default function Home() {
       },
     ];
     
-// console.log("batches", batches)
 
 
 
@@ -146,6 +145,12 @@ export default function Home() {
   const totalClient =agentCostData?.result?.total_client;
   const costIncreasePercentage =agentCostData?.result?.cost_increase_percentage;
   const clientsIncreasePercentage =agentCostData?.result?.cost_increase_percentage;
+
+
+
+
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = dropdownRef.current;

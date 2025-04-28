@@ -24,7 +24,7 @@ export default function EcommerceMetrics({total,totalClient,costIncreasePercenta
       trendDescription: "Increased from last month",
       changePercentage: costIncreasePercentage,
       trendDirection: "up",
-      icon:<MdOutlineTrendingUp size={30} className={`${typeof costIncreasePercentage === "number" && costIncreasePercentage >= 2 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
+      icon:<MdOutlineTrendingUp size={30} className={`${typeof costIncreasePercentage === "number" && costIncreasePercentage >= 0 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
       badge:<AiFillDollarCircle size={35} className="text-primary" />,
     },
     {
