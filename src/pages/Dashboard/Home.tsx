@@ -16,7 +16,7 @@ import { useTitle } from "../../context/TitleContext.js";
 import { useSelector } from "react-redux";
 import {AppState} from "../../redux/store"
 // import { useGetAgentAllClientsQuery } from "../../redux/agentdashboard/agentDashboardApi";
-import {useGetAgentCreditLimitsQuery, useGetAgentOrdersDataMarksQuery, useGetCurrentMonthCostQuery, useGetPerformanceDataQuery, useGetStandardValuesQuery, useGetUniversityAndBatchesQuery} from "../../redux/agentdashboard/agentApi";
+import {useGetAgentClientOrdersBarChartSubjectWiseQuery, useGetAgentCreditLimitsQuery, useGetAgentOrdersDataMarksQuery, useGetAgentOrdersDataQuery, useGetCurrentMonthCostQuery, useGetPerformanceDataQuery, useGetStandardValuesQuery, useGetTopClientsDataQuery, useGetUniversityAndBatchesQuery} from "../../redux/agentdashboard/agentApi";
 import {useGetAgentCostDataQuery} from "../../redux/agentdashboard/agentApi";
 import { convertDateToYYYYMMDD } from "../../config/indext.js";
 export default function Home() {
@@ -36,11 +36,11 @@ export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const user = useSelector((state) => state.auth?.user);
   const token = useSelector((state: AppState) => state.auth.token);
-  const [selectedBatches, setSelectedBatches] = useState(["All"]);
-  const [selectedUniversity, setSelectedUniversity] = useState(["All"]);
+  const [selectedBatches, setSelectedBatches] = useState([]);
+  const [selectedUniversity, setSelectedUniversity] = useState();
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
   const universities = universityAndBatchData?.result?.universities_data;
-  
+  const [showBatches, setShowBatches] = useState(false)
   const currentDate = new Date();
   const toDate = currentDate;
   const fromDate = new Date(toDate);
@@ -56,9 +56,15 @@ export default function Home() {
     startDate:convertDateToYYYYMMDD(startDate),
     endDate: convertDateToYYYYMMDD(endDate),
   };
+  // let payload1 = {
+  //   agentId: user?.agent_user_id,
+  //   university: selectedUniversity,
+  //   batch: selectedBatches,
+  //   paper_subject:"All",
 
-console.log("user",user)
-
+  //   startDate:convertDateToYYYYMMDD(startDate),
+  //   endDate: convertDateToYYYYMMDD(endDate),
+  // };
   const {data: agentCreditLimit} = useGetAgentCreditLimitsQuery(user?.agent_user_id);
   const { data: agentCostData, isLoading: agentCostLoading,  } = useGetAgentCostDataQuery(payload);
   const graphData = agentCostData?.result?.graph_data || [];
@@ -66,33 +72,50 @@ console.log("user",user)
   const batches =universityAndBatchData?.result?.batch_data || "";
   const {data: performaceData,isLoading: performaceDataLoading} = useGetPerformanceDataQuery(payload);
   const performaneGraphData = performaceData?.result?.graph_data || [];
-  const toggleBatch = (batch: string) => {
-    setSelectedBatches((prev) =>
-      prev.includes(batch) ? prev.filter((b) => b !== batch) : [...prev, batch]
-    );
+  const toggleBatch = (batch: { id: string }) => {
+    if (batch.id === "0") {
+      const allBatchIds = batches
+        .filter((b: { id: string }) => b.id !== "0")
+        .map((b: { id: string }) => String(b.id)); // ensure ids are strings
+  
+      setSelectedBatches(allBatchIds);
+      console.log("allBatchIds", allBatchIds);
+    } else {
+      setSelectedBatches((prev) =>
+        prev.includes(String(batch.id)) 
+          ? prev.filter((b) => b !== String(batch.id))
+          : [...prev, String(batch.id)]
+      );
+    }
   };
+  console.log("selectedBatches",selectedBatches)
+  // const {data: agentOrdersData,isLoading: agentOrdersDataLoading,error,} = useGetAgentOrdersDataQuery(payload1);
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
     const currentMonthName = monthNames[new Date().getMonth()];
+    
+    const items = [
+      {
+        icon: <FaSyncAlt className="text-[#13A09D]" />,
+        title: "Current Month",
+        subtitle: currentMonthName,
+        value: currentMonthCost?.result?.total_Current_month_cost,
+        valueColor: "text-green-600",
+      },
+      {
+        icon:<HiMiniChartBarSquare size={25} className="text-[#137DA0]" />,
+        title: "Peak Order Cost",
+        subtitle: "March",
+        value: "$600",
+        valueColor: "text-[#1E8AD3]",
+      },
+    ];
+    
+// console.log("batches", batches)
 
-  const items = [
-    {
-      icon: <FaSyncAlt className="text-[#13A09D]" />,
-      title: "Current Month",
-      subtitle: currentMonthName,
-      value: currentMonthCost?.result?.total_Current_month_cost,
-      valueColor: "text-green-600",
-    },
-    {
-      icon:<HiMiniChartBarSquare size={25} className="text-[#137DA0]" />,
-      title: "Peak Order Cost",
-      subtitle: "March",
-      value: "$600",
-      valueColor: "text-[#1E8AD3]",
-    },
-  ];
 
-  
+
   const handleToggle = () => {
     setIsOpen((prev) => !prev);
   };
@@ -113,6 +136,10 @@ console.log("user",user)
       : 0;
 
 
+      const handleClearSearch =() => {
+        setSelectedBatches([])
+        setSelectedUniversity(null)
+      }
 
   const total =agentCostData?.result?.total_cost;
   const totalClient =agentCostData?.result?.total_client;
@@ -176,7 +203,7 @@ console.log("user",user)
               >
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium">Date range</span>
-                  <button className="text-teal-600 text-sm font-medium">
+                  <button onClick={handleClearSearch} className="text-teal-600 text-sm font-medium">
                     Clear all
                   </button>
                 </div>
@@ -218,17 +245,11 @@ console.log("user",user)
                 </div>
 
                 <div>
-                  <button className="flex items-center justify-between w-full text-sm font-medium mb-2">
+                  <button onClick={() => setShowBatches(!showBatches)} className="flex items-center justify-between w-full text-sm font-medium mb-2">
                     Batch <IoMdArrowDropdown />
                   </button>
+                  {showBatches && (
                   <div className="border rounded p-2 space-y-2">
-                    <div
-                      className="flex justify-between items-center cursor-pointer"
-                      onClick={() => setSelectedBatches(["All"])}
-                    >
-                      <span>All</span>
-                      <span className="h-4 w-4 rounded bg-teal-600"></span>
-                    </div>
                     {batches.map((batch) => (
                       <div
                         key={batch?.id}
@@ -246,6 +267,8 @@ console.log("user",user)
                       </div>
                     ))}
                   </div>
+
+                  )}
                 </div>
               </div>
             )}

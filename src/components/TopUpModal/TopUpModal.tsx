@@ -56,7 +56,7 @@ const TopUpModal = ({ onCancel, onClick ,handlePayment }: TopUpModalProps) => {
     }
   };
   const allCards = Array.isArray(getAllCards) ? getAllCards : [];
-  console.log("walletAmount",allCards)
+  // console.log("walletAmount",allCards)
 
   const [selectedCard, setSelectedCard] = useState(null);
 

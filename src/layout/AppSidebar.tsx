@@ -58,9 +58,9 @@ const navItems: NavItem[] = [
     path: "/settings",
   },
   {
-    name: "Terms &  Conditions",
+    name: "Initiate Order",
     icon: <PiNote />,
-    path: "/terms-and-conditions",
+    path: "/initiate-order",
   },
   {
     name: "FAQs",

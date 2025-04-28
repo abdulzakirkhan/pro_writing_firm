@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { chatUsers } from "../assets/data";
 import { useChat } from "../context/ChatContext";
 import { useSidebar } from "../context/SidebarContext";
 import { MdOutlineArrowBackIos } from "react-icons/md";
 import { Link } from "react-router";
+import { useGetAllChatsQuery, useGetCurrentUserChatSessionQuery } from "../redux/chat/chatApi";
+import { useSelector } from "react-redux";
 
 const ChatSidebar: React.FC = () => {
-  const { selectedUser, setSelectedUser } = useChat();
+  // const { selectedUser, setSelectedUser } = useChat();
+  const [page, setPage] = useState(0);
+  const user = useSelector((state) => state.auth?.user);
+
   const {
     isMobileOpen,
     toggleMobileSidebar,
@@ -55,43 +60,25 @@ const ChatSidebar: React.FC = () => {
 
         {/* Chat List */}
         <ul className="flex flex-col overflow-y-auto max-h-[calc(100vh-150px)] px-1">
-          {chatUsers.map((user) => (
             <li
-              key={user.id}
-              onClick={() => {
-                setSelectedUser(user);
-                toggleMobileSidebar(); // close on mobile
-              }}
-              className={`flex items-start justify-between gap-2 px-3 py-3 border-b cursor-pointer hover:bg-gray-50 ${
-                selectedUser?.id === user.id ? "bg-gray-200" : ""
-              }`}
+              className={`flex items-start justify-between gap-2 px-3 py-3 border-b cursor-pointer hover:bg-gray-50 bg-gray-200`}
             >
               <div className="flex gap-3 items-start">
                 <img
-                  src={user.avatar}
-                  alt={user.name}
+                  src={"https://randomuser.me/api/portraits/men/1.jpg"}
+                  alt={"Customer Support"}
                   className="w-[42px] h-[42px] rounded-full object-cover"
                 />
                 <div>
                   <p
-                    className={`text-sm font-semibold ${
-                      user.isSupport || selectedUser?.id === user.id
-                        ? "text-teal-600"
-                        : "text-black"
-                    }`}
+                    className={`text-sm font-semibold text-teal-600`}
                   >
-                    {user.name}
+                    Customer Support
                   </p>
-                  <p className="text-xs text-gray-500">{user.message}</p>
+                  <p className="text-xs text-gray-500">assa</p>
                 </div>
               </div>
-              {user.unread ? (
-                <div className="bg-teal-600 text-white text-xs px-2 py-[2px] rounded-full">
-                  {user.unread}
-                </div>
-              ) : null}
             </li>
-          ))}
         </ul>
       </aside>
     </>

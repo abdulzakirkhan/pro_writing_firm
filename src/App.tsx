@@ -17,6 +17,7 @@ import Chat from "./pages/Chat/Chat";
 import PageMeta from "./components/common/PageMeta";
 import { useSelector } from "react-redux";
 import PublicRoute from "./PrivateRoute";
+import OrderInitiate from "./pages/OrderInitiate/OrderInitiate";
 
 
 
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="/wallet" element={<Wallet  />} />
             <Route path="/payment-history" element={<PaymentHistory  />} />
             <Route path="/chat" element={<Chat  />} />
+            <Route path="/initiate-order" element={<OrderInitiate  />} />
 
 
           </Route>

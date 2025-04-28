@@ -92,18 +92,27 @@ export default function Wallet() {
 
   const PAYMENT_ERROR = 'Stripe API Error: Your card was declined.';
   const handlePayment= async ({card,amount}) => {
-    console.log("object",card)
-    console.log("amount",amount)
+    // console.log("object",card)
+    // console.log("amount",amount)
     setSelectedId(card?.id)
     try {
       const selectedCard = allCards?.find((card) => card?.id == selectedId);
+      // const payload={
+      //   currency:getCurrency(user?.currency) ,
+      //   amount:amount,
+      //   userId:user?.agent_user_id,
+      //   token:selectedCard?.stripekey,
+      //   viafrom:"stripe"
+      // }
+      // console.log("payload :", payload)
       const res = await makePayment({
         currency: getCurrency(user?.currency),
         amount: amount,
         userId: user?.agent_user_id,
-        token: card?.stripekey,
+        token: selectedCard?.stripekey,
         viafrom: 'stripe',
       });
+
 
       const { data: respData, error } = res || {};
       if (respData) {
@@ -159,7 +168,7 @@ export default function Wallet() {
     </div>
   )
   const oldHistory= paymentHistory || []
-  console.log("oldHistory",oldHistory)
+  // console.log("oldHistory",oldHistory)
   useEffect(() => {
     setTitle("Wallet");
   }, [setTitle]);

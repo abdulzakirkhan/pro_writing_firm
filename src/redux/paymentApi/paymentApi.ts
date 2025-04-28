@@ -1,170 +1,163 @@
-import { api } from '../service';
-
+import { api } from "../service";
 
 export const paymentApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getAllCards: builder.query({
       query: (clientId) => {
         const formData = new FormData();
-        formData.append('clientid', clientId);
+        formData.append("clientid", clientId);
         return {
           url: `/getclientcarddetailof_agent`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
-      providesTags: ['PaymentCards'],
+      providesTags: ["PaymentCards"],
     }),
     addCard: builder.mutation({
       query: (body) => {
         const formData = new FormData();
-        formData.append('clientid', body?.clientid);
-        formData.append('cardtype', body?.cardtype);
-        formData.append('fourdigit', body?.Lastfourdigit);
-        formData.append('stripekey', body?.Stripekey);
+        formData.append("clientid", body?.clientid);
+        formData.append("cardtype", body?.cardtype);
+        formData.append("fourdigit", body?.Lastfourdigit);
+        formData.append("stripekey", body?.Stripekey);
         return {
           url: `/addclientcarddetail_agent`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
-      invalidatesTags: ['PaymentCards'],
+      invalidatesTags: ["PaymentCards"],
     }),
-    makePayment: builder.mutation({
-      query: (body) => {
-        return {
-          url: `/paymentwithwalletconsume_agent`,
-          method: 'POST',
-          body,
-        };
-      },
-      invalidatesTags: ['Payment', 'PaymentCards', 'WalletAmount', "AgentBatchOrders",
-      "AgentBatchOrdersUnPaid","creditLimitAgent"],
-    }),
+
     getpaymentHistry: builder.query({
       query: (clientId) => {
         const formData = new FormData();
-        formData.append('clientid', clientId);
+        formData.append("clientid", clientId);
         return {
           url: `/transactionhistory_agent`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
-      providesTags: ['Payment'],
+      providesTags: ["Payment"],
     }),
     addWalletCard: builder.mutation({
       query: (body) => {
         const formData = new FormData();
-        formData.append('clientid', body?.clientid);
-        formData.append('cardtype', body?.cardtype);
-        formData.append('lastfourdigit', body?.Lastfourdigit);
-        formData.append('stripekey', body?.Stripekey);
+        formData.append("clientid", body?.clientid);
+        formData.append("cardtype", body?.cardtype);
+        formData.append("lastfourdigit", body?.Lastfourdigit);
+        formData.append("stripekey", body?.Stripekey);
         return {
           url: `/addwalletcarddetails_agent`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
-      invalidatesTags: ['WalletCards'],
+      invalidatesTags: ["WalletCards"],
     }),
-    
+
     getWalletAllCards: builder.query({
       query: (clientId) => {
         const formData = new FormData();
-        formData.append('clientid', clientId);
+        formData.append("clientid", clientId);
         return {
           url: `/getclientcarddetailofwallets`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
-      providesTags: ['WalletCards'],
+      providesTags: ["WalletCards"],
     }),
     getWalletAmount: builder.query({
-      query: ({ clientId, currency,}) => {
+      query: ({ clientId, currency }) => {
         const formData = new FormData();
-        formData.append('agent_id', clientId);
-        formData.append('currency', currency);
+        formData.append("agent_id", clientId);
+        formData.append("currency", currency);
         return {
           url: `/get_wallet_amount_agent`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
-      providesTags: ['WalletAmount'],
+      providesTags: ["WalletAmount"],
     }),
+
     makeWalletPayment: builder.mutation({
       query: (body) => {
         const formData = new FormData();
-        formData.append('token', body.token);
-        formData.append('currency', body.currency);
-        formData.append('amount', body.amount);
-        formData.append('clientid', body.userId);
-        formData.append('viafrom', body.viafrom);
+        formData.append("token", body.token);
+        formData.append("currency", body.currency);
+        formData.append("amount", body.amount);
+        formData.append("clientid", body.userId);
+        formData.append("viafrom", body.viafrom);
         return {
           url: `/addtowalletpayment_agent`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
       invalidatesTags: [
-        'WalletCards',
-        'WalletAmount',
-        'Orders',
-        'InitiatedOrders',
-        'UserCurrencyAndCountry',
+        "WalletCards",
+        "WalletAmount",
+        "AgentOrdersData",
+        "WalletAmount",
+        "WalletCards",
       ],
     }),
+
     initateOrderPayment: builder.mutation({
       query: (body) => {
         let endpoint;
-        if (body?._parts.find((part) => part[0] === 'meeting_date')?.[1]) {
-          endpoint = 'initaiteorderfromappforonlineclassmeetings';
+        if (body?._parts.find((part) => part[0] === "meeting_date")?.[1]) {
+          endpoint = "initaiteorderfromappforonlineclassmeetings";
         } else if (
-          body?._parts.find((part) => part[0] === 'createdByBot')?.[1]
+          body?._parts.find((part) => part[0] === "createdByBot")?.[1]
         ) {
-          endpoint = 'initaiteorderfromappviachatbot';
-        } else endpoint = 'initaiteorderfromapp';
+          endpoint = "initaiteorderfromappviachatbot";
+        } else endpoint = "initaiteorderfromapp";
         return {
           url: `/admin/${endpoint}`,
-          method: 'POST',
+          method: "POST",
           body,
         };
       },
       invalidatesTags: [
-        'Payment',
-        'PaymentCards',
-        'UserCurrencyAndCountry',
-        'Orders',
-        'WalletAmount',
-        'Rewards',
+        "Payment",
+        "PaymentCards",
+        "UserCurrencyAndCountry",
+        "Orders",
+        "WalletAmount",
+        "Rewards",
       ],
     }),
+
+
     tipToWriterPayemnt: builder.mutation({
       query: (body) => {
         return {
           url: `/admin/tiptowriter`,
-          method: 'POST',
+          method: "POST",
           body,
         };
       },
       invalidatesTags: [
-        'Payment',
-        'PaymentCards',
-        'WalletAmount',
-        'Rewards',
-        'Orders',
+        "Payment",
+        "PaymentCards",
+        "WalletAmount",
+        "Rewards",
+        "Orders",
       ],
     }),
     makeMeezanPamentLink: builder.mutation({
       query: (body) => {
         const formData = new FormData();
-        formData.append('amount', body.amount);
-        formData.append('currency', body.currency);
+        formData.append("amount", body.amount);
+        formData.append("currency", body.currency);
         return {
-          url: '/generatemeezanlink_agent_app',
-          method: 'POST',
+          url: "/generatemeezanlink_agent_app",
+          method: "POST",
           body: formData,
         };
       },
@@ -173,18 +166,24 @@ export const paymentApi = api.injectEndpoints({
       query: (body) => {
         return {
           url: `/meezanbankapibulkpaymentwithconsume_agent`,
-          method: 'POST',
+          method: "POST",
           body,
         };
       },
-      invalidatesTags: ['Payment', 'PaymentCards', 'WalletAmount', "AgentBatchOrders",
-        "AgentBatchOrdersUnPaid","creditLimitAgent"],
+      invalidatesTags: [
+        "Payment",
+        "PaymentCards",
+        "WalletAmount",
+        "AgentBatchOrders",
+        "AgentBatchOrdersUnPaid",
+        "creditLimitAgent",
+      ],
     }),
     getAddOnsPrices: builder.query({
       query: () => {
         return {
           url: `/admin/add_ons_for_app_fetch`,
-          method: 'POST',
+          method: "POST",
         };
       },
     }),
@@ -194,7 +193,6 @@ export const paymentApi = api.injectEndpoints({
 export const {
   useGetAllCardsQuery,
   useAddCardMutation,
-  useMakePaymentMutation,
   useGetpaymentHistryQuery,
   useAddWalletCardMutation,
   useGetWalletAllCardsQuery,

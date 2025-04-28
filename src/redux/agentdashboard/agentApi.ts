@@ -115,7 +115,7 @@ export const agentApi = api.injectEndpoints({
         formData.append('agent_id', data.agentId);
         formData.append('university', data.university);
         formData.append('batch', data.batch);
-        formData.append('paper_subject', data.paperSubject);
+        formData.append('paper_subject', data.paper_subject);
         //  formData.append('app', appNameCode)
         return {
           url: `/get_Data_of_batch_wise_orders_and_graph`,
@@ -192,6 +192,7 @@ export const agentApi = api.injectEndpoints({
       query: (id) => {
         const formData = new FormData();
         formData.append('agent_id', id);
+        // console.log("id",id)
         return {
           url: `/get_agent_clients`,
           method: 'POST',
@@ -261,6 +262,69 @@ export const agentApi = api.injectEndpoints({
         };
       },
     }),
+
+
+
+    getAgentClientOrdersBarChartSubjectWise: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('agentid', data.agentId);
+        formData.append('paper_subject', data.paper_subject);
+        formData.append('batch', data.batch);
+        return {
+          url: `/rapel_chart_graph_data_subject_wise_agent`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+
+    getTopClientsData: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agent_id', id);
+        return {
+          url: `/data_For_top_three_clients`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+
+
+
+    getAllPaperSubjectForOrders: builder.query({
+      query: () => {
+        return {
+          url: `/get_paper_subject_values`,
+          method: 'POST',
+        };
+      },
+    }),
+
+
+    getPaperTopicFromCourse: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('course_id', id);
+        return {
+          url: `/get_paper_topics_against_course`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+
+
+
+    getAllCoursesForOrder: builder.query({
+      query: () => {
+        return {
+          url: `/get_courses_list`,
+          method: 'POST',
+        };
+      },
+    }),
   }),
 });
 
@@ -279,6 +343,12 @@ export const {
   useGetAgentAllClientsQuery,
   useGetAllClientsForOrderQuery,
   useGetAgentClientOrdersQuery,
-  useGetAgentClientOrdersPieChartQuery
+  useGetAgentClientOrdersPieChartQuery,
+  useGetAgentClientOrdersBarChartSubjectWiseQuery,
+  useGetTopClientsDataQuery,
+  useGetAllPaperSubjectForOrdersQuery,
+  useGetPaperTopicFromCourseQuery,
+  // useGetAllCoursesForOrderQuery,
+  useGetAllCoursesForOrderQuery,
   // ... other hooks
 } = agentApi;

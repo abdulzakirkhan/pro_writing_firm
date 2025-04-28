@@ -21,4 +21,12 @@ const getCurrency = (inputString) => {
     return lastWord;
   } else return '';
 };
-export { baseUrl, convertDateToYYYYMMDD , getCurrency};
+
+
+const APP_NAME_CODES = {
+  HYBRID_RESEARCH_CENTER: 'hrc',
+  EMIRATES_RESEARCH_CENTER: 'erc',
+  DIGITAL_SKY_SERVICES: 'dss',
+  PRO_WRITING_FIRM:'prf'
+};
+export { baseUrl, convertDateToYYYYMMDD , getCurrency,APP_NAME_CODES};
