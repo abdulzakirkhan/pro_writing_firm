@@ -6,6 +6,7 @@ import { Document, Page } from "react-pdf";
 import { DateTime } from "luxon";
 // import { DateTime } from "luxon";
 import { CiMenuFries } from "react-icons/ci";
+import { MdKeyboardVoice } from "react-icons/md";
 import { MdPushPin } from "react-icons/md";
 import { useSidebar } from "../../context/SidebarContext";
 import pusher from "../../utils/pusher";
@@ -18,6 +19,7 @@ import {
 import { useSelector } from "react-redux";
 import selectFile from "./file.png";
 import toast from "react-hot-toast";
+import { RiVoiceRecognitionFill } from "react-icons/ri";
 
 export default function Chat() {
   const user = useSelector((state) => state.auth?.user);
@@ -56,6 +58,49 @@ export default function Chat() {
     setTitle("Chat");
   }, [setTitle]);
 
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+
+//  console.log("AUdio Url", audioUrl)
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+    console.log("Stoped")
+  };
+  console.log("audio url", audioUrl)
+  const startRecording = async () => {
+    try {
+      console.log("Start")
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+  
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+  
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setAudioUrl(audioUrl);
+        setRecordedBlob(audioBlob); 
+      };
+  
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+    }
+  };
+  
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -71,25 +116,29 @@ export default function Chat() {
     }
   };
 
+  // console.log("multipleFiles", multipleFiles)
   const handleSend = () => {
-    if (!message.trim() && !singleFile) return;
+    if (!message.trim() && !singleFile && !multipleFiles && !recordedBlob) return;
 
     const tempId = Date.now(); // generate temporary unique ID
     const now = DateTime.local();
     const formattedDate = DateTime.local().toFormat("M/d/yyyy");
+    const msgfile = singleFile
+      ? URL.createObjectURL(singleFile)
+      : multipleFiles.length > 0
+      ? multipleFiles.map((file) => URL.createObjectURL(file))
+      : null;
     const newMessage = {
       id: tempId,
       message: message.trim() || "", // if only file, message might be empty
-      msgfile: singleFile ? singleFile : null,
+      msgfile: msgfile ? msgfile : recordedBlob,
       messagefrom: user?.agent_user_id,
       orderSummary: null,
       msgstatus: "sending", // optional
       date: formattedDate,
       time: DateTime.local().toFormat("h:mm a"),
-      createdAt: now.toISO(),
       respondTo: null,
     };
-
 
     console.log("New Message", newMessage);
     // return
@@ -103,11 +152,21 @@ export default function Chat() {
     if (singleFile) {
       formData.append("filemsg[]", singleFile);
     }
+    if (multipleFiles.length > 0) {
+      multipleFiles.forEach((file) => {
+        formData.append("filemsg[]", file);
+      });
+    }
+    if (recordedBlob) {
+      formData.append("filemsg[]", recordedBlob, "voice-recording.webm"); // important to give filename
+    }
     insertMesage(formData);
-    setSingleFile("");
+    setAudioUrl(null)
+    setRecordedBlob(null)
+    setSingleFile(null);
+    setMultipleFiles([]);
     setMessage(""); // clear input
   };
-console.log("Messages",messages)
   const groupMessagesByDate = (messages: any[]) => {
     const sections = {};
     messages.forEach((msg: { date: string }) => {
@@ -178,7 +237,6 @@ console.log("Messages",messages)
       }
     }
   };
-  console.log(messages);
 
   useEffect(() => {
     if (getAllChats?.result) {
@@ -290,7 +348,7 @@ console.log("Messages",messages)
                 const isDocument = /\.(pdf|docx?|xlsx?|pptx?|zip)$/i.test(
                   msgfile
                 );
-                const isVoice = /\.(mp3|mp4)$/i.test(msgfile);
+                const isVoice = /\.(mp3|mp4|wav|ogg|webm)$/i.test(msgfile);
                 let msgfiles = Array.isArray(msgfile) ? msgfile : [msgfile];
                 let files = Array.isArray(msgfile) ? msgfile : [];
                 let msgArray = [];
@@ -325,7 +383,7 @@ console.log("Messages",messages)
                     } px-2 mb-1`}
                   >
                     <div
-                      className={`max-w-[70%] px-4 py-2 rounded-lg shadow-sm ${
+                      className={`max-w-[70%] px-4 py-2 rounded-lg  shadow-sm ${
                         isUser
                           ? "bg-teal-600 text-white rounded-br-none"
                           : "bg-white text-gray-800 rounded-bl-none"
@@ -372,12 +430,14 @@ console.log("Messages",messages)
                             Array.isArray(msgArray) &&
                             msgArray.length >= 1 &&
                             msgArray.map((img, index) => (
-                              <img
-                                key={index}
-                                src={`https://nabeel.a2hosted.com/newchatfilesuploads/${img}`}
-                                alt="chat-image"
-                                className="rounded-lg max-w-xs mb-2"
-                              />
+                              <div className="w-full bg-gray-100 my-3 rounded-lg overflow-hidden border flex items-center justify-center">
+                                <img
+                                  key={index}
+                                  src={`https://staging.portalteam.org/newchatfilesuploads/${img}`}
+                                  alt="chat-image"
+                                  className="rounded-lg max-w-xs mb-2 object-contain"
+                                />
+                              </div>
                             ))
                           )}
                         </div>
@@ -410,17 +470,44 @@ console.log("Messages",messages)
             <div className="text-sm text-gray-600 mt-2">{singleFile.name}</div>
           </div>
         )}
+        {multipleFiles.length > 1 && (
+          <div className="absolute bottom-full mb-4 w-64 bg-white border rounded-lg shadow-lg p-4 flex flex-col items-center">
+            <div className="relative w-full flex justify-end">
+              <button
+                onClick={() => setMultipleFiles([])}
+                className="text-red-500 hover:text-red-700"
+              >
+                ❌
+              </button>
+            </div>
+            {multipleFiles.map((file, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`Selected ${index}`}
+                  className="w-full h-24"
+                />
+                <div className="text-[10px] text-gray-600 mt-1">
+                  {file.name.length > 10
+                    ? file.name.slice(0, 10) + "..."
+                    : file.name}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="p-3 border w-1/1 rounded-md border-[#13A09D] flex items-center gap-3 bg-white">
           <input
             onChange={(e) => setMessage(e.target.value)}
             type="text"
             value={message}
-            placeholder="Type your message"
+            placeholder={audioUrl ? "audio" :"Type your message"}
             className="w-full px-4 py-2 rounded-full text-sm outline-none"
           />
           <div className="!cursor-pointer relative ">
             <input
               type="file"
+              multiple
               id="fileUpload"
               onChange={(event) => handleChange(event)}
               className="absolute inset-0 opacity-0 cursor-pointer"
@@ -431,14 +518,20 @@ console.log("Messages",messages)
               className="w-[24px] h-[24px] object-cover"
             />
           </div>
+
+
+
+          <button  onClick={isRecording ? stopRecording : startRecording} className="bg-teal-600 text-white p-2 w-[48px] h-[48px] flex items-center justify-center rounded-full">
+              {isRecording ? <RiVoiceRecognitionFill /> : <MdKeyboardVoice size={26} />}
+            </button>
         </div>
         <div className="w-1/12 flex items-center">
-          <button
-            onClick={handleSend}
-            className="bg-teal-600 text-white p-2 w-[48px] h-[48px] flex items-center justify-center rounded-full"
-          >
-            <FaPaperPlane size={16} />
-          </button>
+            <button
+              onClick={handleSend}
+              className="bg-teal-600 text-white p-2 w-[48px] h-[48px] flex items-center justify-center rounded-full"
+            >
+              <FaPaperPlane size={16} />
+            </button>
         </div>
       </div>
     </div>
