@@ -55,13 +55,11 @@ export default function Wallet() {
        currency: getCurrency(user?.currency),
     },
   );
-  console.log("user",user)
   const {data: paymentHistory,isLoading: paymentHistoryLoading,refetch: paymentHistoryRefech,} = useGetpaymentHistryQuery(user?.agent_user_id);
   const [addCard, { isLoading: addCardLoading }] = useAddWalletCardMutation();
   const [makePayment, { isLoading: makePaymentLoading }] = useMakeWalletPaymentMutation();
   const [selectedId, setSelectedId] = useState();
 
-  console.log("walletAmount", walletAmount)
   
   const handleAddCard = async (formData) => {
     console.log("formData :" , formData)
@@ -177,7 +175,6 @@ export default function Wallet() {
   const availableWallet= walletAmount?.amount || 0
   const currency= walletAmount?.currency || 0
 
-  console.log("availableWallet",availableWallet)
   useEffect(() => {
     setTitle("Wallet");
   }, [setTitle]);
@@ -189,7 +186,7 @@ export default function Wallet() {
         <div className="w-full lg:col-span-9 h-[93px] flex items-center bg-white p-4 rounded-xl shadow-md">
         <div className="text-gray-700 text-lg w-full !flex !justify-between items-center font-medium">
             <span>Available Credit:</span>{" "}
-            <span className="text-green-600 font-bold">{currency} {" "} {availableWallet}</span>
+            <span className="text-green-600 font-bold">{currency} {" "} {availableWallet.toFixed(2)}</span>
         </div>
         </div>
         <div className="w-full lg:col-span-3">

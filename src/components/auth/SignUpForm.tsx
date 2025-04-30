@@ -43,7 +43,6 @@ export default function SignUpForm() {
     },
     validationSchema,
     onSubmit:async (values, { resetForm }) => {
-      console.log(values);
       try {
         const formData = new FormData();
         formData.append('number',   values.phone);
@@ -54,7 +53,6 @@ export default function SignUpForm() {
         formData.append('confirm_password', values.confirmPassword);
         // const formDataObj = Object.fromEntries(formData.entries());
         // console.log("formDataObj" , formDataObj)
-
         const signupRes= await verifySignup(formData);
         const { error, data: respData } = signupRes || {};
         console.log("signupRes",signupRes)
