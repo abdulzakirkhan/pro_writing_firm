@@ -42,7 +42,7 @@ export default function SignUpForm() {
       confirmPassword: "",
     },
     validationSchema,
-    onSubmit:async (values) => {
+    onSubmit:async (values, { resetForm }) => {
       console.log(values);
       try {
         const formData = new FormData();
@@ -63,6 +63,8 @@ export default function SignUpForm() {
         }
         if (!error){
         toast.success(respData?.result?.status);
+        resetForm()
+        navigate("/signin")
         }
       } catch (error) {
         console.log("Error" ,error)
