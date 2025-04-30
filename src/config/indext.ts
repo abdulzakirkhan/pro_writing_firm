@@ -1,5 +1,6 @@
 const baseUrl = "https://staging.portalteam.org";
 import { DateTime } from "luxon";
+
 const convertDateToYYYYMMDD = (dateString) => {
   const dateObj = DateTime.fromISO(dateString);
 
@@ -21,12 +22,10 @@ const getCurrency = (inputString) => {
     return lastWord;
   } else return '';
 };
-
-
 const APP_NAME_CODES = {
   HYBRID_RESEARCH_CENTER: 'hrc',
   EMIRATES_RESEARCH_CENTER: 'erc',
   DIGITAL_SKY_SERVICES: 'dss',
   PRO_WRITING_FIRM:'prf'
 };
-export { baseUrl, convertDateToYYYYMMDD , getCurrency,APP_NAME_CODES};
+export { baseUrl, convertDateToYYYYMMDD , getCurrency,APP_NAME_CODES };

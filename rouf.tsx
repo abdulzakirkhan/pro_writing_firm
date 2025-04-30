@@ -78,3 +78,31 @@
       borderColor: "#F76631",
     },
   ];
+
+
+
+
+
+
+
+
+
+
+  // walletdata function calling from front end 
+
+  
+//   const currency=getCurrency(user?.currency)
+//   const clientId =user?.agent_id;
+//  useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         const data = await getWalletAmountAgent(clientId,currency);
+//         console.log("**************************",data,"**************************")
+//         // setWalletAmount(data.amount);
+//       } catch (error) {
+//         console.error("Error fetching wallet amount:", error);
+//       }
+//     };
+
+//     fetchData(); // call as a function
+//   }, [clientId, currency]);

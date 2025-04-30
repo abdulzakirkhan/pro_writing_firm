@@ -22,7 +22,10 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import { useSelector } from "react-redux";
 import Loader from "../../components/Loader/Loader.js";
 import { getCurrency, getCurrencyNameFromPhone } from "../../config/indext.js";
-import { useGetWalletAmountQuery } from "../../redux/paymentApi/paymentApi.js";
+import { useAddWalletCardMutation, useGetAllCardsQuery, useGetWalletAmountQuery, useMakePaymentForOrdersMutation } from "../../redux/paymentApi/paymentApi.js";
+import { calculatePaymentFees, calculatePaymentVatFees, getConsumableAmounts, getFormattedPriceWith3 } from "../../helper/helper.js";
+import toast, { Toaster } from "react-hot-toast";
+import { CardCvcElement, CardExpiryElement, CardNumberElement, useElements, useStripe } from "@stripe/react-stripe-js";
 
 interface Category {
   id: any;
@@ -49,7 +52,17 @@ export default function Orders() {
       currency: getCurrency(user?.currency),
     });
 
-  
+    // const availableBalance=walletAmount?.amount
+    const [availableBalance, setAvailableBalance] = useState(walletAmount?.amount || 0); 
+    const rewardAmount=walletAmount?.rewardsamount
+    const currency=walletAmount?.currency
+    const rewardsamountpluswalletamount=walletAmount?.rewardsamountpluswalletamount
+    
+
+
+    const [makePaymentForOrders, { isLoading: makePaymentForOrdersLoading }] =
+    useMakePaymentForOrdersMutation();
+    const [isChecked, setIsChecked] = useState(false);
   const firstCategory = categories[0].ordercategoryname || ["All"];
   // const categories = TypeOfPaperData?.result?.Category_list;
   const subjects = TypeOfPaperData?.result?.Type_of_paperlist || [];
@@ -73,12 +86,18 @@ export default function Orders() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  // const {
+  //   data: paperSubjectData,
+  //   isLoading: paperSubjectDataLoading,
+  //   error: paperSubjectDataError,
+  // } = useGetPaperSubjectQuery();
+  // const [makePayment, { isLoading: makePaymentLoading }] =
+  // useMakePaymentMutation();
   const {
-    data: paperSubjectData,
-    isLoading: paperSubjectDataLoading,
-    error: paperSubjectDataError,
-  } = useGetPaperSubjectQuery();
-
+    data: getAllCards = { result: { result: {} } },
+    isLoading: allCardsLoading,
+    refetch: getAllCardsRefech,
+  } = useGetAllCardsQuery(user?.userid);
   const [showSubjectDropdown, setShowSubjectDropdown] =
     useState<boolean>(false);
   const firstSubjectValue = subjects?.[0]?.value || ["All"];
@@ -90,8 +109,7 @@ export default function Orders() {
   ]);
   const [selectedCategoryList, setSelectedCategoryList] =
     useState<any[]>(firstCategory);
-
-  let payload = {
+   let payload = {
     agentId: user?.agent_user_id,
     university: selectedUniversity,
     batch: "All",
@@ -218,91 +236,27 @@ export default function Orders() {
       badge: <MdOutlineTrendingUp size={28} className="text-[#3BB537]" />,
     },
   ];
-  const cardData = [
-    {
-      id: 1,
-      batchName: "Batch 01",
-      fileCount: "4/5",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 5,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "partially paid",
-      statusColor: "#F4A825",
-      borderColor: "#F76631",
-    },
-    {
-      id: 2,
-      batchName: "Batch 02",
-      fileCount: "2/4",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Paid",
-      statusColor: "#3BB537",
-      borderColor: "#FBB343",
-    },
-    {
-      id: 3,
-      batchName: "Batch 03",
-      fileCount: "2/3",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Unpaid",
-      statusColor: "#FF5C5C",
-      borderColor: "#57C063",
-    },
-    {
-      id: 4,
-      batchName: "Batch 03",
-      fileCount: "2/3",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Unpaid",
-      statusColor: "#FF5C5C",
-      borderColor: "#57C063",
-    },
-    {
-      id: 5,
-      batchName: "Batch 02",
-      fileCount: "2/4",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 2,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "Paid",
-      statusColor: "#3BB537",
-      borderColor: "#FBB343",
-    },
-    {
-      id: 6,
-      batchName: "Batch 01",
-      fileCount: "4/5",
-      subject: "Bachelors - Computer Science",
-      itemsCount: 5,
-      placedOn: "20/12/2024",
-      deadline: "30/12/2024",
-      price: 50,
-      status: "partially paid",
-      statusColor: "#F4A825",
-      borderColor: "#F76631",
-    },
-  ];
+
+
 
   const newCardDAta = agentBatchOrderList?.result?.batchesData || [];
   const togglePaymentMethod = () => {
     setPaymentMethod(!paymentMethod);
   };
+
+
+  const consumableObj = getConsumableAmounts(
+    isChecked ? walletAmount?.amount : 0,
+    isChecked ? walletAmount?.rewardsamount : 0,
+    availableBalance
+  );
+
+
+  const totalWalletConsumableAmount = consumableObj.totalWalletConsumableAmount;
+  const cardConsumableAmount = consumableObj.cardConsumableAmount;
+  const acutalServiceFee = calculatePaymentFees(cardConsumableAmount);
+  const actualVatFee = calculatePaymentVatFees(cardConsumableAmount);
+
 
   const makePaymentHandle = () => {
     setMakePayment(!makePayment);
@@ -320,7 +274,173 @@ export default function Orders() {
   }, 0);
   const fourPercent = Number((total * 0.04).toFixed(2));
   const vatPercent = Number((total * 0.2).toFixed(2));
+  const allCards = Array.isArray(getAllCards) ? getAllCards : [];
+  const [selectedId, setSelectedId] = useState();
+
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [addCard, { isLoading: addCardLoading }] = useAddWalletCardMutation();
+  const [isAddWallet, setIsAddWallet] = useState(false);
+  const elements = useElements();
+  const stripe = useStripe();
+  const handlePayment = async (onNext) => {
+    try {
+      // setIsLoading(true);
+      const selectedCard = allCards?.find((card) => card?.id === selectedId);
+      const stripeToken = selectedCard?.stripekey || allCards?.[0]?.stripekey;
+      if (!stripeToken) {
+        toast.error("No valid Stripe card token found.");
+        // setIsLoading(false);
+        return;
+      }
+
+      let totalAmount = 0;
+      const orderIds: string[] = [];
+
+      selectOrders?.forEach((order) => {
+        totalAmount += Number(order.price);
+        orderIds.push(order?.order_id);
+      });
+
+      const formData = new FormData();
+
+      formData.append("token", stripeToken);
+      formData.append("agent_id", user?.agent_user_id);
+      formData.append("currency", getCurrency(user?.currency));
+      formData.append("amount", getFormattedPriceWith3(cardConsumableAmount));
+      formData.append("serviceCharges", getFormattedPriceWith3(acutalServiceFee));
+      formData.append("orderid", orderIds.join(",")); 
+      formData.append("rewardamount", getFormattedPriceWith3(consumableObj.rewardConsumableAmount));
+      formData.append("walletamount", getFormattedPriceWith3(consumableObj.walletConsumableAmount));
+      formData.append("vat", getFormattedPriceWith3(actualVatFee));
+      formData.append("additionalAmount", getFormattedPriceWith3(consumableObj.additionalAmount));
+
+      const { data: respData, error } = await makePaymentForOrders(formData);
+
+      if (respData?.result === "Successfully Paid") {
+        toast.success("Payment successful!");
+        onNext()
+        // navigate("/payment-success", {
+        //   state: {
+        //     serviceCharges: acutalServiceFee,
+        //     totalAmount: getFormattedPriceWith3(totalAmount),
+        //     currency: user?.currency,
+        //     customerName: user?.agent_name,
+        //     customerId: user?.agent_user_id,
+        //     cardConsumableAmount,
+        //     totalWalletConsumableAmount: consumableObj.totalWalletConsumableAmount,
+        //     rewardConsumable: consumableObj.rewardConsumableAmount,
+        //     walletConsumable: consumableObj.walletConsumableAmount,
+        //     vatAmount: actualVatFee,
+        //     isWithVat: withVat,
+        //     additionalAmount: getFormattedPriceWith3(consumableObj.additionalAmount),
+        //   },
+        // });
+
+      } else {
+        toast.error(respData?.result || "Payment failed.");
+      }
+
+      if (error) {
+        toast.error("Something went wrong during payment.");
+      }
+    } catch (error) {
+      console.error("Payment Error:", error);
+      toast.error("Payment failed. Please try again.");
+    } finally {
+      console.log("object")
+    }
+  }
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
+    const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const checked = e.target.checked;
+      setIsChecked(checked);
+    
+      if (checked) {
+        setAvailableBalance(prev => prev - total);
+      } else {
+        setAvailableBalance(prev => prev + total);
+      }
+    };
+
+
+    const handleAddWalletCard = async () => {
+      // console.log("object")
+      // if (!stripe || !elements) return;
+  
+      const cardElement = elements.getElement(CardNumberElement);
+      // if (!cardElement) return;
+      // console.log("object")
+      const { token, error } = await stripe.createToken(cardElement, {
+        name: "Card Holder", // optional
+      });
+      console.log("token",token)
+      // return
+      if (token) {
+        const res = await addCard({
+          clientid:user?.agent_user_id,
+          cardtype: token?.card?.brand,
+          Lastfourdigit: token?.card?.last4,
+          Stripekey: token?.id,
+        });
+    
+        const { data: respData, error } = res;
+        if (respData) {
+          if (respData?.result == 'Client Card Detail Added Successfully') {
+            console.log("object")
+            toast.success("Wallet Added Successfuly")
+            return true;
+          } else{
+            console.log("error")
+          }
+        }
+        // console.log("object")
+        // toast.success("Wallet Added Successfuly")
+        // onClick({
+        //   stripeToken: token.id,
+        //   cardDetails: token.card,
+        // });
+        // return
+        // setIsAddWallet(false);
+      } else if (error) {
+        console.error("Stripe Error:", error.message);
+      }
+      // return
+    };
+
+    const CardItem = ({ card , isSelected, onSelect}) => {
+      return (
+        <div onClick={() => onSelect(card)}
+        className={`w-full bg-gradient-to-br p-5 rounded-2xl shadow-lg cursor-pointer transition transform hover:scale-105
+          from-indigo-600 to-purple-600 text-white
+          ${isSelected ? "ring-4 ring-yellow-400" : ""}`}>
+        <div className="flex justify-between items-center mb-6">
+          <span className="uppercase tracking-widest text-sm font-semibold">Virtual Card</span>
+          <img
+            src={card.brand === "Mastercard"
+              ? "https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png"
+              : "https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png"}
+            alt={card.brand}
+            className="h-6"
+          />
+        </div>
+  
+        <div className="text-2xl font-mono tracking-widest mb-4">
+          •••• •••• •••• {card.last4}
+        </div>
+  
+        <div className="flex justify-between items-center text-sm font-medium">
+          <div>
+            <p className="uppercase text-xs text-gray-200">Card Holder</p>
+            <p>{card.cardholder || "Aliyan Hassan"}</p>
+          </div>
+          <div>
+            <p className="uppercase text-xs text-gray-200">Expires</p>
+            <p>{card.exp_month}/{card.exp_year}</p>
+          </div>
+        </div>
+      </div>
+      );
+    };
     return (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-12">
         {/* Left Card */}
@@ -352,7 +472,7 @@ export default function Orders() {
               <div className="flex flex-col items-end">
                 {/* Toggle switch */}
                 <label className="inline-flex items-center cursor-pointer mt-1">
-                  <input type="checkbox" className="sr-only peer" />
+                  <input type="checkbox" className="sr-only peer"  onChange={handleSwitchChange} />
                   <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-700 after:border-[#C6BCBC] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600 relative" />
                 </label>
               </div>
@@ -361,43 +481,59 @@ export default function Orders() {
               <span className="text-green-500 text-sm font-medium">
                 Available:
               </span>
-              <span className="text-green-600 font-semibold text-sm">$100</span>
+              <span className="text-green-600 font-semibold text-sm"> {currency} {availableBalance}</span>
             </div>
           </div>
 
           {/* Card form */}
-          <div className="space-y-4">
-            <div className="relative">
-              <input
-                placeholder="1234 1234 1234 1234"
-                className="w-full border border-[#C6BCBC] px-3 py-4 focus:rounded-none outline-none text-sm placeholder-gray-400 pr-14"
-              />
-              {/* Card logos */}
-              <img
-                src={paymentIcon} // make sure you have this file
-                alt="Card logos"
-                className="absolute top-1/2 right-3 transform -translate-y-1/2 w-[40px]"
-              />
+          <button
+          onClick={() => setIsAddWallet(true)}
+          className="w-full h-[48px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition my-2"
+        >
+          Add New Card
+        </button>
+          {isAddWallet && (
+          <div className="">
+            <div className="mb-2">
+              <label className="block mb-1">Card Number</label>
+              <CardNumberElement className="border p-3 rounded w-full" />
             </div>
-
-            <div className="flex gap-4">
-              <input
-                placeholder="CVC"
-                className="w-1/2 border border-[#C6BCBC] outline-none px-3 py-4 text-sm placeholder-gray-400"
-              />
-              <input
-                placeholder="MM/YY"
-                className="w-1/2 border border-[#C6BCBC] outline-none px-3 py-4 text-sm placeholder-gray-400"
-              />
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block mb-1">Expiry</label>
+                <CardExpiryElement className="border p-3 rounded w-full" />
+              </div>
+              <div>
+                <label className="block mb-1">CVC</label>
+                <CardCvcElement className="border p-3 rounded w-full" />
+              </div>
             </div>
-
+            <div className="text-center pt-2 pb-5">
+              <button
+                onClick={handleAddWalletCard}
+                className="h-[48px] w-[120px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-5">
+          {allCards.slice(0, 12).map((card, index) => (
+            <CardItem
+              card={card}
+              key={card.id || index}
+              isSelected={selectedCard?.id === card.id}
+              onSelect={setSelectedCard}
+            />
+          ))}
+            </div>
             <button
               onClick={onNext}
               className="bg-teal-600 text-white w-full py-2 outline-none mt-4 hover:bg-teal-700 transition"
             >
               Next
             </button>
-          </div>
         </div>
 
         {/* Right Summary */}
@@ -470,7 +606,7 @@ export default function Orders() {
         </div>
         <div className="flex justify-center mt-8">
           <button
-            onClick={onNext}
+            onClick={() =>handlePayment(onNext)}
             className="bg-teal-600 text-white px-6 py-2 rounded"
           >
             Pay Now
@@ -517,7 +653,8 @@ export default function Orders() {
     );
   };
 
-  console.log("walletAmount",walletAmount)
+  console.log("selected Orders",selectOrders)
+
 
   // const data=agentBatchOrderList?.result
 
@@ -634,6 +771,7 @@ export default function Orders() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-12">
                 {newCardDAta.map((order, index) => {
                   const isSelected = selectedOrders.includes(index);
+                  // console.log("newCardDAta",newCardDAta)
                   return (
                     <PaymentCard
                       key={index}
@@ -657,7 +795,7 @@ export default function Orders() {
                   <div
                     key={index}
                     className={`rounded-2xl w-full border-2 border-[#C6BCBC] bg-white p-5 md:p-3 ${
-                      index === 0 ? "lg:col-span-12" : "lg:col-span-6"
+                      index === 0 ? "lg:col-span-12 !px-10" : "lg:col-span-6"
                     }`}
                   >
                     <div className="flex justify-between items-center">
@@ -682,9 +820,9 @@ export default function Orders() {
                         <div className="flex items-center gap-1">
                           {order.badge}
                           <span
-                            className={`text-sm text-[${order.trend.color}]`}
+                            className={`text-sm`}
                           >
-                            {order.trend.percent} {order.trend.description}
+                            {order.trend.percent} <span className="text-[#606060]">{order.trend.description}</span>
                           </span>
                         </div>
                       </div>
@@ -882,6 +1020,7 @@ export default function Orders() {
           </div>
         </>
       )}
+      <Toaster position="top-right" reverseOrder={false} />
     </>
   );
 }

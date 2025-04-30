@@ -135,7 +135,7 @@ const OrderSummaryCard = () => {
             <div className="mt-4 text-sm  py-12">
               <p className="text-lg">
                 <span className="font-semibold text-lg">Paper Topic:</span>{" "}
-                {order?.topic}
+                {data?.topic}
               </p>
               <p className="mt-2 text-lg">
                 <span className="font-semibold text-lg">Paper Type:</span>{" "}
@@ -163,7 +163,7 @@ const OrderSummaryCard = () => {
             <p className="text-sm flex justify-between mb-1">
               Total Price:{" "}
               <span className="font-bold text-gray-700">
-                ${card?.price ? card?.price.toFixed(2) : 10}
+                ${card?.price ? card?.price : 10}
               </span>
             </p>
             <p className="text-sm flex justify-between">

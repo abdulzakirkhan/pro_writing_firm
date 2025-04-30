@@ -40,7 +40,7 @@ export default function Home() {
   const [selectedBatches, setSelectedBatches] = useState([]);
   const [selectedUniversity, setSelectedUniversity] = useState(universityAndBatchData?.result?.universities_data[0] || "All");
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
-  const universities = universityAndBatchData?.result?.universities_data;
+  const universities = universityAndBatchData?.result?.universities_data || [];
   const [showBatches, setShowBatches] = useState(false)
   const currentDate = new Date();
   const toDate = currentDate;
@@ -53,19 +53,20 @@ export default function Home() {
   let payload = {
     agentId: user?.agent_user_id,
     university: selectedUniversity,
-    batch: selectedBatches || "All",
+    batch: selectedBatches.length >=1 ? selectedBatches : "All",
     startDate:convertDateToYYYYMMDD(startDate),
     endDate: convertDateToYYYYMMDD(endDate),
   };
-  // let payload1 = {
-  //   agentId: user?.agent_user_id,
-  //   university: selectedUniversity,
-  //   batch: selectedBatches,
-  //   paper_subject:"All",
+  let payload1 = {
+    agentId: user?.agent_user_id,
+    university: selectedUniversity,
+    batch: selectedBatches,
+    paper_subject:"All",
 
-  //   startDate:convertDateToYYYYMMDD(startDate),
-  //   endDate: convertDateToYYYYMMDD(endDate),
-  // };
+    startDate:convertDateToYYYYMMDD(startDate),
+    endDate: convertDateToYYYYMMDD(endDate),
+  };
+  
   const {data: agentCreditLimit} = useGetAgentCreditLimitsQuery(user?.agent_user_id);
   const { data: agentCostData, isLoading: agentCostLoading,  } = useGetAgentCostDataQuery(payload);
   const graphData = agentCostData?.result?.graph_data || [];
@@ -90,7 +91,6 @@ export default function Home() {
     }
   };
 
-  // const {data: agentOrdersData,isLoading: agentOrdersDataLoading,error,} = useGetAgentOrdersDataQuery(payload1);
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -113,7 +113,6 @@ export default function Home() {
       },
     ];
     
-
 
 
   const handleToggle = () => {
@@ -148,8 +147,10 @@ export default function Home() {
 
 
 
-
-
+  const {data: topClientsData,isLoading: topClientsDataLoading,error: topClientsDataError,} = useGetTopClientsDataQuery(user?.agent_user_id);
+  console.log("topClientsData",topClientsData?.result?.pie_chart)
+  const pieChartData = topClientsData?.result?.pie_chart || [];
+  // console.log("topClientsData",topClientsData?.result)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -327,7 +328,7 @@ export default function Home() {
 
         <div className="col-span-12 space-y-4 xl:col-span-3">
           <CreditUsageChart creditLimit={creditLimit} usedCredit={usedCredit} availableCredit={availableCredit}  />
-          <BatchAverageOverview />
+          <BatchAverageOverview pieChartData={pieChartData} />
         </div>
       </div>
     </>

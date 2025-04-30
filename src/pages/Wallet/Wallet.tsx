@@ -49,26 +49,29 @@ export default function Wallet() {
   const user = useSelector((state) => state.auth?.user);
   const {data: getAllCards = { result: { result: {} } },isLoading: allCardsLoading,refetch: getAllCardsRefech,} = useGetAllCardsQuery(user?.userid);
   const allCards = Array.isArray(getAllCards) ? getAllCards : [];
-  // const {data: walletAmount,isLoading: walletAmountLoading,refetch: walletAmountRefech,} = useGetWalletAmountQuery(
-  //   {
-  //      clientId:user?.agent_id,
-  //      currency: getCurrency(user?.currency),
-  //   },
-  // );
+  const {data: walletAmount,isLoading: walletAmountLoading,refetch: walletAmountRefech,} = useGetWalletAmountQuery(
+    {
+       clientId:user?.agent_user_id,
+       currency: getCurrency(user?.currency),
+    },
+  );
+  console.log("user",user)
   const {data: paymentHistory,isLoading: paymentHistoryLoading,refetch: paymentHistoryRefech,} = useGetpaymentHistryQuery(user?.agent_user_id);
   const [addCard, { isLoading: addCardLoading }] = useAddWalletCardMutation();
   const [makePayment, { isLoading: makePaymentLoading }] = useMakeWalletPaymentMutation();
   const [selectedId, setSelectedId] = useState();
 
-  // console.log("user", user)
+  console.log("walletAmount", walletAmount)
   
   const handleAddCard = async (formData) => {
-    // console.log("formData :" , formData)
+    console.log("formData :" , formData)
+    // console.log("formData :" , formData?.stripeToken)
+    // return
     const res = await addCard({
       clientid:user?.agent_user_id,
       cardtype: formData?.cardDetails?.brand,
-      Lastfourdigit: formData?.cvc,
-      Stripekey: formData?.token,
+      Lastfourdigit: formData?.cardDetails?.last4,
+      Stripekey: formData?.stripeToken,
     });
 
     const { data: respData, error } = res;
@@ -109,7 +112,7 @@ export default function Wallet() {
         currency: getCurrency(user?.currency),
         amount: amount,
         userId: user?.agent_user_id,
-        token: selectedCard?.stripekey,
+        token: "tok_1RJB3XIDvqClqRenS3ZoHZNS",
         viafrom: 'stripe',
       });
 
@@ -169,6 +172,12 @@ export default function Wallet() {
   )
   const oldHistory= paymentHistory || []
   // console.log("oldHistory",oldHistory)
+
+
+  const availableWallet= walletAmount?.amount || 0
+  const currency= walletAmount?.currency || 0
+
+  console.log("availableWallet",availableWallet)
   useEffect(() => {
     setTitle("Wallet");
   }, [setTitle]);
@@ -180,7 +189,7 @@ export default function Wallet() {
         <div className="w-full lg:col-span-9 h-[93px] flex items-center bg-white p-4 rounded-xl shadow-md">
         <div className="text-gray-700 text-lg w-full !flex !justify-between items-center font-medium">
             <span>Available Credit:</span>{" "}
-            <span className="text-green-600 font-bold">$1,000</span>
+            <span className="text-green-600 font-bold">{currency} {" "} {availableWallet}</span>
         </div>
         </div>
         <div className="w-full lg:col-span-3">

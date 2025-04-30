@@ -21,10 +21,9 @@ interface OrderCardProps {
 
 
 const OrderCard : React.FC<OrderCardProps>  = ({card}) => {
- const statusColor="#3BB537";
+ const statusColor=card?.paymentStatus === "Paid" ? "#3BB537" : card?.paymentStatus === "Un Paid" ? "#D33316" : "#FCAE30";
   const borderColor ="#FBB343";
   const lastChar = card?.batchNo?.slice(-1); 
- 
   return (
     <Link to={`/order/order-details`} state={{ card }}
       className="bg-white rounded-xl flex flex-col gap-4 shadow px-5 pt-8 w-full h-[210px] relative overflow-hidden"

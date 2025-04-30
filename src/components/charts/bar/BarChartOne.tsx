@@ -49,7 +49,7 @@ const BarChartOne = ({title ="",labels, dataSet}) => {
       tooltip: {
         enabled: true,
         callbacks: {
-          label: (ctx) => `${ctx.raw} orders ${title}`,
+          label: (ctx) => `${ctx.raw}  ${title}`,
         }
       }
     },

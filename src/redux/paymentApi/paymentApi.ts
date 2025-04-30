@@ -40,7 +40,18 @@ export const paymentApi = api.injectEndpoints({
           body: formData,
         };
       },
-      providesTags: ["Payment"],
+      providesTags: ["PaymentCards"],
+    }),
+    makePaymentForOrders: builder.mutation({
+      query: (body) => {
+        return {
+          url: `/paymentwithwalletconsume_agent`,
+          method: 'POST',
+          body,
+        };
+      },
+      invalidatesTags: ['PaymentCards', 'PaymentCards', 'WalletAmount', "AgentBatchOrders",
+      "AgentBatchOrdersUnPaid","creditLimitAgent"],
     }),
     addWalletCard: builder.mutation({
       query: (body) => {
@@ -55,7 +66,7 @@ export const paymentApi = api.injectEndpoints({
           body: formData,
         };
       },
-      invalidatesTags: ["WalletCards"],
+      invalidatesTags: ["WalletCards","PaymentCards"],
     }),
 
     getWalletAllCards: builder.query({
@@ -68,7 +79,7 @@ export const paymentApi = api.injectEndpoints({
           body: formData,
         };
       },
-      providesTags: ["WalletCards"],
+      providesTags: ["WalletCards","PaymentCards"],
     }),
     getWalletAmount: builder.query({
       query: ({ clientId, currency }) => {
@@ -81,7 +92,8 @@ export const paymentApi = api.injectEndpoints({
           body: formData,
         };
       },
-      providesTags: ["WalletAmount"],
+      
+      providesTags: ["WalletAmount","PaymentCards"],
     }),
 
     makeWalletPayment: builder.mutation({
@@ -103,7 +115,7 @@ export const paymentApi = api.injectEndpoints({
         "WalletAmount",
         "AgentOrdersData",
         "WalletAmount",
-        "WalletCards",
+        "PaymentCards",
       ],
     }),
 
@@ -124,12 +136,12 @@ export const paymentApi = api.injectEndpoints({
         };
       },
       invalidatesTags: [
-        "Payment",
+        "PaymentCards",
         "PaymentCards",
         "UserCurrencyAndCountry",
         "Orders",
         "WalletAmount",
-        "Rewards",
+        "Rewards","PaymentCards"
       ],
     }),
 
@@ -194,6 +206,7 @@ export const {
   useGetAllCardsQuery,
   useAddCardMutation,
   useGetpaymentHistryQuery,
+  useMakePaymentForOrdersMutation,
   useAddWalletCardMutation,
   useGetWalletAllCardsQuery,
   useGetWalletAmountQuery,
