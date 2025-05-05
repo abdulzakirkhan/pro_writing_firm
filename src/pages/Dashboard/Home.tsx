@@ -125,6 +125,7 @@ export default function Home() {
   const currentMonthName = monthNames[new Date().getMonth()];
   const peakOrderCost = agentCostData?.result?.highest_price || 0;
   const currentMonth = agentCostData?.result?.current_month_cost || 0;
+  // const [total, setTotal] = useState(agentCostData?.result?.total_cost || 0)
   const items = [
     {
       icon: <FaSyncAlt className="text-[#13A09D]" />,
@@ -166,13 +167,19 @@ export default function Home() {
     setSelectedUniversity(null);
   };
 
-  const total = agentCostData?.result?.total_cost;
-  const totalClient = agentCostData?.result?.total_client;
-  const costIncreasePercentage =
-    agentCostData?.result?.cost_increase_percentage;
-  const clientsIncreasePercentage =
-    agentCostData?.result?.cost_increase_percentage;
+  // const total = agentCostData?.result?.total_cost ?? 0;
+  // const totalClient = agentCostData?.result?.total_client ?? 0;
+  // const costIncreasePercentage =
+    // agentCostData?.result?.cost_increase_percentage ?? 0;
+  // const clientsIncreasePercentage =
+  //   agentCostData?.result?.cost_increase_percentage ?? 0;
 
+    const [total, setTotal] = useState(0)
+    const [totalClient, setTotalClient] = useState(0)
+    const [costIncreasePercentage, setCostIncreasePercentage] = useState(0)
+    const [clientsIncreasePercentage, setClientsIncreasePercentage] = useState(0)
+
+    console.log("total",total)
   const {
     data: showBlinker,
     isLoading: showBlinkerLoading,
@@ -188,6 +195,9 @@ export default function Home() {
 
   const blinker = Number(showBlinker?.result?.show_blinker_true || 0);
   const blinker_text = showBlinker?.result?.blinker_text || "";
+
+
+  // console.log("total",toatl)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = dropdownRef.current;
@@ -210,6 +220,15 @@ export default function Home() {
   useEffect(() => {
     setTitle("Dashboard");
   }, []);
+  useEffect(() => {
+    if(agentCostData?.result){
+      setTotal(agentCostData?.result?.total_cost)
+      setTotalClient(agentCostData?.result?.total_client)
+      setCostIncreasePercentage(agentCostData?.result?.cost_increase_percentage)
+      setClientsIncreasePercentage(agentCostData?.result?.cost_increase_percentage)
+    }
+  }, [agentCostData,agentCreditLimit])
+  
   return (
     <>
       {/* <PageMeta

@@ -11,7 +11,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { PiNote } from "react-icons/pi";
 import ques from "../../icons/q.png";
 import left from "../../icons/left.png";
-import { MdOutlineLogout } from "react-icons/md";
+import { MdOutlineLogout, MdPendingActions } from "react-icons/md";
 import { MdSpaceDashboard } from "react-icons/md";
 import { CgNotes } from "react-icons/cg";
 
@@ -66,6 +66,11 @@ const navItems: NavItem[] = [
     name: "FAQs",
     icon: <img src={ques} alt="FAQs Icon" className="w-5 h-5" />,
     path: "/faqs",
+  },
+  {
+    name: "My Pending Orders",
+    icon: <MdPendingActions />,
+    path: "/my-pending-orders",
   },
 ];
 

@@ -153,9 +153,6 @@ export const agentApi = api.injectEndpoints({
         formData.append('payment_status', data.selectedFilters);
         formData.append('type_of_paper', data.selectedSubject);
         formData.append('categoty', data.selectedCategoryList);
-        for (const [key, value] of formData.entries()) {
-          console.log(`${key}:`, value);
-        }
         return {
           url: `/get_batch_wise_order_list`,
           method: 'POST',
@@ -377,6 +374,56 @@ export const agentApi = api.injectEndpoints({
       },
       invalidatesTags: ['Agentnotification'],
     }),
+
+
+
+
+    getAgentPendingOrders: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agent_id', id);
+        return {
+          url: `/agent_pending_orders_list`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['AgentPendingOrdersList'],
+    }),
+
+    deleteOrder: builder.mutation({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('id', data?.orderId);
+        formData.append('agent_id', data?.agentId);
+        return {
+          url: `/delete_pending_orders`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: ['AgentPendingOrdersList'],
+    }),
+
+    // /my-pending-orders cors error
+    movePendingOrder: builder.mutation({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('pendingorderid', data?.orderId);
+        formData.append('agentid', data?.agetID);
+        return {
+          url: `/move_pending_orders`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: [
+        'AgentPendingOrdersList',
+        'AgentBatchOrders',
+        'AgentBatchOrdersUnPaid',
+        'creditLimitAgent',
+      ],
+    }),
   }),
 });
 
@@ -402,16 +449,16 @@ export const {
   useInsertRequestRevesionMutation,
   useGetNotificationByIdQuery,
   useMarkReadNotificationMutation,
-
-
-
-
-
   useGetTopClientsDataQuery,
   useGetAllPaperSubjectForOrdersQuery,
   useGetPaperTopicFromCourseQuery,
   // useGetAllCoursesForOrderQuery,
   useGetAllCoursesForOrderQuery,
   useShowBlinkerQuery,
-  // ... other hooks
+
+
+
+  useGetAgentPendingOrdersQuery,
+  useDeleteOrderMutation,
+  useMovePendingOrderMutation
 } = agentApi;

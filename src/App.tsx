@@ -18,43 +18,63 @@ import PageMeta from "./components/common/PageMeta";
 import { useSelector } from "react-redux";
 import PublicRoute from "./PrivateRoute";
 import OrderInitiate from "./pages/OrderInitiate/OrderInitiate";
-
-
+import FAQS from "./pages/FAQS/FAQS";
+import PendingOrders from "./pages/PendingOrders/PendingOrders";
 
 export default function App() {
-    const user = useSelector((state) => state.auth?.user);
+  const user = useSelector((state) => state.auth?.user);
   return (
     <>
-    <PageMeta title="Pro Writng Firm"
-        description="This is React.js " />
+      <PageMeta title="Pro Writng Firm" description="This is React.js " />
       <Router>
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          <Route element={<PublicRoute type="private">
-      <AppLayout />
-    </PublicRoute>}>
+          <Route
+            element={
+              <PublicRoute type="private">
+                <AppLayout />
+              </PublicRoute>
+            }
+          >
             <Route index path="/" element={<Home />} />
 
-            <Route path="/orders" element={<Orders  />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/my-pending-orders" element={<PendingOrders />} />
 
             {/* <Route path="/order-list" element={<OrderList  />} /> */}
 
-            <Route path="/order/order-details" element={<OrderDetails  />} />
-            <Route path="/order/:id/order-summary" element={<OrderSummaryCard  />} />
-            <Route path="/my-clients" element={<MyClients  />} />
-            <Route path="/settings" element={<Settings  />} />
-            <Route path="/wallet" element={<Wallet  />} />
-            <Route path="/payment-history" element={<PaymentHistory  />} />
-            <Route path="/chat" element={<Chat  />} />
-            <Route path="/initiate-order" element={<OrderInitiate  />} />
-
-
+            <Route path="/order/order-details" element={<OrderDetails />} />
+            <Route
+              path="/order/:id/order-summary"
+              element={<OrderSummaryCard />}
+            />
+            <Route path="/my-clients" element={<MyClients />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/wallet" element={<Wallet />} />
+            <Route path="/payment-history" element={<PaymentHistory />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/initiate-order" element={<OrderInitiate />} />
+            <Route path="/faqs" element={<FAQS />} />
           </Route>
 
           {/* Auth Layout */}
-          <Route path="/signin" element={<PublicRoute type="public"><SignIn /> </PublicRoute>} />
-          <Route path="/signup" element={<PublicRoute type="public"><SignUp /></PublicRoute>} />
+          <Route
+            path="/signin"
+            element={
+              <PublicRoute type="public">
+                <SignIn />{" "}
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute type="public">
+                <SignUp />
+              </PublicRoute>
+            }
+          />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
