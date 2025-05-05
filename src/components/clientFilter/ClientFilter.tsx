@@ -41,7 +41,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ navigate, title }) => {
   };
 
   const clearAll = () => {
-    setFilters({ Subject: [], Batch: [] });
+    getAllPaperSubjectAndBatches?.paper_subject || [];({ Subject: [], Batch: [] });
   };
 
   useEffect(() => {

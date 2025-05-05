@@ -8,6 +8,7 @@ import {
 } from 'chart.js';
 import { FaSyncAlt, FaChartBar } from 'react-icons/fa';
 import { HiMiniChartBarSquare } from "react-icons/hi2";
+import Loader from '../Loader/Loader';
 ChartJS.register(ArcElement, Tooltip, Legend);
 interface CreditUsageChartProps {
   creditLimit: number;
@@ -15,6 +16,7 @@ interface CreditUsageChartProps {
   availableCredit: number;
 }
 const CreditUsageChart : React.FC<CreditUsageChartProps>  = ({creditLimit,usedCredit,availableCredit}) => {
+ 
     const used = usedCredit;
     const limit = creditLimit;
     const remaining = availableCredit;

@@ -66,4 +66,103 @@ const getFormattedPriceWith3 = (price) => {
     return truncatedAmount.toFixed(3);
   } else return '0.00';
 };
-export { getConsumableAmounts, calculatePaymentFees, calculatePaymentVatFees,getFormattedPriceWith3 };
+
+const getLast12Months=()=> {
+  const monthsYears = [];
+  const currentDate = new Date();
+
+  for (let i = 0; i < 12; i++) {
+      // Create a new date object for the month i months ago
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i);
+      
+      // Push the month and year into the array
+      monthsYears.push({
+          month: date.getMonth() + 1, // getMonth() returns 0-11, so we add 1
+          year: date.getFullYear()
+      });
+  }
+
+  return monthsYears;
+}
+
+
+const getColor = (isLightColor, param) => {
+  let color;
+
+  // Map the param to a base hue (range of 0 to 360 degrees for HSL)
+  const baseHue = getBaseHue(param);
+
+  // Generate a distinct HSL color for the given param
+  let hue = baseHue;
+  let saturation = 70 + (param % 30); // Vary saturation slightly for interest
+  let lightness = 50 + ((param * 10) % 20); // Vary lightness slightly
+
+  // Adjust lightness to make sure it's light or dark based on the `isLightColor` flag
+  if (isLightColor) {
+    lightness = Math.min(90, lightness + 20); // Increase lightness for light colors
+  } else {
+    lightness = Math.max(30, lightness - 20); // Decrease lightness for dark colors
+  }
+
+  // Convert HSL to HEX color
+  color = hslToHex(hue, saturation, lightness);
+
+  return color;
+
+  function getBaseHue(param) {
+    // Assign distinct color families (hues) for different `param` values
+    if (param === 1) return 0; // Red
+    if (param === 2) return 240; // Blue
+    if (param === 3) return 120; // Green
+    if (param === 4) return 60; // Yellow
+    return (param * 60) % 360; // For larger values, continue cycling through hues
+  }
+
+  function hslToHex(h, s, l) {
+    s /= 100;
+    l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let r, g, b;
+
+    if (h >= 0 && h < 60) {
+      r = c;
+      g = x;
+      b = 0;
+    } else if (h >= 60 && h < 120) {
+      r = x;
+      g = c;
+      b = 0;
+    } else if (h >= 120 && h < 180) {
+      r = 0;
+      g = c;
+      b = x;
+    } else if (h >= 180 && h < 240) {
+      r = 0;
+      g = x;
+      b = c;
+    } else if (h >= 240 && h < 300) {
+      r = x;
+      g = 0;
+      b = c;
+    } else {
+      r = c;
+      g = 0;
+      b = x;
+    }
+
+    const rgb = [r + m, g + m, b + m];
+    return (
+      '#' +
+      rgb
+        .map((x) =>
+          Math.round(x * 255)
+            .toString(16)
+            .padStart(2, '0')
+        )
+        .join('')
+    );
+  }
+};
+export { getConsumableAmounts, calculatePaymentFees, calculatePaymentVatFees,getFormattedPriceWith3,getLast12Months ,getColor};

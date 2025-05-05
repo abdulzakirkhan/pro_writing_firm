@@ -1,29 +1,24 @@
 import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import Loader from "../../Loader/Loader";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
 
-const SubjectPieChart = () => {
+
+const SubjectPieChart = ({labels,pieData}) => {
+  // console.log("monthlyTotals",pieData)
   const data = {
-    labels: [
-      "OOP",
-      "Data Structures",
-      "Business",
-      "English",
-      "Essay Writing",
-      "Calculus",
-    ],
+    labels: labels,
     datasets: [
       {
         label: "Subjects",
-        data: [57, 23, 10, 5, 4, 1],
+        data: pieData,
         backgroundColor: [
-          "#0C829B", // OOP
-          "#27AE60", // Data Structures
-          "#F39C12", // Business
-          "#E74C3C", // English
-          "#D35400", // Essay Writing
-          "#F1C40F", // Calculus
+          "#0C829B",
+          "#27AE60",
+          "#F39C12",
+          "#E74C3C",
+          "#D35400",
+          "#F1C40F",
+          "#0C829B",
         ],
         borderWidth: 0,
       },
@@ -46,6 +41,11 @@ const SubjectPieChart = () => {
     color: data.datasets[0].backgroundColor[index],
   }));
 
+  // if (!labels || !pieData){
+  //   return(
+  //     <Loader />
+  //   )
+  // }
   return (
     <div className="flex items-start lg:gap-6">
       {/* Chart */}
@@ -58,13 +58,13 @@ const SubjectPieChart = () => {
         {legendData.map((item, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <span
-              className="inline-block w-3 h-3 rounded-full"
+              className="inline-block !w-[12px] !h-[12px] rounded-full"
               style={{ backgroundColor: item.color as string }}
             ></span>
-            <span className="text-gray-700 font-medium">{item.label}</span>
-            <span className="text-blue-600 font-semibold ml-auto">
-              ({item.value}%)
-            </span>
+            <span className="text-gray-700 font-medium">{item.label.split(" ").slice(0, 2).join(" ")}...</span>
+            {/* <span className="text-blue-600 font-semibold ml-auto">
+              {item.value}
+            </span> */}
           </div>
         ))}
       </div>

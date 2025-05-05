@@ -3,6 +3,13 @@ import { useTitle } from "../../context/TitleContext";
 import ClientFilter from "../../components/clientFilter/ClientFilter";
 import OrderSubjectChart from "../../components/OrderSubjectChart/OrderSubjectChart";
 import SubjectPieChart from "../../components/charts/SubjectPieChart/SubjectPieChart";
+
+
+
+
+
+
+
 import ClientList from "../../components/ClientList/ClientList";
 import { MdKeyboardArrowLeft } from "react-icons/md";
 import {
@@ -27,9 +34,11 @@ import { IoSearch } from "react-icons/io5";
 import MyClientOrders from "../../components/MyClientOrders/MyClientOrders";
 import {
   useGetAgentAllClientsQuery,
+  useGetAgentClientOrdersBarChartSubjectWiseQuery,
   useGetAgentClientOrdersPieChartQuery,
   useGetAgentClientOrdersQuery,
   useGetAllClientsForOrderQuery,
+  useGetAllPaperSubjectForOrdersQuery,
 } from "../../redux/agentdashboard/agentApi";
 import { useSelector } from "react-redux";
 import Calendar from "../../assets/icons/calendar.png";
@@ -51,7 +60,10 @@ export default function MyClients() {
   const handleClickProfile = (client: SetStateAction<never[]>) => {
     setClientData(client);
   };
-
+  const [filters, setFilters] = useState({
+    Subject: [] as string[],
+    Batch: [] as string[],
+  });
   let payloadorders = {
     agentId: user?.agent_user_id,
     selectedFilterOrder: "All",
@@ -142,24 +154,7 @@ export default function MyClients() {
     },
   ];
   const labels = ["Jan", "Feb", "March", "April", "May", "June", "July"];
-  const datasets = [
-    {
-      label: "Artificial Intelligence",
-      data: [30, 50, 70, 95, 85, 65, 75],
-      backgroundColor: "#0DA8D8",
-    },
-    {
-      label: "OOP",
-      data: [40, 50, 60, 90, 75, 35, 70],
-      backgroundColor: "#A3D79A",
-    },
-    {
-      label: "English",
-      data: [10, 0, 15, 5, 45, 0, 0],
-      backgroundColor: "#D33316",
-    },
-    { label: "DS", data: [95, 0, 85, 0, 65, 0, 0], backgroundColor: "#FBB343" },
-  ];
+
 
   const toggleDropdown = (label: string) => {
     setOpenDropdown((prev) => (prev === label ? null : label));
@@ -189,6 +184,114 @@ export default function MyClients() {
     error: allAgentClientsError,
   } = useGetAllClientsForOrderQuery(user?.agent_user_id);
 
+  const [selectedSubject, setSelectedSubject] = useState([]);
+  const [selectedBatches, setSelectedBatches] = useState([]);
+  let payload1 = {
+    agentId: user?.agent_user_id,
+    paper_subject: selectedSubject.length > 0 ? selectedSubject : ["All"],
+    batch: selectedBatches.length > 0 ? selectedBatches :["All"],
+  };
+  const {
+    data: barChartDataSubjectWise,
+    isLoading: barChartDataSubjectWiseLoading,
+    error: barChartDataSubjectWisetError,
+  } = useGetAgentClientOrdersBarChartSubjectWiseQuery(payload1);
+  const {
+    data: getAllPaperSubjectAndBatches,
+    isLoading: getAllPaperSubjectAndBatchesLoading,
+    error: getAllPaperSubjectAndBatchesError,
+  } = useGetAllPaperSubjectForOrdersQuery();
+
+  const [showBatches, setShowBatches] = useState(false)
+  const [showSubjects, setShowSubjects] = useState(false)
+  const subjects = getAllPaperSubjectAndBatches?.paper_subject || [];
+
+  const batches = getAllPaperSubjectAndBatches?.batch_data || [];
+
+  // console.log("barChartDataSubjectWise :", barChartDataSubjectWise?.result)
+  const data = barChartDataSubjectWise?.result?.slack || {};
+
+  const MONTH_ORDER = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const labelsForStacked = MONTH_ORDER.filter(month => Object.keys(data).includes(month));
+  
+  
+  const {
+    data: agentPieChart,
+    isLoading: agentPieChartLoading,
+    error: agentPieChartError,
+  } = useGetAgentClientOrdersPieChartQuery(payload1);
+  
+  let subjectsLabels=[];
+  const subjectLabelsData =agentPieChart?.result?.clientsLabelValues || []
+  subjectLabelsData.map((subject) => {
+    subjectsLabels.push(subject?.title)
+  })
+  const subjectCount = Math.max(...Object.values(data).map(arr => arr.length));
+  const datasets = [];
+  for (let subjectIndex = 0; subjectIndex < subjectCount; subjectIndex++) {
+    const subjectData = labelsForStacked.map(month => {
+      const monthValues = data[month];
+      
+      return Number(monthValues?.[subjectIndex] ?? 0);
+    });
+
+    datasets.push({
+      label: subjectsLabels[subjectIndex] || `Subject ${subjectIndex + 1}`,
+      data: subjectData,
+      backgroundColor: getColor(subjectIndex),
+    });
+  }
+
+  const monthCount = datasets[0]?.data.length ?? 0;
+  const monthlyTotals = [];
+
+  for (let monthIndex = 0; monthIndex < monthCount; monthIndex++) {
+    const total = datasets.reduce((sum, subject) => {
+      return sum + Number(subject.data[monthIndex] ?? 0);
+    }, 0);
+
+    monthlyTotals.push(total);
+  }
+  console.log("monthlyTotals",monthlyTotals)
+
+
+  
+  
+
+  function getColor(index) {
+    const colors = ["#0DA8D8", "#A3D79A", "#D33316", "#FBB343", "#60A5FA", "#F472B6", "#FACC15"];
+    return colors[index % colors.length];
+  }
+
+  
+
+  
+
+
+
+
+  const subjectLabels= agentPieChart?.result?.clientsLabelValues?.map(item => item.title) || [];
+
+  
+  
+  const pieData = agentPieChart?.result?.clientsLabelValues?.map(item => Number(item.pieValue) ) || [];
+  
+  
+
+  const toggleSubject = (subjectId: string) => {
+    setSelectedSubject(prev => 
+      prev.includes(subjectId)
+        ? prev.filter(id => id !== subjectId)
+        : [...prev, subjectId]
+    );
+  };
+  const toggleBatch = (batchId: string) => {
+    setSelectedBatches(prev => 
+      prev.includes(batchId)
+        ? prev.filter(id => id !== batchId)
+        : [...prev, batchId]
+    );
+  };
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -498,19 +601,107 @@ export default function MyClients() {
         </>
       ) : (
         <>
-          <ClientFilter title="Client List" />
+          <div className="w-full flex flex-wrap justify-between items-center px-2">
+            {/* Title + See All */}
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-black">Client List</h2>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center flex-wrap gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="pl-10 pr-4 py-2 text-sm border-2 border-[#B9AFAF] rounded"
+                />
+                <IoSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              </div>
+
+              {/* Filter */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsOpen((prev) => !prev)}
+                  className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-md shadow"
+                >
+                  <FaFilter /> Filter
+                </button>
+
+                {isOpen && (
+                  <div className="absolute right-0 mt-2 w-[270px] bg-white rounded-xl shadow-lg p-4 z-50 border">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-semibold">Filter Options</span>
+                    </div>
+                    <div>
+                      <button onClick={() => setShowSubjects(!showSubjects)} className="flex items-center justify-between w-full text-sm font-medium mb-2">
+                        Subjects <IoMdArrowDropdown />
+                      </button>
+                      {showSubjects && (
+                      <div className="border rounded p-2 space-y-2">
+                        {subjects.map((subject) => (
+                          <div
+                            key={subject?.id}
+                            className="flex justify-between items-center cursor-pointer"
+                            onClick={() => toggleSubject(subject?.id)}
+                          >
+                            <span>{subject?.label}</span>
+                            <span
+                              className={`h-4 w-4 rounded ${
+                                selectedSubject.includes(subject?.id)
+                                  ? "bg-gray-400"
+                                  : "border border-gray-300"
+                              }`}
+                            ></span>
+                          </div>
+                        ))}
+                      </div>
+
+                      )}
+                    </div>
+                    
+                    <div>
+                      <button onClick={() => setShowBatches(!showBatches)} className="flex items-center justify-between w-full text-sm font-medium mb-2">
+                        Batch <IoMdArrowDropdown />
+                      </button>
+                      {showBatches && (
+                      <div className="border rounded p-2 space-y-2">
+                        {batches.map((batch) => (
+                          <div
+                            key={batch?.id}
+                            className="flex justify-between items-center cursor-pointer"
+                            onClick={() => toggleBatch(batch?.id)}
+                          >
+                            <span>{batch?.label}</span>
+                            <span
+                              className={`h-4 w-4 rounded ${
+                                selectedBatches.includes(batch?.id)
+                                  ? "bg-gray-400"
+                                  : "border border-gray-300"
+                              }`}
+                            ></span>
+                          </div>
+                        ))}
+                      </div>
+
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 py-8">
             <div className="w-full lg:col-span-5">
               <div className="grid grid-cols-1 lg:grid-cols-1">
                 <div className="bg-white rounded-xl p-4 shadow h-[380px]">
                   <OrderSubjectChart
-                    labels={Mainlabels}
-                    stacked={true}
-                    datasets={Maindatasets}
+                    labels={labelsForStacked}
+                    stacked={true} 
+                    datasets={datasets}
                   />
                 </div>
                 <div className="lg:h-[380px] overflow-auto  flex justify-center items-center">
-                  <SubjectPieChart />
+                  <SubjectPieChart labels={subjectLabels} pieData={pieData}/>
                 </div>
               </div>
             </div>

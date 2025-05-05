@@ -3,9 +3,16 @@ import { useTitle } from "../../context/TitleContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { LuEyeClosed } from "react-icons/lu";
 import * as Yup from "yup";
+import { useSelector } from "react-redux";
+import { useChangePasswordMutation } from "../../redux/profileApi/profileApi";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 export default function Settings() {
+  const user = useSelector((state) => state.auth?.user);
   const { setTitle } = useTitle();
   const [activeTab, setActiveTab] = useState("profile");
+  const [changePassword, { isLoading: changePasswordLoading }] =useChangePasswordMutation();
   const [showPassword, setShowPassword] = useState(false);
   const tabClass = (tab: string) =>
     `cursor-pointer text-sm font-medium px-4 pb-2 ${
@@ -43,8 +50,8 @@ export default function Settings() {
             className="w-16 h-16 rounded-full"
           />
           <div>
-            <p className="font-bold text-lg">User Full Name</p>
-            <p className="text-sm text-gray-500">useremail@gmail.com</p>
+            <p className="font-bold text-lg">{user?.agent_name}</p>
+            <p className="text-sm text-gray-500">{user?.agent_email}</p>
           </div>
         </div>
         {/* <button type="submit" className="bg-[#13A09D] text-white px-4 py-1 rounded">
@@ -53,15 +60,13 @@ export default function Settings() {
       </div>
       <Formik
         initialValues={{
-          firstName: "",
-          lastName: "",
-          email: "",
+          name: user?.agent_name || "",
+          email: user?.agent_email || "",
           phone: "",
           password: "",
         }}
         validationSchema={Yup.object({
-          firstName: Yup.string().required("First name is required"),
-          lastName: Yup.string().required("Last name is required"),
+          name: Yup.string().required("Last name is required"),
           email: Yup.string()
             .email("Invalid email address")
             .required("Email is required"),
@@ -72,42 +77,21 @@ export default function Settings() {
           console.log("Form values:", values);
         }}
       >
-        <Form className="grid grid-cols-2 gap-4 relative text-sm">
+        <Form className="grid grid-cols-1 gap-4 relative text-sm">
           <div className="mb-2 flex flex-col gap-2">
             <label
-              htmlFor="firstName"
+              htmlFor="name"
               className="!text-[#6D6D6D] text-lg font-semibold"
             >
-              First Name
+              Name
             </label>
             <Field
-              name="firstName"
+              name="name"
               type="text"
               className="border rounded p-3 col-span-1"
-              placeholder="First Name"
             />
             <ErrorMessage
-              name="firstName"
-              component="div"
-              className="text-red-500 text-xs"
-            />
-          </div>
-
-          <div className="mb-2 flex flex-col gap-2">
-            <label
-              htmlFor="lastName"
-              className="!text-[#6D6D6D] text-lg font-semibold"
-            >
-              Last Name
-            </label>
-            <Field
-              name="lastName"
-              type="text"
-              className="border rounded p-3 col-span-1"
-              placeholder="Last Name"
-            />
-            <ErrorMessage
-              name="lastName"
+              name="name"
               component="div"
               className="text-red-500 text-xs"
             />
@@ -125,6 +109,7 @@ export default function Settings() {
               type="email"
               className="border rounded p-3 col-span-2"
               placeholder="Email"
+              readOnly
             />
             <ErrorMessage
               name="email"
@@ -248,9 +233,142 @@ export default function Settings() {
       ))}
     </div>
   );
+
+  const UpdatePassword= () =>{
+    const [showEye, setShowEye] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
+    const [confirmNewPassword, setConfirmNewPassword] = useState(false)
+    const navigate =useNavigate()
+    const passwordSchema = Yup.object().shape({
+      oldPassword: Yup.string()
+        .required("Old Password is required"),
+      newPassword: Yup.string()
+        .min(6, "New Password must be at least 6 characters")
+        .required("New Password is required"),
+      confirmNewPassword: Yup.string()
+        .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
+        .required("Confirm New Password is required"),
+    });
+  
+    const handleSubmit =async (values) => {
+      try {
+        const formData = new FormData();
+        formData.append('clientid',user?.agent_user_id);
+        formData.append('oldpassword', values?.oldPassword);
+        formData.append('newpassword', values?.newPassword);
+        formData.append('confirmpassword', values?.confirmNewPassword);
+
+        // console.log("VALUES.CONFIRMNEWPASSWORD",values.confirmNewPassword)
+        // return
+        const res = await changePassword(formData);
+  
+        const { data: respData, error } = res || {};
+        if (respData?.result == 'Password Updated Successfully') {
+          toast.success(respData?.result || "SUCCEESS !")
+        } else {
+          toast.error(respData?.result)
+        }
+      } catch (error) {
+        toast.error("Something went wrong.")
+      }
+    };
+    const handleClick = () =>{
+      setShowEye(!showEye)
+    }
+
+    const newPassword = () => {
+      setShowNewPassword(!showNewPassword)
+    }
+    const confirmNewPasswordFunc = () => {
+      setConfirmNewPassword(!confirmNewPassword)
+    }
+    return(
+      <div className="max-w-md mx-auto p-6">
+      <h2 className="text-2xl font-semibold mb-4">Update Password</h2>
+      
+      <Formik
+        initialValues={{
+          oldPassword: "",
+          newPassword: "",
+          confirmNewPassword: "",
+        }}
+        validationSchema={passwordSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting }) => (
+          <Form className="space-y-4">
+            
+            <div>
+              <label className="block text-sm font-medium">Old Password</label>
+              <div className="relative">
+                <Field
+                  type={showEye ? "text" :"password"}
+                  name="oldPassword"
+                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                />
+                {showEye ?<IoEye onClick={handleClick} size={25} className="absolute top-2 cursor-pointer right-4" /> : <IoEyeOff onClick={handleClick} size={25} className="absolute top-2 cursor-pointer right-4" />}
+              </div>
+              <ErrorMessage
+                name="oldPassword"
+                component="div"
+                className="text-red-500 text-sm mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">New Password</label>
+              
+              <div className="relative">
+                <Field
+                  type={showNewPassword ? "text" : "password"}
+                  name="newPassword"
+                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                />
+                {showNewPassword ?<IoEye onClick={newPassword} size={25} className="absolute top-2 cursor-pointer right-4" /> : <IoEyeOff onClick={newPassword} size={25} className="absolute top-2 cursor-pointer right-4" />}
+              </div>
+              <ErrorMessage
+                name="newPassword"
+                component="div"
+                className="text-red-500 text-sm mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Confirm New Password</label>
+              <div className="relative">
+                <Field
+                  type={confirmNewPassword ? "text" : "password"}
+                  name="confirmNewPassword"
+                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                />
+                {confirmNewPassword ?<IoEye onClick={confirmNewPasswordFunc} size={25} className="absolute top-2 cursor-pointer right-4" /> : <IoEyeOff onClick={confirmNewPasswordFunc} size={25} className="absolute top-2 cursor-pointer right-4" />}
+              </div>
+              <ErrorMessage
+                name="confirmNewPassword"
+                component="div"
+                className="text-red-500 text-sm mt-1"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-[#13A09D] text-white py-2 rounded-md w-full"
+            >
+              {isSubmitting ? "Updating..." : "Update Password"}
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+
+    )
+  }
   useEffect(() => {
     setTitle("Settings");
   }, [setTitle]);
+
+
 
   return (
     <>
@@ -263,7 +381,7 @@ export default function Settings() {
           >
             Profile
           </span>
-          <span
+          {/* <span
             className={`${tabClass("notifications")} text-[24px]`}
             onClick={() => setActiveTab("notifications")}
           >
@@ -274,14 +392,21 @@ export default function Settings() {
             onClick={() => setActiveTab("customization")}
           >
             Customization
+          </span> */}
+          <span
+            className={`${tabClass("updateProfile")} text-[24px]`}
+            onClick={() => setActiveTab("updateProfile")}
+          >
+            Update Password
           </span>
         </div>
 
         {/* Tab Content */}
         <div className="bg-white rounded-xl p-6 shadow w-full max-w-3xl mx-auto">
           {activeTab === "profile" && <ProfileTab />}
-          {activeTab === "notifications" && <NotificationsTab />}
-          {activeTab === "customization" && <CustomizationTab />}
+          {/* {activeTab === "notifications" && <NotificationsTab />} */}
+          {/* {activeTab === "customization" && <CustomizationTab />} */}
+          {activeTab === "updateProfile" && <UpdatePassword />}
         </div>
       </div>
     </>

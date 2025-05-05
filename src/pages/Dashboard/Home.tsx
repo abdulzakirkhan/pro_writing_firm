@@ -16,7 +16,7 @@ import { useTitle } from "../../context/TitleContext.js";
 import { useSelector } from "react-redux";
 import {AppState} from "../../redux/store"
 // import { useGetAgentAllClientsQuery } from "../../redux/agentdashboard/agentDashboardApi";
-import {useGetAgentClientOrdersBarChartSubjectWiseQuery, useGetAgentCreditLimitsQuery, useGetAgentOrdersDataMarksQuery, useGetAgentOrdersDataQuery, useGetCurrentMonthCostQuery, useGetPerformanceDataQuery, useGetStandardValuesQuery, useGetTopClientsDataQuery, useGetUniversityAndBatchesQuery} from "../../redux/agentdashboard/agentApi";
+import {useGetAgentClientOrdersBarChartSubjectWiseQuery, useGetAgentCreditLimitsQuery, useGetAgentOrdersDataMarksQuery, useGetAgentOrdersDataQuery, useGetCurrentMonthCostQuery, useGetPerformanceDataQuery, useGetStandardValuesQuery, useGetTopClientsDataQuery, useGetUniversityAndBatchesQuery, useShowBlinkerQuery} from "../../redux/agentdashboard/agentApi";
 import {useGetAgentCostDataQuery} from "../../redux/agentdashboard/agentApi";
 import { convertDateToYYYYMMDD } from "../../config/indext.js";
 import Loader from "../../components/Loader/Loader.js";
@@ -93,22 +93,22 @@ export default function Home() {
 
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
     const currentMonthName = monthNames[new Date().getMonth()];
-    
+    const peakOrderCost= agentCostData?.result?.highest_price  || 0;
+    const currentMonth =agentCostData?.result?.current_month_cost || 0;
     const items = [
       {
         icon: <FaSyncAlt className="text-[#13A09D]" />,
         title: "Current Month",
         subtitle: currentMonthName,
-        value: currentMonthCost?.result?.total_Current_month_cost,
+        value: currentMonth,
         valueColor: "text-green-600",
       },
       {
         icon:<HiMiniChartBarSquare size={25} className="text-[#137DA0]" />,
         title: "Peak Order Cost",
         subtitle: "March",
-        value: "$600",
+        value: peakOrderCost,
         valueColor: "text-[#1E8AD3]",
       },
     ];
@@ -146,12 +146,13 @@ export default function Home() {
   const clientsIncreasePercentage =agentCostData?.result?.cost_increase_percentage;
 
 
-
+  const {data: showBlinker,isLoading: showBlinkerLoading,error: showBlinkerError,} = useShowBlinkerQuery(user?.agent_user_id);
   const {data: topClientsData,isLoading: topClientsDataLoading,error: topClientsDataError,} = useGetTopClientsDataQuery(user?.agent_user_id);
-  console.log("topClientsData",topClientsData?.result?.pie_chart)
   const pieChartData = topClientsData?.result?.pie_chart || [];
   // console.log("topClientsData",topClientsData?.result)
 
+  const blinker= Number(showBlinker?.result?.show_blinker_true || 0)
+  const blinker_text=showBlinker?.result?.blinker_text || ""
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = dropdownRef.current;
@@ -176,10 +177,21 @@ export default function Home() {
   }, []);
   return (
     <>
+    
       {/* <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       /> */}
+      {blinker >= 1 && (
+        <div className="flex justify-center">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-red-500 animate-blink" />
+            <span className="text-sm text-red-600 font-medium">{blinker_text}</span>
+          </div>
+        </div>
+      )}
+
+
       <div className="flex flex-wrap justify-between py-5">
         <h1 className="text-3xl font-bold">Welcome to Dashboard</h1>
 
@@ -327,7 +339,7 @@ export default function Home() {
         </div>
 
         <div className="col-span-12 space-y-4 xl:col-span-3">
-          <CreditUsageChart creditLimit={creditLimit} usedCredit={usedCredit} availableCredit={availableCredit}  />
+            <CreditUsageChart creditLimit={creditLimit} usedCredit={usedCredit} availableCredit={availableCredit}  />
           <BatchAverageOverview pieChartData={pieChartData} />
         </div>
       </div>

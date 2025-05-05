@@ -38,7 +38,7 @@ export default function App() {
 
             <Route path="/orders" element={<Orders  />} />
 
-            <Route path="/order-list" element={<OrderList  />} />
+            {/* <Route path="/order-list" element={<OrderList  />} /> */}
 
             <Route path="/order/order-details" element={<OrderDetails  />} />
             <Route path="/order/:id/order-summary" element={<OrderSummaryCard  />} />

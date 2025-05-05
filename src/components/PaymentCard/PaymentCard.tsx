@@ -57,7 +57,7 @@ const PaymentCard = ({ order, onClick, isSelected , index}) => {
           </p>
           <p className="text-sm font-bold text-gray-600">
             Status:{" "}
-            <span className="font-medium" style={{ color: order?.statusColor }}>
+            <span className={`font-medium ${order?.paymentStatus === "Paid" ? "text-[#3BB537]" : order?.paymentStatus === "Partial Paid" ? "text-[#FFBE55]" : "text-red-600"}`}>
               {order?.paymentStatus}
             </span>
           </p>

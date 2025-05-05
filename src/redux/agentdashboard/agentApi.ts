@@ -325,6 +325,58 @@ export const agentApi = api.injectEndpoints({
         };
       },
     }),
+
+
+
+
+
+    showBlinker: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agent_id', id);
+        return {
+          url: `/blinker_api`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+
+
+    insertRequestRevesion: builder.mutation({
+      query: (body) => {
+        return {
+          url: `/agent_Revision_mark_data`,
+          method: 'POST',
+          body,
+        };
+      },
+      invalidatesTags: ['AgentBatchOrders', 'AgentBatchOrdersUnPaid'],
+    }),
+
+    getNotificationById: builder.query({
+      query: (id) => {
+        const formData = new FormData();
+        formData.append('agent_id', id);
+        return {
+          url: `/get_notifications`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['Agentnotification'],
+    }),
+
+    markReadNotification: builder.mutation({
+      query: (body) => {
+        return {
+          url: `/mark_read_notification`,
+          method: 'POST',
+          body,
+        };
+      },
+      invalidatesTags: ['Agentnotification'],
+    }),
   }),
 });
 
@@ -343,12 +395,23 @@ export const {
   useGetAgentAllClientsQuery,
   useGetAllClientsForOrderQuery,
   useGetAgentClientOrdersQuery,
+
   useGetAgentClientOrdersPieChartQuery,
   useGetAgentClientOrdersBarChartSubjectWiseQuery,
+
+  useInsertRequestRevesionMutation,
+  useGetNotificationByIdQuery,
+  useMarkReadNotificationMutation,
+
+
+
+
+
   useGetTopClientsDataQuery,
   useGetAllPaperSubjectForOrdersQuery,
   useGetPaperTopicFromCourseQuery,
   // useGetAllCoursesForOrderQuery,
   useGetAllCoursesForOrderQuery,
+  useShowBlinkerQuery,
   // ... other hooks
 } = agentApi;

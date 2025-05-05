@@ -28,7 +28,7 @@ export default function EcommerceMetrics({total,totalClient,costIncreasePercenta
       badge:<AiFillDollarCircle size={35} className="text-primary" />,
     },
     {
-      title: "Active Clients",
+      title: "Active Students",
       value: totalClient, // Using number type when possible
       trendDescription: "Slight increase from last month",
       changePercentage: clientsIncreasePercentage,

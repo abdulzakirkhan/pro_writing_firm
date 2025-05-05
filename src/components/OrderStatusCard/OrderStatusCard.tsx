@@ -10,9 +10,9 @@ interface OrderStatusCardProps {
     paymentStatus: "Paid" | "Un Paid" | "Partial Paid" | string;
     marks?: number | null;
     price: number;
-    orders:any
+    orders:any;
   };
-  data: {}
+  data: {};
 }
 const OrderStatusCard : React.FC<OrderStatusCardProps> = ({card ,data}) => {
   // console.log("card :", card)
@@ -50,8 +50,22 @@ const OrderStatusCard : React.FC<OrderStatusCardProps> = ({card ,data}) => {
 
         <button
           className={`mt-2 text-white text-xs px-3 h-[38px] rounded flex items-center gap-2 ${
-            card?.paymentStatus === "Un Paid" ? 'bg-gray-500' : 'bg-[#13A09D]'
+            card?.downloadFile ? ' bg-[#13A09D]' : 'bg-gray-500'
           }`}
+          onClick={() => {
+            if (!card?.downloadFile) {
+              alert("No file available for download.");
+              return;
+            }
+
+            // Start download
+            const link = document.createElement("a");
+            link.href = card?.downloadFile;
+            link.download = ""; // optional, you can put custom filename here e.g. "order-file.pdf"
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }}
         >
           <FaDownload size={12} />
           Download File

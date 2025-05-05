@@ -111,7 +111,7 @@ const TopUpModal = ({ onCancel, onClick ,handlePayment }: TopUpModalProps) => {
       <div className="absolute inset-0 bg-black opacity-30"></div>
 
       {/* Modal Content */}
-      <div className="relative z-10 bg-white w-[700px] max-w-full p-6 rounded-2xl shadow-lg overflow-y-auto">
+      <div className="relative z-10 bg-white w-[700px] max-w-full p-6 rounded-2xl shadow-lg">
         <h2 className="text-2xl font-semibold text-teal-700 mb-4">
           Top-up Wallet
         </h2>
@@ -173,8 +173,8 @@ const TopUpModal = ({ onCancel, onClick ,handlePayment }: TopUpModalProps) => {
           </div>
         )}
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-5">
-          {allCards.slice(0, 12).map((card, index) => (
+          <div className="grid grid-cols-1 gap-6 py-5">
+          {allCards.slice(-1).map((card, index) => (
             <CardItem
               card={card}
               key={card.id || index}

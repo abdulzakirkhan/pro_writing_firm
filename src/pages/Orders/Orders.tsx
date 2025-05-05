@@ -26,6 +26,7 @@ import { useAddWalletCardMutation, useGetAllCardsQuery, useGetWalletAmountQuery,
 import { calculatePaymentFees, calculatePaymentVatFees, getConsumableAmounts, getFormattedPriceWith3 } from "../../helper/helper.js";
 import toast, { Toaster } from "react-hot-toast";
 import { CardCvcElement, CardExpiryElement, CardNumberElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import OrderList from "../OrderList/OrderList.js";
 
 interface Category {
   id: any;
@@ -44,7 +45,6 @@ export default function Orders() {
   const [categories, setCategories] = useState<Category[]>(
     TypeOfPaperData?.result?.Category_list || ["All"]
   );
-
 
   const {data: walletAmount,isLoading: walletAmountLoading,refetch: walletAmountRefech,} = useGetWalletAmountQuery(
     {
@@ -77,6 +77,7 @@ export default function Orders() {
   const [selectedUniversity, setSelectedUniversity] = useState(["All"]);
   const [makePayment, setMakePayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(false);
+  const [isOrderedList, setIsOrderedList] = useState(false)
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [step, setStep] = useState(1);
   const [showUniversityDropdown, setShowUniversityDropdown] =
@@ -244,7 +245,6 @@ export default function Orders() {
     setPaymentMethod(!paymentMethod);
   };
 
-
   const consumableObj = getConsumableAmounts(
     isChecked ? walletAmount?.amount : 0,
     isChecked ? walletAmount?.rewardsamount : 0,
@@ -353,6 +353,7 @@ export default function Orders() {
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
     const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const checked = e.target.checked;
+      console.log("CHEKED",checked)
       setIsChecked(checked);
     
       if (checked) {
@@ -472,7 +473,7 @@ export default function Orders() {
               <div className="flex flex-col items-end">
                 {/* Toggle switch */}
                 <label className="inline-flex items-center cursor-pointer mt-1">
-                  <input type="checkbox" className="sr-only peer"  onChange={handleSwitchChange} />
+                  <input checked={isChecked} type="checkbox" className="sr-only peer"  onChange={handleSwitchChange} />
                   <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-700 after:border-[#C6BCBC] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600 relative" />
                 </label>
               </div>
@@ -519,7 +520,7 @@ export default function Orders() {
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-5">
-          {allCards.slice(0, 12).map((card, index) => (
+          {allCards.slice(-1).map((card, index) => (
             <CardItem
               card={card}
               key={card.id || index}
@@ -653,10 +654,12 @@ export default function Orders() {
     );
   };
 
-  console.log("selected Orders",selectOrders)
 
 
   // const data=agentBatchOrderList?.result
+  const handleClickSeeAll = () => {
+    setIsOrderedList(!isOrderedList)
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -680,9 +683,11 @@ export default function Orders() {
   useEffect(() => {
     setTitle("My Orders");
   }, [setTitle]);
+
+
   return (
     <>
-      {makePayment ? (
+      {makePayment || isOrderedList ? (
         <>
           {paymentMethod ? (
             <>
@@ -754,7 +759,10 @@ export default function Orders() {
               <div className="mt-12">
                 <div className="">
                   <button
-                    onClick={() => setMakePayment(!makePayment)}
+                    onClick={() => {
+                      setIsOrderedList(false);
+                      setMakePayment(!makePayment);
+                    }}
                     className="flex text-[#13A09D] items-center gap-1 text-lg font-semibold"
                   >
                     <IoChevronBack size={24} />
@@ -853,9 +861,9 @@ export default function Orders() {
               {/* Left Side: Title + See All */}
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-black">Order List</h2>
-                <span className="text-[#13A09D] border-b border-[#13A09D] cursor-pointer">
+                <button onClick={handleClickSeeAll} className="text-[#13A09D] border-b border-[#13A09D] cursor-pointer">
                   See All
-                </span>
+                </button>
               </div>
 
               {/* Right Side: Buttons + Search */}
@@ -984,9 +992,9 @@ export default function Orders() {
                         </button>
                         {showCategory && (
                           <div className="border max-h-48 overflow-y-auto rounded p-2 mt-1 space-y-1 bg-white shadow">
-                            {categories.map((cat) => (
+                            {categories.map((cat,index) => (
                               <div
-                                key={cat?.id}
+                              key={`${cat.id}-${index}`}
                                 className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
                                 onClick={() => {
                                   toggleCateg(cat);
@@ -1013,7 +1021,7 @@ export default function Orders() {
 
               </div>
             ) : (
-              newCardDAta.map((card, idx) => (
+              newCardDAta.slice(0,3).map((card, idx) => (
                 <OrderCard key={idx} card={card} />
               ))
             )}

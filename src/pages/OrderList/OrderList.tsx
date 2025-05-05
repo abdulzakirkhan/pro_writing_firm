@@ -140,7 +140,7 @@ export default function OrderList() {
           <RiArrowLeftSLine size={30} /> Back
         </Link>
       </div>
-      <FilterSection navigate={false} />
+      <FilterSection navigate={false} btnTitle={"Payment"} />
       <div className="grid grid-cols-3 gap-4 py-8">
         {cardData.map((card, idx) => (
           <OrderCard key={idx} {...card} />
