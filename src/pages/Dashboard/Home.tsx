@@ -46,7 +46,7 @@ export default function Home() {
   const token = useSelector((state: AppState) => state.auth.token);
   const [selectedBatches, setSelectedBatches] = useState([]);
   const [selectedUniversity, setSelectedUniversity] = useState(
-    universityAndBatchData?.result?.universities_data[0] || "All"
+    universityAndBatchData?.result?.universities_data[0]?.id || "All"
   );
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
   const universities = universityAndBatchData?.result?.universities_data || [];
@@ -65,15 +65,6 @@ export default function Home() {
     agentId: user?.agent_user_id,
     university: selectedUniversity,
     batch: selectedBatches.length >= 1 ? selectedBatches : "All",
-    startDate: convertDateToYYYYMMDD(startDate),
-    endDate: convertDateToYYYYMMDD(endDate),
-  };
-  let payload1 = {
-    agentId: user?.agent_user_id,
-    university: selectedUniversity,
-    batch: selectedBatches,
-    paper_subject: "All",
-
     startDate: convertDateToYYYYMMDD(startDate),
     endDate: convertDateToYYYYMMDD(endDate),
   };
@@ -107,6 +98,7 @@ export default function Home() {
       );
     }
   };
+
 
   const monthNames = [
     "Jan",
@@ -157,29 +149,25 @@ export default function Home() {
       ? agentCreditLimit?.result?.credit_data?.used_credit
       : 0; // Used credit
 
-  const availableCredit =
-    agentCreditLimit?.result?.credit_data?.avaible_limit > 0
-      ? agentCreditLimit?.result?.credit_data?.avaible_limit
-      : 0;
+  const availableCredit = agentCreditLimit?.result?.credit_data?.avaible_limit > 0 ? agentCreditLimit?.result?.credit_data?.avaible_limit: 0;
 
   const handleClearSearch = () => {
     setSelectedBatches([]);
     setSelectedUniversity(null);
   };
 
-  // const total = agentCostData?.result?.total_cost ?? 0;
-  // const totalClient = agentCostData?.result?.total_client ?? 0;
-  // const costIncreasePercentage =
-    // agentCostData?.result?.cost_increase_percentage ?? 0;
-  // const clientsIncreasePercentage =
-  //   agentCostData?.result?.cost_increase_percentage ?? 0;
+  const total = agentCostData?.result?.total_cost ?? 0;
+  const totalClient = agentCostData?.result?.total_client ?? 0;
+  const costIncreasePercentage =
+    agentCostData?.result?.cost_increase_percentage ?? 0;
+  const clientsIncreasePercentage =
+    agentCostData?.result?.cost_increase_percentage ?? 0;
 
-    const [total, setTotal] = useState(0)
-    const [totalClient, setTotalClient] = useState(0)
-    const [costIncreasePercentage, setCostIncreasePercentage] = useState(0)
-    const [clientsIncreasePercentage, setClientsIncreasePercentage] = useState(0)
+    // const [total, setTotal] = useState(agentCostData?.result?.total_cost || 0)
+    // const [totalClient, setTotalClient] = useState(agentCostData?.result?.total_client || 0)
+    // const [costIncreasePercentage, setCostIncreasePercentage] = useState(agentCostData?.result?.cost_increase_percentage || 0)
+    // const [clientsIncreasePercentage, setClientsIncreasePercentage] = useState(agentCostData?.result?.cost_increase_percentage || 0)
 
-    console.log("total",total)
   const {
     data: showBlinker,
     isLoading: showBlinkerLoading,
@@ -191,13 +179,11 @@ export default function Home() {
     error: topClientsDataError,
   } = useGetTopClientsDataQuery(user?.agent_user_id);
   const pieChartData = topClientsData?.result?.pie_chart || [];
-  // console.log("topClientsData",topClientsData?.result)
 
   const blinker = Number(showBlinker?.result?.show_blinker_true || 0);
   const blinker_text = showBlinker?.result?.blinker_text || "";
 
 
-  // console.log("total",toatl)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = dropdownRef.current;
@@ -220,15 +206,7 @@ export default function Home() {
   useEffect(() => {
     setTitle("Dashboard");
   }, []);
-  useEffect(() => {
-    if(agentCostData?.result){
-      setTotal(agentCostData?.result?.total_cost)
-      setTotalClient(agentCostData?.result?.total_client)
-      setCostIncreasePercentage(agentCostData?.result?.cost_increase_percentage)
-      setClientsIncreasePercentage(agentCostData?.result?.cost_increase_percentage)
-    }
-  }, [agentCostData,agentCreditLimit])
-  
+
   return (
     <>
       {/* <PageMeta

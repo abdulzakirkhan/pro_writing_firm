@@ -53,7 +53,7 @@ export const agentApi = api.injectEndpoints({
           body:formData
         };
       },
-      providesTags: ['AgentCostData'],
+      providesTags: ['AgentCostData',"creditLimitAgent"],
     }),
 
     getUniversityAndBatches: builder.query({
