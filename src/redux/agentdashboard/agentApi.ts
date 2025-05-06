@@ -405,7 +405,6 @@ export const agentApi = api.injectEndpoints({
       invalidatesTags: ['AgentPendingOrdersList'],
     }),
 
-    // /my-pending-orders cors error
     movePendingOrder: builder.mutation({
       query: (data) => {
         const formData = new FormData();
