@@ -839,7 +839,7 @@ export default function Orders() {
               </div>
             </div>
 
-            <div className="col-span-12 lg:col-span-4 border-2 bg-white rounded-xl shadow">
+            <div className="col-span-12 lg:col-span-4 border-2 bg-white rounded-xl pb-6 shadow">
               {agentCostLoading ? <Loader /> : <BarChartOne title="Orders" labels={labels} dataSet={data} />}
               
             </div>
