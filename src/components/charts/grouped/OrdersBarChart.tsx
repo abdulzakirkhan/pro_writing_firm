@@ -68,8 +68,9 @@ const OrdersBarChart = ({ performaneGraphData }: OrdersBarChartProps) => {
     "Nov",
     "Dec",
   ];
-
-  const labels = performaneGraphData.map((item) => monthLabels[item.month]);
+  const sortedData = [...performaneGraphData].sort((a, b) => a.month - b.month);
+  const labels = sortedData.map((item) => monthLabels[item.month]);
+  // const labels = performaneGraphData.map((item) => monthLabels[item.month]);
   const totalOrders = performaneGraphData.map(
     (item) => item.Totalorderforthisclient
   );
