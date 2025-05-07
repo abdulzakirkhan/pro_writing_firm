@@ -32,6 +32,11 @@ const OrderSubjectChart: React.FC<OrderChartProps> = ({
   stacked = true,
   maxY = 100,
 }) => {
+ 
+  
+
+
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -52,6 +57,9 @@ const OrderSubjectChart: React.FC<OrderChartProps> = ({
           label: (ctx: any) => `${ctx.dataset.label}: ${ctx.raw}`,
         },
       },
+      datalabels:{
+        display: false,
+      }
     },
     scales: {
       x: {
@@ -84,7 +92,7 @@ const OrderSubjectChart: React.FC<OrderChartProps> = ({
       <Bar
         data={{
           labels,
-          datasets,
+          datasets
         }}
         options={options}
       />

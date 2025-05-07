@@ -5,7 +5,8 @@ import BatchWiseScatterChart from "../../components/scatter/BatchWiseScatterChar
 import CreditUsageChart from "../../components/credit/CreditUsageChart.js";
 import BatchAverageOverview from "../../components/charts/pie/BatchAverageOverview.js";
 // import PageMeta from "../../components/common/PageMeta";
-
+// import "react-datepicker/dist/react-datepicker.css";
+// import DatePicker from "react-datepicker";
 import { FaFilter } from "react-icons/fa";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
@@ -15,7 +16,10 @@ import { HiMiniChartBarSquare } from "react-icons/hi2";
 import { useTitle } from "../../context/TitleContext.js";
 import { useSelector } from "react-redux";
 import { AppState } from "../../redux/store";
-// import { useGetAgentAllClientsQuery } from "../../redux/agentdashboard/agentDashboardApi";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import {
   useGetAgentClientOrdersBarChartSubjectWiseQuery,
   useGetAgentCreditLimitsQuery,
@@ -72,6 +76,7 @@ export default function Home() {
   const { data: agentCreditLimit } = useGetAgentCreditLimitsQuery(
     user?.agent_user_id
   );
+  console.log("startDate",startDate)
   const { data: agentCostData, isLoading: agentCostLoading } =
     useGetAgentCostDataQuery(payload);
   const graphData = agentCostData?.result?.graph_data || [];
@@ -183,7 +188,7 @@ export default function Home() {
   const blinker = Number(showBlinker?.result?.show_blinker_true || 0);
   const blinker_text = showBlinker?.result?.blinker_text || "";
 
-
+// console.log("topClientsData?.result :",topClientsData?.result)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = dropdownRef.current;
@@ -206,7 +211,15 @@ export default function Home() {
   useEffect(() => {
     setTitle("Dashboard");
   }, []);
-
+  const CustomInput = ({ value, onClick, placeholderText }) => (
+    <button 
+      onClick={onClick}
+      className="flex justify-between items-center ms-2 w-full px-3 py-1 border rounded shadow-sm text-sm bg-white"
+    >
+      {value || placeholderText}
+      <FontAwesomeIcon icon={faCalendarAlt} className="text-gray-500" />
+    </button>
+  );
   return (
     <>
       {/* <PageMeta
@@ -262,7 +275,7 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="flex z-50 gap-2 mb-4">
+                {/* <div className="flex z-50 gap-2 mb-4">
                   <input
                     type="date"
                     value={startDate}
@@ -274,6 +287,21 @@ export default function Home() {
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     className="flex-1 px-3 py-1 border rounded shadow-sm text-sm"
+                  />
+                </div> */}
+                <div className="flex z-50 gap-2 mb-4">
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date) => setStartDate(date?.toISOString())}
+                    customInput={<CustomInput placeholderText="Start Date" />}
+                    dateFormat="yyyy-MM-dd"
+                  />
+                  <DatePicker
+                    selected={endDate} placeholderText="TO"
+                    onChange={(date) => setEndDate(date?.toISOString())}
+                    customInput={<CustomInput placeholderText="End Date" />}
+                    dateFormat="yyyy-MM-dd"
+                    popperPlacement="bottom-start"
                   />
                 </div>
 

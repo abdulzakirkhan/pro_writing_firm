@@ -50,7 +50,7 @@ export default function PaymentHistory() {
 const history =paymentHistory || []
 
 
-  
+
   useEffect(() => {
     setTitle("Payment History");
   }, [setTitle]);
@@ -99,7 +99,7 @@ const history =paymentHistory || []
           <div className="mt-4">
             <div className="flex justify-between">
               <p className="text-sm font-semibold">Payed via:</p>
-              <p className="text-sm">{payment?.card}</p>
+              <p className="text-sm">{payment?.transactionkey}</p>
             </div>
             <div className="flex justify-between items-end">
               <p className="text-sm font-semibold">Date:</p>

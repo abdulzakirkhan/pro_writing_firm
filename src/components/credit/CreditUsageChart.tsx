@@ -58,6 +58,9 @@ const CreditUsageChart : React.FC<CreditUsageChartProps>  = ({creditLimit,usedCr
         },
         tooltip: {
           enabled: false
+        },
+        datalabels: {
+          display: false // 👈 THIS IS THE FIX - HIDE POINT VALUE
         }
       }
     };

@@ -232,11 +232,12 @@ export default function OrderDetails() {
     },
   ];
   const data =card || [];
-  console.log("cardddd",data)
+  // console.log("cardddd",data)
   
   const orders=card?.orders || []
 
-  console.log("orders",orders)
+  // console.log("orders",orders)
+
   // if(orders.length < 0) {
   //   return(
   //     <p>No Orders</p>

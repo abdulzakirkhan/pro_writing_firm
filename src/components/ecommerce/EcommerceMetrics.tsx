@@ -21,19 +21,19 @@ export default function EcommerceMetrics({total,totalClient,costIncreasePercenta
     {
       title: "Total Cost",
       value: total,
-      trendDescription: "Increased from last month",
+      trendDescription: "Up from last month",
       changePercentage: costIncreasePercentage,
       trendDirection: "up",
-      icon:<MdOutlineTrendingUp size={30} className={`${typeof costIncreasePercentage === "number" && costIncreasePercentage >= 0 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
+      icon:<MdOutlineTrendingUp size={20} className={`${typeof costIncreasePercentage === "number" && costIncreasePercentage >= 0 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
       badge:<AiFillDollarCircle size={35} className="text-primary" />,
     },
     {
       title: "Active Students",
       value: totalClient, // Using number type when possible
-      trendDescription: "Slight increase from last month",
+      trendDescription: "Up from last month",
       changePercentage: clientsIncreasePercentage,
       trendDirection: "up",
-      icon:<MdOutlineTrendingUp size={30} className={`${typeof clientsIncreasePercentage === "number" && clientsIncreasePercentage >= 2 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
+      icon:<MdOutlineTrendingUp size={20} className={`${typeof clientsIncreasePercentage === "number" && clientsIncreasePercentage >= 2 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
       badge:<img src={users} className="w-10" />,
     },
   ];
@@ -53,7 +53,8 @@ export default function EcommerceMetrics({total,totalClient,costIncreasePercenta
             <div className="mt-5">
               <div className="flex items-center gap-1">
                 {card.icon}
-                {typeof card.changePercentage === 'number' ? card.changePercentage.toFixed(2) : 0}%
+                <span className="text-sm">{typeof card.changePercentage === 'number' ? card.changePercentage.toFixed(2) : 0}%</span>
+                <span className="text-sm">{card?.trendDescription}</span>
               </div>
 
             </div>

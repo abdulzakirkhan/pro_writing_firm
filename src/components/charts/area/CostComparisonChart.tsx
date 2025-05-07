@@ -33,6 +33,17 @@ interface Props {
   graphData: GraphDataPoint[];
 }
 
+function formatNumber(value: number) {
+  if (value >= 10000000) {
+    return (value / 10000000).toFixed(1).replace(/\.0$/, '') + 'C';
+  } else if (value >= 100000) {
+    return (value / 100000).toFixed(1).replace(/\.0$/, '') + 'L';
+  } else if (value >= 1000) {
+    return (value / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  } else {
+    return value;
+  }
+}
 export default function CostComparisonChart({ graphData }: Props) {
 
   const monthLabels = [
@@ -44,8 +55,7 @@ export default function CostComparisonChart({ graphData }: Props) {
 
   // Extract labels and data from props
   const labels = graphData.map((entry) => monthLabels[entry.month]);
-  const costData = graphData.map((entry) => entry.TotalMonthlyCost);
-
+  const costData = graphData.map((entry) => Number(entry.TotalMonthlyCost));
 
   const data = {
     labels: labels,
@@ -84,6 +94,9 @@ export default function CostComparisonChart({ graphData }: Props) {
         font: {
           size: 18
         }
+      },
+      datalabels: {
+        display: false // 👈 THIS IS THE FIX - HIDE POINT VALUE
       }
     },
     scales: {
@@ -91,7 +104,7 @@ export default function CostComparisonChart({ graphData }: Props) {
         beginAtZero: true,
         ticks: {
           callback: function (value: number) {
-            return value >= 1000 ? value / 1000 + 'k' : value;
+            return formatNumber(value);
           }
         }
       }

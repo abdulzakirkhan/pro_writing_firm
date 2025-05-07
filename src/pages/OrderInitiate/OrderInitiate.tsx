@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetStandardValuesQuery } from "../../redux/sharedApi/sharedApi";
 import {
@@ -15,6 +15,7 @@ import { useAgentInitiateOrderMutation } from "../../redux/ordersApi/ordersApi";
 import { convertDateToYYYYMMDD } from "../../config/indext";
 import toast, { Toaster } from "react-hot-toast";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { RxCross2 } from "react-icons/rx";
 
 interface FormValues {
   taskSheet: File | null;
@@ -137,6 +138,7 @@ export default function OrderInitiate() {
   } = useGetAllClientsForOrderQuery(user?.agent_user_id);
 
   const courses = getAllCourses?.result || [];
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
 
   const clients = allAgentClients?.result || [];
   const paperTopics = paperTopic?.result || [];
@@ -145,6 +147,16 @@ export default function OrderInitiate() {
   const categories = CATEGORY_LEVELS;
   const ratesSlabes = standarValues?.result[0]?.slabs_rate;
   const standardRates = standarValues?.result[0]?.standardRates;
+
+  const handleImageToggle = (
+    e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>
+  ) => {
+    e.stopPropagation();
+    e.preventDefault()
+    e.nativeEvent.stopImmediatePropagation();
+    setFileName(null);
+    setTaskSheetPre(null);
+  };
   return (
     <>
       <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -289,7 +301,7 @@ export default function OrderInitiate() {
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Task Sheet *
-                    <div className="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
+                    <div className="mt-1 relative flex items-center justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
                       <div className="text-center">
                         <input
                           type="file"
@@ -297,6 +309,8 @@ export default function OrderInitiate() {
                           accept=".pdf,.docx,.jpg,.jpeg,.png"
                           className="sr-only"
                           onChange={(event) => {
+                            event.stopPropagation();
+                            event.preventDefault()
                             const file = event.currentTarget.files?.[0] || null;
                             // console.log("file", file)
                             setFileName(file?.name);
@@ -321,11 +335,17 @@ export default function OrderInitiate() {
                             />
                           </svg>
                         )}
-                        <p className="text-xs text-gray-500">
-                          {fileName ? fileName : "PDF, DOCX up to 10MB"}
+                        <p
+                          className="text-xs flex gap-3 items-center text-gray-500"
+                        >
+                          {fileName ? fileName :"PDF, DOCX up to 10MB"}
                         </p>
                       </div>
+                      {fileName && (
+                        <RxCross2 size={30} className="text-red-500 absolute -top-5 -right-4 cursor-pointer" onClick={handleImageToggle} />
+                      )}
                     </div>
+
                   </label>
                   <ErrorMessage
                     name="taskSheet"
@@ -337,7 +357,7 @@ export default function OrderInitiate() {
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Additional Module *
-                    <div className="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
+                    <div className="mt-1 !relative flex items-center justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
                       <div className="text-center">
                         <input
                           type="file"
@@ -379,6 +399,15 @@ export default function OrderInitiate() {
                             : "PDF, DOCX up to 10MB"}
                         </p>
                       </div>
+                    {addintionalModule && (
+                    <RxCross2 size={30} className="text-red-500 absolute -top-5 -right-5 cursor-pointer" onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault()
+                      e.nativeEvent.stopImmediatePropagation();
+                      setAdditionalModule(null);
+                      setPreview(null)
+                    }} />
+                    )}
                     </div>
                   </label>
                 </div>
@@ -436,11 +465,20 @@ export default function OrderInitiate() {
                   <label className="block text-sm font-medium text-gray-700">
                     Set Deadline
                   </label>
-                  <Field
-                    type="date"
-                    name="deadline"
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
-                  />
+                  <div className="relative">
+                    <Field
+                      type="date"
+                      name="deadline"
+                      innerRef={dateInputRef}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
+                    />
+                    <div
+                      className="absolute w-full flex justify-end inset-y-0 right-4 pl-3 items-center cursor-pointer text-gray-400"
+                      onClick={() => dateInputRef.current?.showPicker()}
+                    >
+                      📅
+                    </div>
+                  </div>
                   <ErrorMessage
                     name="deadline"
                     component="div"
@@ -459,7 +497,7 @@ export default function OrderInitiate() {
                     name="course"
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                       setFieldValue("course", e.target.value); // Set value in Formik
-                      console.log("COURSE",e.target.value)
+                      console.log("COURSE", e.target.value);
                       const selectCourse = courses.find(
                         (course) => course.id === e.target.value
                       );

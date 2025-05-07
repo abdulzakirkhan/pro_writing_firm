@@ -43,6 +43,7 @@ import {
 import { useSelector } from "react-redux";
 import Calendar from "../../assets/icons/calendar.png";
 import Loader from "../../components/Loader/Loader";
+import ClientChart from "../../components/ClientChart/ClientChart";
 export default function MyClients() {
   const user = useSelector((state) => state.auth?.user);
 
@@ -228,6 +229,7 @@ export default function MyClients() {
   })
   const subjectCount = Math.max(...Object.values(data).map(arr => arr.length));
   const datasets = [];
+  
   for (let subjectIndex = 0; subjectIndex < subjectCount; subjectIndex++) {
     const subjectData = labelsForStacked.map(month => {
       const monthValues = data[month];
@@ -252,7 +254,6 @@ export default function MyClients() {
 
     monthlyTotals.push(total);
   }
-  console.log("monthlyTotals",monthlyTotals)
 
 
   
@@ -590,9 +591,9 @@ export default function MyClients() {
 
                 <div className="p-5 mt-3 border-2 border-[#C6BCBC] rounded-2xl h-[380px] bg-white">
                   <OrderSubjectChart
-                    labels={labels}
+                    labels={labelsForStacked}
                     stacked={false}
-                    datasets={datasets}
+                    datasets={datasets} 
                   />
                 </div>
               </div>
@@ -637,7 +638,7 @@ export default function MyClients() {
                         Subjects <IoMdArrowDropdown />
                       </button>
                       {showSubjects && (
-                      <div className="border rounded p-2 space-y-2">
+                      <div className="border rounded max-h-40 overflow-y-auto p-2 space-y-2">
                         {subjects.map((subject) => (
                           <div
                             key={subject?.id}

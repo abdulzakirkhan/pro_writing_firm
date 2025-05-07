@@ -57,7 +57,6 @@ export default function Orders() {
     const rewardAmount=walletAmount?.rewardsamount
     const currency=walletAmount?.currency
     const rewardsamountpluswalletamount=walletAmount?.rewardsamountpluswalletamount
-    
 
 
     const [makePaymentForOrders, { isLoading: makePaymentForOrdersLoading }] =
@@ -803,7 +802,7 @@ export default function Orders() {
                   <div
                     key={index}
                     className={`rounded-2xl w-full border-2 border-[#C6BCBC] bg-white p-5 md:p-3 ${
-                      index === 0 ? "lg:col-span-12 !px-10" : "lg:col-span-6"
+                      index === 0 ? "lg:col-span-12 !px-10 mb-2" : "lg:col-span-6"
                     }`}
                   >
                     <div className="flex justify-between items-center">
@@ -820,11 +819,11 @@ export default function Orders() {
                       </div>
                     </div>
 
-                    <div className="mt-5">
+                    <div className="">
                       <h4 className="mt-2 font-bold text-gray-800 text-2xl">
                         {order.value}
                       </h4>
-                      <div className="mt-5">
+                      <div className="mt-4">
                         <div className="flex items-center gap-1">
                           {order.badge}
                           <span

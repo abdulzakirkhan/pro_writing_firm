@@ -54,13 +54,18 @@ const BatchWiseScatterChart = () => {
     maintainAspectRatio: false,
     plugins: {
       legend:false as const,
-      title: false
+      title: false,
+      datalabels: {
+        display: false // <-- This makes sure nothing is rendered on points
+      }
     },
     scales: {
       x: {
+        position: 'top', 
         title: {
           display: true,
-          text: 'Orders'
+          text: 'Marks',
+          align: 'start',
         },
         min: 0,
         max: 8,
@@ -70,7 +75,7 @@ const BatchWiseScatterChart = () => {
       },
       y: {
         title: {
-          display: true,
+          display: false,
           text: 'Marks'
         },
         min: 0,

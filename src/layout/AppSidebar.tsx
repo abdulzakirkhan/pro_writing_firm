@@ -11,6 +11,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { PiNote } from "react-icons/pi";
 import ques from "../../icons/q.png";
 import left from "../../icons/left.png";
+import right from "../../icons/right.png";
 import { MdOutlineLogout, MdPendingActions } from "react-icons/md";
 import { MdSpaceDashboard } from "react-icons/md";
 import { CgNotes } from "react-icons/cg";
@@ -322,7 +323,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ setShowLogoutModal }) => {
           onClick={handleToggle}
           aria-label="Toggle Sidebar"
         >
-          <img src={left} alt="" className="w-[30px]" />
+          <img src={isExpanded ? right : left} alt="" className="w-[30px]" />
           {/* {isMobileOpen ? () : ()} */}
         </button>
         <button
