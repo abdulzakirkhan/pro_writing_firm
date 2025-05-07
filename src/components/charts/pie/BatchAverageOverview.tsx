@@ -34,6 +34,9 @@ const BatchAverageOverview = ({pieChartData}) => {
             return `${context.label}: ${context.parsed}%`;
           }
         }
+      },
+      datalabels:{
+        display: false,
       }
     }
   };
