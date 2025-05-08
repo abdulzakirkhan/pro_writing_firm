@@ -73,7 +73,7 @@ export default function Home() {
     endDate: convertDateToYYYYMMDD(endDate),
   };
 
-  const { data: agentCreditLimit } = useGetAgentCreditLimitsQuery(
+  const { data: agentCreditLimit ,isLoading: agentCreditLimitLoading,error: agentCreditLimitError,} = useGetAgentCreditLimitsQuery(
     user?.agent_user_id
   );
   console.log("startDate",startDate)
@@ -220,6 +220,17 @@ export default function Home() {
       <FontAwesomeIcon icon={faCalendarAlt} className="text-gray-500" />
     </button>
   );
+
+  if(topClientsDataLoading || showBlinkerLoading || performaceDataLoading || agentCostLoading || agentCreditLimitLoading){
+    return(
+      <div className="w-full h-[80vh]">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* <PageMeta
