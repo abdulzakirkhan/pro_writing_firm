@@ -1,4 +1,4 @@
-import { FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaRegUserCircle } from "react-icons/fa";
 import { PiGraduationCapDuotone } from "react-icons/pi";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import "../../styles/scrollbar.css";
@@ -15,7 +15,7 @@ import Calendar from "../../assets/icons/calendar.png"
 //   { id: 7, name: "Client Name",education:"Master’s in Computer Science",email:"client@gmail.com",password:"client12345",icon:Calendar,performance:8.5,orders:0.5, university: "University name here", avatar: "https://randomuser.me/api/portraits/men/5.jpg" },
 // ];
 
-const avatar ="https://randomuser.me/api/portraits/men/3.jpg"
+const avatar =<FaRegUserCircle className="w-[50px] h-[50px] text-gray-500" />
 
 const ClientList = ({handleClickProfile,clientProfileOpen,clientProfile, client}) => {
  
@@ -33,11 +33,11 @@ const ClientList = ({handleClickProfile,clientProfileOpen,clientProfile, client}
         >
           {/* Avatar + Name */}
           <div className="flex items-center gap-3">
-            <img
-              src={client.avatar ? client.avatar : avatar}
+            {client?.avatar ? <img
+              src={client?.avatar}
               alt="Client Avatar"
               className="w-[56px] h-[56px] rounded-full object-cover"
-            />
+            /> : avatar}
             <div>
               <p className="font-bold text-black text-lg">{client.name}</p>
               <p className="flex items-center gap-1 text-[16px] text-gray-500">
