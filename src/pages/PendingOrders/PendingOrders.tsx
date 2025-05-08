@@ -103,6 +103,7 @@ export default function PendingOrders() {
         toast.error("Something went wrong.");
         return;
       }
+      console.log("res :", res)
       toast.success("Moved Successfully");
     } catch (error) {
       console.error("Error moving order:", error);

@@ -28,10 +28,13 @@ const OrderSummaryCard = () => {
 
   const { card, data } = location.state || [];
   const orderDetails = data?.orders?.find((order) => order.id === id);
-  console.log("data", data);
 
 
+  const nwfile=orderDetails?.downloadFile;
 
+  const baseUrl=`https://staging.portalteam.org/newfolder/${nwfile}`
+
+  
   const handleRequestRevision = () => {
     setRequest((prev) => !prev);
   };
@@ -182,7 +185,7 @@ const OrderSummaryCard = () => {
 
                   // Start download
                   const link = document.createElement("a");
-                  link.href = orderDetails.downloadFile;
+                  link.href = baseUrl;
                   link.download = ""; // optional, you can put custom filename here e.g. "order-file.pdf"
                   document.body.appendChild(link);
                   link.click();

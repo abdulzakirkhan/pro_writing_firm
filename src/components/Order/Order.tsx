@@ -9,9 +9,9 @@ const Order = ({ order }) => {
     : !downloadFiles
     ? 1
     : 0;
-const d =orders[0]?.downloadFiles
-const nwfile=order.orders[0]?.downloadFile
-// console.log("order :", order.orders[0]?.downloadFile)
+const nwfile=order.orders[0]?.downloadFile;
+
+const baseUrl=`https://staging.portalteam.org/newfolder/${nwfile}`
   return (
     <div
       className="bg-white rounded-xl flex flex-col gap-4 shadow px-5 pt-8 w-full h-[230px] relative overflow-hidden"
@@ -35,8 +35,7 @@ const nwfile=order.orders[0]?.downloadFile
           <button onClick={() => {
             // Start download
             const link = document.createElement("a");
-            link.href = nwfile;
-            console.log("downloadFiles",nwfile)
+            link.href = baseUrl;
             link.download = ""; // optional, you can put custom filename here e.g. "order-file.pdf"
             document.body.appendChild(link);
             link.click();

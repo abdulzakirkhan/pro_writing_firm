@@ -411,7 +411,7 @@ export const agentApi = api.injectEndpoints({
         formData.append('pendingorderid', data?.orderId);
         formData.append('agentid', data?.agetID);
         return {
-          url: `/move_pending_orders`,
+          url: `/Agent_api/move_pending_orders_to_actual`,
           method: 'POST',
           body: formData,
         };
