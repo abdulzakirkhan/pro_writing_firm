@@ -223,7 +223,7 @@ export default function Home() {
 
   if(topClientsDataLoading || showBlinkerLoading || performaceDataLoading || agentCostLoading || agentCreditLimitLoading){
     return(
-      <div className="w-full h-[80vh]">
+      <div className="w-full md:h-[80vh]">
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
         </div>
