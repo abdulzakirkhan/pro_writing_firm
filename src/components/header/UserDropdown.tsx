@@ -1,8 +1,10 @@
 import { useSelector } from "react-redux";
+import { useGetProfileQuery } from "../../redux/profileApi/profileApi";
 
 
 export default function UserDropdown() {
   const user = useSelector((state) => state.auth?.user);
+  const { data: profileData } = useGetProfileQuery(user?.agent_user_id);
   return (
     <div className="relative">
       <div
@@ -12,7 +14,7 @@ export default function UserDropdown() {
           <img src="/images/user/owner.jpg" alt="User" />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">{user?.agent_name}</span>
+        <span className="block mr-1 font-medium text-theme-sm">{profileData?.name}</span>
        
       </div>
     </div>

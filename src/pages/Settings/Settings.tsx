@@ -3,17 +3,28 @@ import { useTitle } from "../../context/TitleContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { LuEyeClosed } from "react-icons/lu";
 import * as Yup from "yup";
-import { useSelector } from "react-redux";
-import { useChangePasswordMutation } from "../../redux/profileApi/profileApi";
-import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  useChangePasswordMutation,
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+} from "../../redux/profileApi/profileApi";
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import { ChangeUser } from "../../redux/auth/authSlice";
 export default function Settings() {
   const user = useSelector((state) => state.auth?.user);
+  const { data: profileData } = useGetProfileQuery(user?.agent_user_id);
   const { setTitle } = useTitle();
   const [activeTab, setActiveTab] = useState("profile");
-  const [changePassword, { isLoading: changePasswordLoading }] =useChangePasswordMutation();
+  const [changePassword, { isLoading: changePasswordLoading }] =
+    useChangePasswordMutation();
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [updateProfile, { isLoading: updateProfileLoading }] =
+    useUpdateProfileMutation();
   const tabClass = (tab: string) =>
     `cursor-pointer text-sm font-medium px-4 pb-2 ${
       activeTab === tab
@@ -41,6 +52,14 @@ export default function Settings() {
     { group: "Orders", options: ["Metrics", "Pie Chart"] },
     { group: "Clients", options: ["Graphs", "Pie Chart"] },
   ];
+  useEffect(() => {
+    if (profileData?.name) {
+      setName(profileData?.name);
+      setEmail(profileData?.email);
+    }
+  }, [profileData]);
+  const dispatch = useDispatch();
+
   const ProfileTab = () => (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -50,8 +69,8 @@ export default function Settings() {
             className="w-16 h-16 rounded-full"
           />
           <div>
-            <p className="font-bold text-lg">{user?.agent_name}</p>
-            <p className="text-sm text-gray-500">{user?.agent_email}</p>
+            <p className="font-bold text-lg">{profileData?.name}</p>
+            <p className="text-sm text-gray-500">{profileData?.email}</p>
           </div>
         </div>
         {/* <button type="submit" className="bg-[#13A09D] text-white px-4 py-1 rounded">
@@ -60,121 +79,93 @@ export default function Settings() {
       </div>
       <Formik
         initialValues={{
-          name: user?.agent_name || "",
-          email: user?.agent_email || "",
-          phone: "",
-          password: "",
+          name: profileData?.name || "",
+          email: email || "",
+          phone: profileData?.number || "",
         }}
-        validationSchema={Yup.object({
-          name: Yup.string().required("Last name is required"),
-          email: Yup.string()
-            .email("Invalid email address")
-            .required("Email is required"),
-          phone: Yup.string().required("Phone number is required"),
-          password: Yup.string().required("Password is required"),
-        })}
-        onSubmit={(values) => {
-          console.log("Form values:", values);
+        onSubmit={async(values) => {
+          console.log("Submitting", values);
+          // Call your submit handler
+          const formData = new FormData();
+          formData.append("clientid", user?.agent_user_id);
+          if (name) formData.append("name", values.name);
+          // if (email) formData.append('email', email);
+          // if (profileImage?.uri)
+          //   formData.append('imageof', {
+          //     uri: data?.profileImage.uri,
+          //     type: data?.profileImage.type,
+          //     name: data?.profileImage.fileName,
+          //   });
+
+          const res = await updateProfile(formData);
+          if (res?.data) {
+            toast.success("Profile Updated Successfully.");
+            dispatch(ChangeUser({ ...user, clientname: name }));
+          }
+          if (res?.error) toast.success("Something went wrong.");
         }}
       >
-        <Form className="grid grid-cols-1 gap-4 relative text-sm">
-          <div className="mb-2 flex flex-col gap-2">
-            <label
-              htmlFor="name"
-              className="!text-[#6D6D6D] text-lg font-semibold"
-            >
-              Name
-            </label>
-            <Field
-              name="name"
-              type="text"
-              className="border rounded p-3 col-span-1"
-            />
-            <ErrorMessage
-              name="name"
-              component="div"
-              className="text-red-500 text-xs"
-            />
-          </div>
+        {({ handleBlur }) => (
+          <Form className="grid grid-cols-1 gap-4 relative text-sm">
+            <div className="mb-2 flex flex-col gap-2">
+              <label
+                htmlFor="name"
+                className="!text-[#6D6D6D] text-lg font-semibold"
+              >
+                Name
+              </label>
+              <Field
+                name="name"
+                placeholder="Name"
+                onBlur={handleBlur}
+                className="border rounded p-3 col-span-1"
+              />
+            </div>
 
-          <div className="mb-2 lg:col-span-2 flex flex-col gap-2">
-            <label
-              htmlFor="email"
-              className="!text-[#6D6D6D] text-lg font-semibold"
-            >
-              Email
-            </label>
-            <Field
-              name="email"
-              type="email"
-              className="border rounded p-3 col-span-2"
-              placeholder="Email"
-              readOnly
-            />
-            <ErrorMessage
-              name="email"
-              component="div"
-              className="text-red-500 text-xs"
-            />
-          </div>
+            <div className="mb-2 lg:col-span-2 flex flex-col gap-2">
+              <label
+                htmlFor="email"
+                className="!text-[#6D6D6D] text-lg font-semibold"
+              >
+                Email
+              </label>
+              <Field
+                name="email"
+                type="email"
+                readOnly
+                className="border rounded p-3 col-span-2"
+                placeholder="Email"
+              />
+            </div>
 
-          <div className="mb-2 lg:col-span-2 flex flex-col gap-2">
-            <label
-              htmlFor="phone"
-              className="!text-[#6D6D6D] text-lg font-semibold"
-            >
-              Phone No
-            </label>
-            <Field
-              name="phone"
-              type="tel"
-              className="border rounded p-3 col-span-2"
-              placeholder="Phone No"
-            />
-            <ErrorMessage
-              name="phone"
-              component="div"
-              className="text-red-500 text-xs"
-            />
-          </div>
+            <div className="mb-2 lg:col-span-2 flex flex-col gap-2">
+              <label
+                htmlFor="phone"
+                className="!text-[#6D6D6D] text-lg font-semibold"
+              >
+                Phone No
+              </label>
+              <Field
+                name="phone"
+                type="tel"
+                readOnly
+                className="border rounded p-3 col-span-2"
+                placeholder="Phone No"
+              />
+            </div>
 
-          <div className="mb-2 lg:col-span-2 flex flex-col gap-2 relative">
-            <label
-              htmlFor="password"
-              className="!text-[#6D6D6D] text-lg font-semibold"
-            >
-              Password
-            </label>
-
-            <Field
-              name="password"
-              type={`${showPassword ? "text" : "password"}`}
-              className="border rounded p-3 col-span-2"
-              placeholder="Password"
-            />
-
-            <LuEyeClosed
-              onClick={() => setShowPassword(!showPassword)}
-              size={30}
-              className="text-[#6D6D6D] cursor-pointer absolute top-11 end-4"
-            />
-            <ErrorMessage
-              name="password"
-              component="div"
-              className="text-red-500 text-xs"
-            />
-          </div>
-
-          {/* <div className="lg:col-span-2 ">
-            <button
-              type="submit"
-              className="bg-[#13A09D] !absolute -top-20 !end-0 text-white px-4 py-1 rounded-lg w-[69px] h-[34px]"
-            >
-              Edit
-            </button>
-          </div> */}
-        </Form>
+            <div className="lg:col-span-2 text-center">
+              <button
+                type="submit"
+                className="bg-[#13A09D] text-white px-4 py-1 w-1/3 rounded-lg h-[34px]"
+              >
+                Update
+              </button>
+            </div>
+          </Form>
+        )}
       </Formik>
+      <Toaster position="top-right" />
     </div>
   );
   const NotificationsTab = () => {
@@ -234,14 +225,13 @@ export default function Settings() {
     </div>
   );
 
-  const UpdatePassword= () =>{
-    const [showEye, setShowEye] = useState(false)
-    const [showNewPassword, setShowNewPassword] = useState(false)
-    const [confirmNewPassword, setConfirmNewPassword] = useState(false)
-    const navigate =useNavigate()
+  const UpdatePassword = () => {
+    const [showEye, setShowEye] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [confirmNewPassword, setConfirmNewPassword] = useState(false);
+    const navigate = useNavigate();
     const passwordSchema = Yup.object().shape({
-      oldPassword: Yup.string()
-        .required("Old Password is required"),
+      oldPassword: Yup.string().required("Old Password is required"),
       newPassword: Yup.string()
         .min(6, "New Password must be at least 6 characters")
         .required("New Password is required"),
@@ -249,126 +239,164 @@ export default function Settings() {
         .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
         .required("Confirm New Password is required"),
     });
-  
-    const handleSubmit =async (values) => {
+
+    const handleSubmit = async (values) => {
       try {
         const formData = new FormData();
-        formData.append('clientid',user?.agent_user_id);
-        formData.append('oldpassword', values?.oldPassword);
-        formData.append('newpassword', values?.newPassword);
-        formData.append('confirmpassword', values?.confirmNewPassword);
+        formData.append("clientid", user?.agent_user_id);
+        formData.append("oldpassword", values?.oldPassword);
+        formData.append("newpassword", values?.newPassword);
+        formData.append("confirmpassword", values?.confirmNewPassword);
 
         // console.log("VALUES.CONFIRMNEWPASSWORD",values.confirmNewPassword)
         // return
         const res = await changePassword(formData);
-  
+
         const { data: respData, error } = res || {};
-        if (respData?.result == 'Password Updated Successfully') {
-          toast.success(respData?.result || "SUCCEESS !")
+        if (respData?.result == "Password Updated Successfully") {
+          toast.success(respData?.result || "SUCCEESS !");
         } else {
-          toast.error(respData?.result)
+          toast.error(respData?.result);
         }
       } catch (error) {
-        toast.error("Something went wrong.")
+        toast.error("Something went wrong.");
       }
     };
-    const handleClick = () =>{
-      setShowEye(!showEye)
-    }
+    const handleClick = () => {
+      setShowEye(!showEye);
+    };
 
     const newPassword = () => {
-      setShowNewPassword(!showNewPassword)
-    }
+      setShowNewPassword(!showNewPassword);
+    };
     const confirmNewPasswordFunc = () => {
-      setConfirmNewPassword(!confirmNewPassword)
-    }
-    return(
+      setConfirmNewPassword(!confirmNewPassword);
+    };
+    return (
       <div className="max-w-md mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4">Update Password</h2>
-      
-      <Formik
-        initialValues={{
-          oldPassword: "",
-          newPassword: "",
-          confirmNewPassword: "",
-        }}
-        validationSchema={passwordSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isSubmitting }) => (
-          <Form className="space-y-4">
-            
-            <div>
-              <label className="block text-sm font-medium">Old Password</label>
-              <div className="relative">
-                <Field
-                  type={showEye ? "text" :"password"}
+        <h2 className="text-2xl font-semibold mb-4">Update Password</h2>
+
+        <Formik
+          initialValues={{
+            oldPassword: "",
+            newPassword: "",
+            confirmNewPassword: "",
+          }}
+          validationSchema={passwordSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting }) => (
+            <Form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium">
+                  Old Password
+                </label>
+                <div className="relative">
+                  <Field
+                    type={showEye ? "text" : "password"}
+                    name="oldPassword"
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  />
+                  {showEye ? (
+                    <IoEye
+                      onClick={handleClick}
+                      size={25}
+                      className="absolute top-2 cursor-pointer right-4"
+                    />
+                  ) : (
+                    <IoEyeOff
+                      onClick={handleClick}
+                      size={25}
+                      className="absolute top-2 cursor-pointer right-4"
+                    />
+                  )}
+                </div>
+                <ErrorMessage
                   name="oldPassword"
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
                 />
-                {showEye ?<IoEye onClick={handleClick} size={25} className="absolute top-2 cursor-pointer right-4" /> : <IoEyeOff onClick={handleClick} size={25} className="absolute top-2 cursor-pointer right-4" />}
               </div>
-              <ErrorMessage
-                name="oldPassword"
-                component="div"
-                className="text-red-500 text-sm mt-1"
-              />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium">New Password</label>
-              
-              <div className="relative">
-                <Field
-                  type={showNewPassword ? "text" : "password"}
+              <div>
+                <label className="block text-sm font-medium">
+                  New Password
+                </label>
+
+                <div className="relative">
+                  <Field
+                    type={showNewPassword ? "text" : "password"}
+                    name="newPassword"
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  />
+                  {showNewPassword ? (
+                    <IoEye
+                      onClick={newPassword}
+                      size={25}
+                      className="absolute top-2 cursor-pointer right-4"
+                    />
+                  ) : (
+                    <IoEyeOff
+                      onClick={newPassword}
+                      size={25}
+                      className="absolute top-2 cursor-pointer right-4"
+                    />
+                  )}
+                </div>
+                <ErrorMessage
                   name="newPassword"
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
                 />
-                {showNewPassword ?<IoEye onClick={newPassword} size={25} className="absolute top-2 cursor-pointer right-4" /> : <IoEyeOff onClick={newPassword} size={25} className="absolute top-2 cursor-pointer right-4" />}
               </div>
-              <ErrorMessage
-                name="newPassword"
-                component="div"
-                className="text-red-500 text-sm mt-1"
-              />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium">Confirm New Password</label>
-              <div className="relative">
-                <Field
-                  type={confirmNewPassword ? "text" : "password"}
+              <div>
+                <label className="block text-sm font-medium">
+                  Confirm New Password
+                </label>
+                <div className="relative">
+                  <Field
+                    type={confirmNewPassword ? "text" : "password"}
+                    name="confirmNewPassword"
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  />
+                  {confirmNewPassword ? (
+                    <IoEye
+                      onClick={confirmNewPasswordFunc}
+                      size={25}
+                      className="absolute top-2 cursor-pointer right-4"
+                    />
+                  ) : (
+                    <IoEyeOff
+                      onClick={confirmNewPasswordFunc}
+                      size={25}
+                      className="absolute top-2 cursor-pointer right-4"
+                    />
+                  )}
+                </div>
+                <ErrorMessage
                   name="confirmNewPassword"
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
                 />
-                {confirmNewPassword ?<IoEye onClick={confirmNewPasswordFunc} size={25} className="absolute top-2 cursor-pointer right-4" /> : <IoEyeOff onClick={confirmNewPasswordFunc} size={25} className="absolute top-2 cursor-pointer right-4" />}
               </div>
-              <ErrorMessage
-                name="confirmNewPassword"
-                component="div"
-                className="text-red-500 text-sm mt-1"
-              />
-            </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-[#13A09D] text-white py-2 rounded-md w-full"
-            >
-              {isSubmitting ? "Updating..." : "Update Password"}
-            </button>
-          </Form>
-        )}
-      </Formik>
-    </div>
-
-    )
-  }
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-[#13A09D] text-white py-2 rounded-md w-full"
+              >
+                {isSubmitting ? "Updating..." : "Update Password"}
+              </button>
+            </Form>
+          )}
+        </Formik>
+      </div>
+    );
+  };
   useEffect(() => {
     setTitle("Settings");
   }, [setTitle]);
-
-
 
   return (
     <>
