@@ -165,14 +165,14 @@ export default function Settings() {
             />
           </div>
 
-          <div className="lg:col-span-2 ">
+          {/* <div className="lg:col-span-2 ">
             <button
               type="submit"
               className="bg-[#13A09D] !absolute -top-20 !end-0 text-white px-4 py-1 rounded-lg w-[69px] h-[34px]"
             >
               Edit
             </button>
-          </div>
+          </div> */}
         </Form>
       </Formik>
     </div>

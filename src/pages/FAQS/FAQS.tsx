@@ -23,7 +23,7 @@ export default function FAQS() {
         ? "bg-gradient-to-r from-[#13A09D] to-[#0D7C7A] text-white shadow-lg" 
         : "text-gray-600 hover:bg-gray-50"
     }`;
-
+    
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Tabs */}
