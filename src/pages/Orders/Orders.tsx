@@ -10,10 +10,12 @@ import FilterSection from "../../components/filter/FilterSection";
 import PaymentCard from "../../components/PaymentCard/PaymentCard.js";
 import paymentIcon from "../../../icons/payment.png";
 import paymentsuccess from "../../assets/icons/paymentsuccess.png";
+import html2canvas from "html2canvas";
 import {
   useGetAgentOrdersDataMarksQuery,
   useGetAgentOrdersDataQuery,
   useGetAgentOrdersListBatchQuery,
+  useGetAgentUnpaidOrdersListBatchQuery,
   useGetPaperSubjectQuery,
   useGetTypeOfPaperQuery,
   useGetUniversityAndBatchesQuery,
@@ -22,11 +24,34 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import { useSelector } from "react-redux";
 import Loader from "../../components/Loader/Loader.js";
 import { getCurrency, getCurrencyNameFromPhone } from "../../config/indext.js";
-import { useAddWalletCardMutation, useGetAllCardsQuery, useGetWalletAmountQuery, useMakePaymentForOrdersMutation } from "../../redux/paymentApi/paymentApi.js";
-import { calculatePaymentFees, calculatePaymentVatFees, getConsumableAmounts, getFormattedPriceWith3 } from "../../helper/helper.js";
+import {
+  useAddCardMutation,
+  useAddWalletCardMutation,
+  useGetAllCardsQuery,
+  useGetAllClientCardsQuery,
+  useGetWalletAmountQuery,
+  useMakePaymentForOrdersMutation,
+} from "../../redux/paymentApi/paymentApi.js";
+import {
+  calculatePaymentFees,
+  calculatePaymentVatFees,
+  getConsumableAmounts,
+  getFormattedPriceWith3,
+  getIntOrderConsumableAmnts,
+} from "../../helper/helper.js";
 import toast, { Toaster } from "react-hot-toast";
-import { CardCvcElement, CardExpiryElement, CardNumberElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import {
+  CardCvcElement,
+  CardExpiryElement,
+  CardNumberElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
 import OrderList from "../OrderList/OrderList.js";
+import { useGetStandardValuesQuery } from "../../redux/sharedApi/sharedApi.js";
+import { useGetProfileQuery } from "../../redux/profileApi/profileApi.js";
+import { useGetRewardAmountsQuery } from "../../redux/rewardsApi/rewardsApi.js";
+import { useNavigate } from "react-router";
 
 interface Category {
   id: any;
@@ -45,23 +70,39 @@ export default function Orders() {
   const [categories, setCategories] = useState<Category[]>(
     TypeOfPaperData?.result?.Category_list || ["All"]
   );
+  const payload8 = {
+    agentId: user?.agent_user_id,
+  };
+  const {
+    data: agentUnpaidOrdersListBatch,
+    isLoading: agentUnpaidOrdersListBatchLoading,
+    error: agentUnpaidOrdersListBatchError,
+  } = useGetAgentUnpaidOrdersListBatchQuery(payload8);
+  const {
+    data: walletAmount,
+    isLoading: walletAmountLoading,
+    refetch: walletAmountRefech,
+  } = useGetWalletAmountQuery({
+    clientId: user?.agent_user_id,
+    currency: getCurrency(user?.currency),
+  });
 
-  const {data: walletAmount,isLoading: walletAmountLoading,refetch: walletAmountRefech,} = useGetWalletAmountQuery(
-    {
-      clientId: user?.agent_user_id,
-      currency: getCurrency(user?.currency),
-    });
+  // const availableBalance=walletAmount?.amount
+  const [availableBalance, setAvailableBalance] = useState(
+    walletAmount?.amount || 0
+  );
+  const rewardAmount = walletAmount?.rewardsamount;
+  const currency = walletAmount?.currency;
+  const rewardsamountpluswalletamount =
+    walletAmount?.rewardsamountpluswalletamount;
 
-    // const availableBalance=walletAmount?.amount
-    const [availableBalance, setAvailableBalance] = useState(walletAmount?.amount || 0); 
-    const rewardAmount=walletAmount?.rewardsamount
-    const currency=walletAmount?.currency
-    const rewardsamountpluswalletamount=walletAmount?.rewardsamountpluswalletamount
+  const batchesDataUnpaid =
+    agentUnpaidOrdersListBatch?.result?.batchesData || [];
 
-
-    const [makePaymentForOrders, { isLoading: makePaymentForOrdersLoading }] =
+  const [makePaymentForOrders, { isLoading: makePaymentForOrdersLoading }] =
     useMakePaymentForOrdersMutation();
-    const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+
   const firstCategory = categories[0].ordercategoryname || ["All"];
   // const categories = TypeOfPaperData?.result?.Category_list;
   const subjects = TypeOfPaperData?.result?.Type_of_paperlist || [];
@@ -76,7 +117,7 @@ export default function Orders() {
   const [selectedUniversity, setSelectedUniversity] = useState(["All"]);
   const [makePayment, setMakePayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(false);
-  const [isOrderedList, setIsOrderedList] = useState(false)
+  const [isOrderedList, setIsOrderedList] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [step, setStep] = useState(1);
   const [showUniversityDropdown, setShowUniversityDropdown] =
@@ -93,11 +134,12 @@ export default function Orders() {
   // } = useGetPaperSubjectQuery();
   // const [makePayment, { isLoading: makePaymentLoading }] =
   // useMakePaymentMutation();
+
   const {
-    data: getAllCards = { result: { result: {} } },
-    isLoading: allCardsLoading,
-    refetch: getAllCardsRefech,
-  } = useGetAllCardsQuery(user?.userid);
+    data: getAllClientCards = { result: { result: {} } },
+    isLoading: allClientCardsLoading,
+    refetch: getAllClientCardsRefech,
+  } = useGetAllClientCardsQuery(user?.agent_user_id);
   const [showSubjectDropdown, setShowSubjectDropdown] =
     useState<boolean>(false);
   const firstSubjectValue = subjects?.[0]?.value || ["All"];
@@ -109,7 +151,7 @@ export default function Orders() {
   ]);
   const [selectedCategoryList, setSelectedCategoryList] =
     useState<any[]>(firstCategory);
-   let payload = {
+  let payload = {
     agentId: user?.agent_user_id,
     university: selectedUniversity,
     batch: "All",
@@ -125,6 +167,12 @@ export default function Orders() {
     isLoading: agentOrdersDataMarksLoading,
     error: agentOrdersDataMarksError,
   } = useGetAgentOrdersDataMarksQuery(payload);
+
+  const { data: profileData } = useGetProfileQuery(user?.agent_user_id);
+  const { data: rewardAmounts } = useGetRewardAmountsQuery();
+
+  // console.log("getAllClientCards :",getAllClientCards)
+
   const academicLevels = TypeOfPaperData?.result?.Academic_level;
 
   const [showAcademicLevel, setShowAcademicLevel] = useState<boolean>(false);
@@ -237,53 +285,105 @@ export default function Orders() {
     },
   ];
 
-
-
   const newCardDAta = agentBatchOrderList?.result?.batchesData || [];
   const togglePaymentMethod = () => {
     setPaymentMethod(!paymentMethod);
   };
 
-  const consumableObj = getConsumableAmounts(
-    isChecked ? walletAmount?.amount : 0,
-    isChecked ? walletAmount?.rewardsamount : 0,
-    availableBalance
-  );
-
-
-  const totalWalletConsumableAmount = consumableObj.totalWalletConsumableAmount;
-  const cardConsumableAmount = consumableObj.cardConsumableAmount;
-  const acutalServiceFee = calculatePaymentFees(cardConsumableAmount);
-  const actualVatFee = calculatePaymentVatFees(cardConsumableAmount);
-
-
   const makePaymentHandle = () => {
     setMakePayment(!makePayment);
   };
-  const toggleSelect = (index: number) => {
+  const toggleSelect = (batchid: number) => {
     setSelectedOrders((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+      prev.includes(batchid)
+        ? prev.filter((i) => i !== batchid)
+        : [...prev, batchid]
     );
   };
-  const selectOrders = selectedOrders.map((index) => newCardDAta[index]);
 
-  const total = selectOrders.reduce((sum, order) => {
-    const price = Number(order?.price) || 0;
+  const selectOrders = selectedOrders.map((id) =>
+    batchesDataUnpaid.find((batch) => batch.batchid === id)
+  );
+  // const slorder=
+  const matchingBatches = batchesDataUnpaid.filter((batch) =>
+    selectedOrders.includes(batch.batchid)
+  );
+  const allOrders = matchingBatches.flatMap((batch) => batch.orders || []);
+  // console.log("allOrders :",allOrders)
+
+  const total = allOrders.reduce((sum, order) => {
+    const price = Number(order?.balaceamount) || 0;
     return sum + price;
   }, 0);
+  // console.log("total :",total)
+  const amnt = Number(walletAmount?.amount || 0);
+  const [withVat, setWithVat] = useState(true);
+    const [paymentType, setPaymentType] = useState("full"); // "full" or "partial"
+    const [partialAmount, setPartialAmount] = useState("");
+    const [partialInput, setPartialInput] = useState("");
+    const amountRef = useRef<HTMLInputElement | null>(null);
+
+
+    // const partialAmount=amountRef.current?.value
+  const consumableObj = getConsumableAmounts(
+    isChecked ? walletAmount?.amount : 0,
+    isChecked ? walletAmount?.rewardsamount : 0,
+    paymentType === "full" ? total : partialAmount,
+    withVat
+  );
+
+  const totalWalletConsumableAmount = consumableObj.totalWalletConsumableAmount;
+  const cardConsumableAmount = consumableObj.cardConsumableAmount;
+
+  const acutalServiceFee = calculatePaymentFees(cardConsumableAmount);
+  const actualVatFee = calculatePaymentVatFees(cardConsumableAmount);
+
+  const discountPercentage = 0;
+  const withVatConsumable = getIntOrderConsumableAmnts(
+    isChecked ? walletAmount?.amount : 0,
+    isChecked ? walletAmount?.rewardsamount : 0,
+    total,
+    discountPercentage,
+    true
+  );
+
+  const withoutVatConsumable = getIntOrderConsumableAmnts(
+    isChecked ? walletAmount?.amount : 0,
+    isChecked ? walletAmount?.rewardsamount : 0,
+    total,
+    discountPercentage,
+    false
+  );
+  // console.log("withVatConsumable :",withVatConsumable)
+  // console.log("withoutVatConsumable :",withoutVatConsumable)
+  const { serviceChargePercentage, vatFeePercentage } = useSelector(
+    (state) => state?.shared
+  );
+  const [Html, setHtml] = useState()
+  // console.log("batchesDataUnpaid",batchesDataUnpaid)
+  const serviceChargeFee = serviceChargePercentage;
+  const vatChargeFee = vatFeePercentage;
+
+  const { standardValues } = useGetStandardValuesQuery(user?.agent_user_id);
+  const STANDARD_VALUES = standardValues?.result?.[0];
+
   const fourPercent = Number((total * 0.04).toFixed(2));
   const vatPercent = Number((total * 0.2).toFixed(2));
-  const allCards = Array.isArray(getAllCards) ? getAllCards : [];
+  const allCards = Array.isArray(getAllClientCards) ? getAllClientCards : [];
   const [selectedId, setSelectedId] = useState();
-
+  // selectOrders[0]?.orders?.forEach((order) => {
+  //   console.log("Order Balance price :",order?.balaceamount)
+  // });
   const [selectedCard, setSelectedCard] = useState(null);
-  const [addCard, { isLoading: addCardLoading }] = useAddWalletCardMutation();
+  const [addCard, { isLoading: addCardLoading }] = useAddCardMutation();
   const [isAddWallet, setIsAddWallet] = useState(false);
+  const [paymentScreenshot, setPaymentScreenshot] = useState(null);
   const elements = useElements();
   const stripe = useStripe();
+  const [isLoadinPaying, setIsLoadinPaying] = useState(false)
   const handlePayment = async (onNext) => {
     try {
-      // setIsLoading(true);
+      // setIsLoadinPaying(true);
       const selectedCard = allCards?.find((card) => card?.id === selectedId);
       const stripeToken = selectedCard?.stripekey || allCards?.[0]?.stripekey;
       if (!stripeToken) {
@@ -293,31 +393,105 @@ export default function Orders() {
       }
 
       let totalAmount = 0;
+      let tableRows = "";
       const orderIds: string[] = [];
+      selectOrders[0]?.orders?.forEach((order, index) => {
+        orderIds.push(order?.id);
+         tableRows += `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${order?.id}</td>
+                    <td>${order?.price}</td>
+                  </tr>`;
 
-      selectOrders?.forEach((order) => {
-        totalAmount += Number(order.price);
-        orderIds.push(order?.order_id);
       });
+      
+        const tableHTML = `
+          <div id="payment-table" class="p-4 bg-white rounded-lg shadow-md mx-auto">
+            <table class="min-w-full table-auto border border-gray-200 rounded-md">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Sr No</th>
+                  <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Order ID</th>
+                  <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Price</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                ${tableRows}
+              </tbody>
+            </table>
+            <p class="mt-4 text-right font-semibold text-gray-800">
+              Remaining: ${paymentType == "partial" ? total - partialAmount : 0}
+            </p>
+          </div>
+        `; 
 
-      const formData = new FormData();
 
+        const tableParent = document.getElementById("table-Image")
+        tableParent.innerHTML = tableHTML;
+
+        // 2. Wait for rendering
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        const element=document.getElementById("table-Image")
+        const canvas = await html2canvas(element);
+
+        // 4. Convert canvas to blob
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+
+        if (!blob || blob.size < 100) {
+          console.error("Blob is empty or invalid — image likely failed.");
+          return;
+        }
+
+// 5. Create File and append to FormData
+
+    const file = new File([blob], "order_table.png", { type: "image/png" });
+    const formData = new FormData();
+    // console.log("Screenshot File created:", file);
+    formData.append("screenshot", file);
       formData.append("token", stripeToken);
       formData.append("agent_id", user?.agent_user_id);
       formData.append("currency", getCurrency(user?.currency));
       formData.append("amount", getFormattedPriceWith3(cardConsumableAmount));
-      formData.append("serviceCharges", getFormattedPriceWith3(acutalServiceFee));
-      formData.append("orderid", orderIds.join(",")); 
-      formData.append("rewardamount", getFormattedPriceWith3(consumableObj.rewardConsumableAmount));
-      formData.append("walletamount", getFormattedPriceWith3(consumableObj.walletConsumableAmount));
+      formData.append(
+        "serviceCharges",
+        getFormattedPriceWith3(acutalServiceFee)
+      );
+      formData.append("orderid", orderIds.join(","));
+      formData.append(
+        "rewardamount",
+        getFormattedPriceWith3(consumableObj.rewardConsumableAmount)
+      );
+      formData.append(
+        "walletamount",
+        getFormattedPriceWith3(consumableObj.walletConsumableAmount)
+      );
       formData.append("vat", getFormattedPriceWith3(actualVatFee));
-      formData.append("additionalAmount", getFormattedPriceWith3(consumableObj.additionalAmount));
-
+      formData.append(
+        "additionalAmount",
+        getFormattedPriceWith3(consumableObj.additionalAmount)
+      );
+      const objectPayload ={
+        "token": stripeToken,
+        "agent_id": user?.agent_user_id,
+        "currency": getCurrency(user?.currency),
+        "amount":getFormattedPriceWith3(cardConsumableAmount),
+        "serviceCharges":getFormattedPriceWith3(acutalServiceFee),
+        "orderid":orderIds.join(","),
+        "rewardamount":getFormattedPriceWith3(consumableObj.rewardConsumableAmount),
+        "walletamount":getFormattedPriceWith3(consumableObj.walletConsumableAmount),
+        "vat":getFormattedPriceWith3(actualVatFee),
+        "additionalAmount":getFormattedPriceWith3(consumableObj.additionalAmount),
+        "file":file
+      }
+      console.log("objectPayload :",objectPayload)
+      // return
       const { data: respData, error } = await makePaymentForOrders(formData);
 
       if (respData?.result === "Successfully Paid") {
         toast.success("Payment successful!");
-        onNext()
+        setIsLoadinPaying(false)
+        onNext();
         // navigate("/payment-success", {
         //   state: {
         //     serviceCharges: acutalServiceFee,
@@ -334,115 +508,63 @@ export default function Orders() {
         //     additionalAmount: getFormattedPriceWith3(consumableObj.additionalAmount),
         //   },
         // });
-
       } else {
         toast.error(respData?.result || "Payment failed.");
+        // setIsLoadinPaying(false)
       }
 
       if (error) {
+        // setIsLoadinPaying(false)
         toast.error("Something went wrong during payment.");
       }
     } catch (error) {
+      // setIsLoadinPaying(false)
       console.error("Payment Error:", error);
       toast.error("Payment failed. Please try again.");
     } finally {
-      console.log("object")
+      setSelectedOrders([])
+      setIsLoadinPaying(false)
     }
-  }
+  };
+
+  const navigate =useNavigate()
+  // console.log("getAllClientCards :",getAllClientCards)
+
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
+    // console.log("cardConsumableAmount :",cardConsumableAmount)
+    const [selectedMethod, setSelectedMethod] = useState<"bank" | "gateway">(
+      "gateway"
+    );
+
+    // const handleSelect = (method: "bank" | "gateway") => {
+    //   setSelectedMethod(method);
+    // };
     const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const checked = e.target.checked;
-      console.log("CHEKED",checked)
+      // console.log("CHEKED",checked)
       setIsChecked(checked);
-    
-      if (checked) {
-        setAvailableBalance(prev => prev - total);
-      } else {
-        setAvailableBalance(prev => prev + total);
-      }
+
+      // if (checked) {
+      //   setAvailableBalance((prev) => prev - total);
+      // } else {
+      //   setAvailableBalance((prev) => prev + total);
+      // }
     };
 
-
-    const handleAddWalletCard = async () => {
-      // console.log("object")
-      // if (!stripe || !elements) return;
-  
-      const cardElement = elements.getElement(CardNumberElement);
-      // if (!cardElement) return;
-      // console.log("object")
-      const { token, error } = await stripe.createToken(cardElement, {
-        name: "Card Holder", // optional
-      });
-      console.log("token",token)
-      // return
-      if (token) {
-        const res = await addCard({
-          clientid:user?.agent_user_id,
-          cardtype: token?.card?.brand,
-          Lastfourdigit: token?.card?.last4,
-          Stripekey: token?.id,
-        });
-    
-        const { data: respData, error } = res;
-        if (respData) {
-          if (respData?.result == 'Client Card Detail Added Successfully') {
-            console.log("object")
-            toast.success("Wallet Added Successfuly")
-            return true;
-          } else{
-            console.log("error")
-          }
-        }
-        // console.log("object")
-        // toast.success("Wallet Added Successfuly")
-        // onClick({
-        //   stripeToken: token.id,
-        //   cardDetails: token.card,
-        // });
-        // return
-        // setIsAddWallet(false);
-      } else if (error) {
-        console.error("Stripe Error:", error.message);
-      }
-      // return
+    // const [selectedMethod, setSelectedMethod] = useState(null); // "bank" or "gateway"
+    const handleSelect = (method) => {
+      setSelectedMethod(method);
+      // setPaymentType("full"); // Reset on change
+      // setPartialAmount("");
     };
 
-    const CardItem = ({ card , isSelected, onSelect}) => {
-      return (
-        <div onClick={() => onSelect(card)}
-        className={`w-full bg-gradient-to-br p-5 rounded-2xl shadow-lg cursor-pointer transition transform hover:scale-105
-          from-indigo-600 to-purple-600 text-white
-          ${isSelected ? "ring-4 ring-yellow-400" : ""}`}>
-        <div className="flex justify-between items-center mb-6">
-          <span className="uppercase tracking-widest text-sm font-semibold">Virtual Card</span>
-          <img
-            src={card.brand === "Mastercard"
-              ? "https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png"
-              : "https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png"}
-            alt={card.brand}
-            className="h-6"
-          />
-        </div>
-  
-        <div className="text-2xl font-mono tracking-widest mb-4">
-          •••• •••• •••• {card.last4}
-        </div>
-  
-        <div className="flex justify-between items-center text-sm font-medium">
-          <div>
-            <p className="uppercase text-xs text-gray-200">Card Holder</p>
-            <p>{card.cardholder || "Aliyan Hassan"}</p>
-          </div>
-          <div>
-            <p className="uppercase text-xs text-gray-200">Expires</p>
-            <p>{card.exp_month}/{card.exp_year}</p>
-          </div>
-        </div>
-      </div>
-      );
-    };
+    const handleNext = () => {
+      const value =Number(amountRef.current?.value)
+      setPartialAmount(value)
+      onNext()
+    }
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-12">
+      <div className="grid grid-cols-1 px-12">
         {/* Left Card */}
         <div className="w-full lg:col-span-7 bg-white rounded-xl p-6 shadow">
           <h2 className="text-center text-teal-700 font-semibold text-lg mb-6">
@@ -472,7 +594,12 @@ export default function Orders() {
               <div className="flex flex-col items-end">
                 {/* Toggle switch */}
                 <label className="inline-flex items-center cursor-pointer mt-1">
-                  <input checked={isChecked} type="checkbox" className="sr-only peer"  onChange={handleSwitchChange} />
+                  <input
+                    checked={isChecked}
+                    type="checkbox"
+                    className="sr-only peer"
+                    onChange={availableBalance > 0 ? handleSwitchChange : () => {}}
+                  />
                   <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-700 after:border-[#C6BCBC] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600 relative" />
                 </label>
               </div>
@@ -481,18 +608,360 @@ export default function Orders() {
               <span className="text-green-500 text-sm font-medium">
                 Available:
               </span>
-              <span className="text-green-600 font-semibold text-sm"> {currency} {availableBalance}</span>
+              <span className="text-green-600 font-semibold text-sm">
+                {" "}
+                {currency} {availableBalance}
+              </span>
             </div>
           </div>
 
           {/* Card form */}
-          <button
-          onClick={() => setIsAddWallet(true)}
-          className="w-full h-[48px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition my-2"
-        >
-          Add New Card
-        </button>
+          {/* <button
+            onClick={() => setIsAddWallet(true)}
+            className="w-full h-[48px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition my-2"
+          >
+            Add New Card
+          </button>
           {isAddWallet && (
+            <div className="">
+              <div className="mb-2">
+                <label className="block mb-1">Card Number</label>
+                <CardNumberElement className="border p-3 rounded w-full" />
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block mb-1">Expiry</label>
+                  <CardExpiryElement className="border p-3 rounded w-full" />
+                </div>
+                <div>
+                  <label className="block mb-1">CVC</label>
+                  <CardCvcElement className="border p-3 rounded w-full" />
+                </div>
+              </div>
+              <div className="text-center pt-2 pb-5">
+                <button
+                  onClick={handleAddWalletCard}
+                  className="h-[48px] w-[120px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-5">
+            {allCards.slice(-1).map((card, index) => (
+              <CardItem
+                card={card}
+                key={card.id || index}
+                isSelected={selectedCard?.id === card.id}
+                onSelect={setSelectedCard}
+              />
+            ))}
+          </div> */}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              // onClick={() => handleSelect("bank")}
+              className={`cursor-not-allowed border rounded-2xl p-6 shadow-md transition-all duration-300 ${
+                selectedMethod === "bank"
+                  ? "border-[#13A09D] bg-[#E6F8F7]"
+                  : "border-gray-300 bg-white"
+              }`}
+            >
+              <h3 className="text-lg font-semibold mb-2">Bank Transfer</h3>
+              <div className="flex justify-between items-center">
+                <span>Price :</span>
+                <span>{total.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Proceesing Fee :</span>
+                <span>04 %</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="line-through">Vat (20%):</span>
+                <span className="line-through">04 %</span>
+              </div>
+              {isChecked && (
+                <div className="flex text-red-500 justify-between items-center">
+                  <span className="">Wallet:</span>
+                  <span>
+                    -{currency} {availableBalance}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-end mt-2 items-center">
+                <span className="text-[#12A09D] font-semibold">
+                  Total {currency} {total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Gateway Card */}
+            <div
+              onClick={(e) => {
+                e.stopPropagation()
+                handleSelect("gateway");
+                setWithVat(true);
+              }}
+              className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
+                selectedMethod === "gateway"
+                  ? "border-[#13A09D] bg-[#E6F8F7]"
+                  : "border-gray-300 bg-white hover:border-[#13A09D]"
+              }`}
+            >
+              <h3 className="text-lg font-semibold mb-2">Payment Gateway</h3>
+              <div className="flex justify-between items-center">
+                <span>Price :</span>
+                <span>{total.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Proceesing Fee :</span>
+                <span>04 %</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="">Vat (20%):</span>
+                <span>04 %</span>
+              </div>
+              {isChecked && (
+                <div className="flex text-red-500 justify-between items-center">
+                  <span className="">Wallet:</span>
+                  <span>
+                    -{currency} {availableBalance}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-end mt-2 items-center">
+                <span className="text-[#12A09D] font-semibold">
+                  Total {currency} {total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+          {selectedMethod && (
+            <div className="mt-6 px-20">
+              {/* Tabs */}
+              <div className="flex gap-4 border-b border-gray-300 mb-4">
+                <button
+                  onClick={() => {
+                    if(paymentType !== "full"){
+                      setPaymentType("full")
+                    }
+                  }}
+                  className={`pb-2 font-semibold ${
+                    paymentType === "full"
+                      ? "border-b-2 border-[#13A09D] text-[#13A09D]"
+                      : "text-gray-600"
+                  }`}
+                >
+                  Full Payment
+                </button>
+                <button
+                  onClick={() => {
+                     if (paymentType !== "partial") {
+                        setPaymentType("partial");
+                      }
+                  }}
+                  className={`pb-2 font-semibold ${
+                    paymentType === "partial"
+                      ? "border-b-2 border-[#13A09D] text-[#13A09D]"
+                      : "text-gray-600"
+                  }`}
+                >
+                  Partial Payment
+                </button>
+              </div>
+
+              {/* Content Based on Tab */}
+              <div className="mt-4">
+                {paymentType === "partial" && (
+                  <div className="py-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Enter Amount
+                    </label>
+                    <input
+                    ref={amountRef}
+                      type="number"
+                      // min="0"
+                      className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#13A09D]"
+                      placeholder="Enter partial payment amount"
+                      // value={partialAmount}
+                    />
+                  </div>
+                )}
+                <div className="bg-gray-50 p-4 rounded-md shadow-sm">
+                  <h4 className="font-semibold text-gray-700 mb-2">
+                    Payment Summary
+                  </h4>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Price:</span>
+                    <span>
+                      {currency} {total.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Processing Fee (4%) :</span>
+                    <span>
+                      {currency} {fourPercent}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>VAT (20%):</span>
+                    <span>{currency} 4%</span>
+                  </div>
+                  {isChecked && (
+                    <>
+                      {paymentType == "partial" ? (
+                        <div className="flex justify-between items-center">
+                          <span className="text-red-500">Wallet:</span>
+                          {partialAmount > availableBalance &&
+                          paymentType == "partial" ? (
+                            <div className="text-[#12a09d]">
+                              <span>Payable Amount</span>{" "}
+                              <span>{partialAmount - availableBalance}</span>
+                            </div>
+                          ) : (
+                            <span className="text-red-500">
+                              -{currency} {Number(partialAmount) || 0}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex text-red-500 justify-between items-center">
+                          <span>Wallet:</span>
+                          <span>
+                            -{currency} {availableBalance}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <div className="flex justify-between text-base font-semibold text-[#13A09D] mt-2">
+                    <span>Payable Amount:</span>
+                    <span>
+                      {currency} {total.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="text-center">
+            <button
+              onClick={handleNext}
+              className="bg-teal-600 text-white px-12 rounded-md py-2 outline-none mt-4 hover:bg-teal-700 transition"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function OrderSummary({
+    onNext,
+    onBack,
+  }: {
+    onNext: () => void;
+    onBack: () => void;
+  }) {
+    const handleAddWalletCard = async () => {
+      // console.log("object")
+      // if (!stripe || !elements) return;
+
+      const cardElement = elements.getElement(CardNumberElement);
+      // if (!cardElement) return;
+      // console.log("object")
+      const { token, error } = await stripe.createToken(cardElement, {
+        name: "Card Holder", // optional
+      });
+      // console.log("token", token);
+      // return
+      if (token) {
+        const res = await addCard({
+          clientid: user?.agent_user_id,
+          cardtype: token?.card?.brand,
+          Lastfourdigit: token?.card?.last4,
+          Stripekey: token?.id,
+        });
+
+        const { data: respData, error } = res;
+        if (respData) {
+          if (respData?.result?.result == "Card Detail Added Successfully") {
+            toast.success("Card Detail Added Successfully");
+            return true;
+          }
+          console.log("object", respData);
+        }
+        // console.log("object")
+        // toast.success("Wallet Added Successfuly")
+        // onClick({
+        //   stripeToken: token.id,
+        //   cardDetails: token.card,
+        // });
+        // return
+        // setIsAddWallet(false);
+      } else if (error) {
+        console.error("Stripe Error:", error.message);
+      }
+      // return
+    };
+    const CardItem = ({ card, isSelected, onSelect }) => {
+      return (
+        <div
+          onClick={() => onSelect(card)}
+          className={`w-full bg-gradient-to-br p-5 rounded-2xl shadow-lg cursor-pointer transition transform hover:scale-105
+          from-indigo-600 to-purple-600 text-white
+          ${isSelected ? "ring-4 ring-yellow-400" : ""}`}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <span className="uppercase tracking-widest text-sm font-semibold">
+              Virtual Card
+            </span>
+            <img
+              src={
+                card.brand === "Mastercard"
+                  ? "https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png"
+                  : "https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png"
+              }
+              alt={card.brand}
+              className="h-6"
+            />
+          </div>
+
+          <div className="text-2xl font-mono tracking-widest mb-4">
+            •••• •••• •••• {card.last4}
+          </div>
+
+          <div className="flex justify-between items-center text-sm font-medium">
+            <div>
+              <p className="uppercase text-xs text-gray-200">Card Holder</p>
+              <p>{card.cardholder || "Aliyan Hassan"}</p>
+            </div>
+            <div>
+              <p className="uppercase text-xs text-gray-200">Expires</p>
+              <p>
+                {card.exp_month}/{card.exp_year}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    if(isLoadinPaying){
+      return(
+        <div className="e-full h-[70vh]">
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <>
+        <div className="mx-auto bg-white p-6 shadow rounded-xl w-full max-w-md">
           <div className="">
             <div className="mb-2">
               <label className="block mb-1">Card Number</label>
@@ -517,109 +986,38 @@ export default function Orders() {
               </button>
             </div>
           </div>
-        )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-5">
-          {allCards.slice(-1).map((card, index) => (
-            <CardItem
-              card={card}
-              key={card.id || index}
-              isSelected={selectedCard?.id === card.id}
-              onSelect={setSelectedCard}
-            />
-          ))}
-            </div>
-            <button
-              onClick={onNext}
-              className="bg-teal-600 text-white w-full py-2 outline-none mt-4 hover:bg-teal-700 transition"
-            >
-              Next
-            </button>
-        </div>
-
-        {/* Right Summary */}
-        <div className="w-full lg:col-span-5 h-[278px]  bg-white rounded-xl p-4 shadow">
-          <h3 className="text-md font-bold my-4 text-center text-2xl text-[#13A09D]">
-            Order Summary
-          </h3>
-          <div className="text-sm space-y-2">
-            <div className="flex justify-between">
-              <span className="text-[#6D6D6D] text-lg">Price:</span>
-              <span>{total}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#6D6D6D] text-lg">
-                Processing fee (4%):
-              </span>
-              <span>${fourPercent}</span>
-            </div>
-            <div className="flex justify-between line-through text-gray-400">
-              <span>VAT (20%):</span>
-              <span>${vatPercent}</span>
-            </div>
-            <hr />
-            <div className="flex text-[#13A09D] justify-between font-bold text-lg">
-              <span>Total:</span>
-              <span>{total + fourPercent}</span>
-            </div>
+          <div className="grid grid-cols-1 gap-6 py-5">
+            {allCards.map((card, index) => (
+              <CardItem
+                card={card}
+                key={card.id || index}
+                isSelected={selectedCard?.id === card.id}
+                onSelect={setSelectedCard}
+              />
+            ))}
           </div>
-        </div>
-      </div>
-    );
-  }
-  function OrderSummary({
-    onNext,
-    onBack,
-  }: {
-    onNext: () => void;
-    onBack: () => void;
-  }) {
-    return (
-      <>
-        <div className="mx-auto bg-white p-6 shadow rounded-xl w-full max-w-md">
-          <h3 className="text-lg font-semibold text-teal-700 mb-4">
-            Order Summary
-          </h3>
-          <div className="text-sm space-y-2">
-            <div className="flex justify-between">
-              <span className="text-[#6D6D6D] text-lg">Price:</span>
-              <span>${total}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#6D6D6D] text-lg">
-                Processing fee (4%):
-              </span>
-              <span>${fourPercent}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Wallet:</span>
-              <span className="text-red-600">- $100</span>
-            </div>
-            <hr />
-            <div className="flex border-b justify-between text-lg font-bold">
-              <span className="text-[#13A09D]">Total:</span>
-              <span className="text-[#13A09D]">${total + fourPercent}</span>
-            </div>
-            <div className="text-sm flex justify-between items-center text-gray-500 mt-2">
-              Payment Method: <span> **** **** **** 1234</span>
-            </div>
-          </div>
-        </div>
         <div className="flex justify-center mt-8">
           <button
-            onClick={() =>handlePayment(onNext)}
+            onClick={() => handlePayment(onNext)}
             className="bg-teal-600 text-white px-6 py-2 rounded"
           >
             Pay Now
           </button>
         </div>
+        </div>
+
+        <div className="mx-auto mt-5 bg-white p-6 shadow rounded-xl w-full" id="table-Image" style={{opacity:"-44"}}></div>
+
       </>
     );
   }
 
   function PaymentSuccess() {
     const backToOrders = () => {
+      setStep(1)
       setMakePayment(false);
       setPaymentMethod(false);
+      navigate("/orders")
     };
     return (
       <div className="flex justify-center">
@@ -653,12 +1051,10 @@ export default function Orders() {
     );
   };
 
-
-
   // const data=agentBatchOrderList?.result
   const handleClickSeeAll = () => {
-    setIsOrderedList(!isOrderedList)
-  }
+    setIsOrderedList(!isOrderedList);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -683,7 +1079,6 @@ export default function Orders() {
     setTitle("My Orders");
   }, [setTitle]);
 
-
   return (
     <>
       {makePayment || isOrderedList ? (
@@ -694,7 +1089,7 @@ export default function Orders() {
                 <div className="relative flex justify-between items-center mb-10 px-4">
                   {[
                     "Choose payment Method",
-                    "Order Summary",
+                    "Make Payment",
                     "Payment Successful",
                   ].map((label, index, arr) => {
                     const isActive = step > index;
@@ -773,19 +1168,20 @@ export default function Orders() {
                   onClick={togglePaymentMethod}
                   navigate={false}
                   btnTitle={"Make Payment"}
+                  selectedOrders={selectedOrders}
                 />
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-12">
-                {newCardDAta.map((order, index) => {
-                  const isSelected = selectedOrders.includes(index);
-                  // console.log("newCardDAta",newCardDAta)
+                {batchesDataUnpaid.map((order, index) => {
+                  const isSelected = selectedOrders.includes(order?.batchid);
+                  // console.log("order",order)
                   return (
                     <PaymentCard
                       key={index}
                       order={order}
+                      index={index}
                       onClick={toggleSelect}
                       isSelected={isSelected}
-                      index={index}
                     />
                   );
                 })}
@@ -802,7 +1198,9 @@ export default function Orders() {
                   <div
                     key={index}
                     className={`rounded-2xl w-full border-2 border-[#C6BCBC] bg-white p-5 md:p-3 ${
-                      index === 0 ? "lg:col-span-12 !px-10 mb-2" : "lg:col-span-6"
+                      index === 0
+                        ? "lg:col-span-12 !px-10 mb-2"
+                        : "lg:col-span-6"
                     }`}
                   >
                     <div className="flex justify-between items-center">
@@ -826,10 +1224,11 @@ export default function Orders() {
                       <div className="mt-4">
                         <div className="flex items-center gap-1">
                           {order.badge}
-                          <span
-                            className={`text-sm`}
-                          >
-                            {order.trend.percent} <span className="text-[#606060]">{order.trend.description}</span>
+                          <span className={`text-sm`}>
+                            {order.trend.percent}{" "}
+                            <span className="text-[#606060]">
+                              {order.trend.description}
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -840,18 +1239,23 @@ export default function Orders() {
             </div>
 
             <div className="col-span-12 lg:col-span-4 border-2 bg-white rounded-xl pb-6 shadow">
-              {agentCostLoading ? <Loader /> : <BarChartOne title="Orders" labels={labels} dataSet={data} />}
-              
+              {agentCostLoading ? (
+                <Loader />
+              ) : (
+                <BarChartOne title="Orders" labels={labels} dataSet={data} />
+              )}
             </div>
 
             <div className="col-span-12 lg:col-span-4 border-2 bg-white rounded-xl shadow">
-              {agentCostLoading ? <Loader /> : <BarChartOne
-                title="Marks"
-                labels={marksLabels}
-                dataSet={marksData}
-              />
-              }
-              
+              {agentCostLoading ? (
+                <Loader />
+              ) : (
+                <BarChartOne
+                  title="Marks"
+                  labels={marksLabels}
+                  dataSet={marksData}
+                />
+              )}
             </div>
           </div>
 
@@ -860,7 +1264,10 @@ export default function Orders() {
               {/* Left Side: Title + See All */}
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-black">Order List</h2>
-                <button onClick={handleClickSeeAll} className="text-[#13A09D] border-b border-[#13A09D] cursor-pointer">
+                <button
+                  onClick={handleClickSeeAll}
+                  className="text-[#13A09D] border-b border-[#13A09D] cursor-pointer"
+                >
                   See All
                 </button>
               </div>
@@ -991,9 +1398,9 @@ export default function Orders() {
                         </button>
                         {showCategory && (
                           <div className="border max-h-48 overflow-y-auto rounded p-2 mt-1 space-y-1 bg-white shadow">
-                            {categories.map((cat,index) => (
+                            {categories.map((cat, index) => (
                               <div
-                              key={`${cat.id}-${index}`}
+                                key={`${cat.id}-${index}`}
                                 className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
                                 onClick={() => {
                                   toggleCateg(cat);
@@ -1017,12 +1424,11 @@ export default function Orders() {
             {agentCostLoading ? (
               <div className="w-full col-span-12">
                 <Loader />
-
               </div>
             ) : (
-              newCardDAta.slice(0,3).map((card, idx) => (
-                <OrderCard key={idx} card={card} />
-              ))
+              newCardDAta
+                .slice(0, 3)
+                .map((card, idx) => <OrderCard key={idx} card={card} />)
             )}
           </div>
         </>

@@ -28,7 +28,7 @@ const TopUpModal = ({ onCancel, onClick ,handlePayment }: TopUpModalProps) => {
     cvc: "",
     expiry: "",
   });
-  const {data: getAllCards = { result: { result: {} } },isLoading: allCardsLoading,refetch: getAllCardsRefech,} = useGetAllCardsQuery(user?.userid);
+  const {data: getAllCards = { result: { result: {} } },isLoading: allCardsLoading,refetch: getAllCardsRefech,} = useGetAllCardsQuery(user?.agent_user_id);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -43,7 +43,6 @@ const TopUpModal = ({ onCancel, onClick ,handlePayment }: TopUpModalProps) => {
     const { token, error } = await stripe.createToken(cardElement, {
       name: "Card Holder", // optional
     });
-    console.log("token",token)
     // return
     if (token) {
       // console.log("object")
@@ -61,7 +60,7 @@ const TopUpModal = ({ onCancel, onClick ,handlePayment }: TopUpModalProps) => {
   };
   const allCards = Array.isArray(getAllCards) ? getAllCards : [];
 
-  console.log("allCards",allCards)
+  // console.log("getAllCards",getAllCards)
   const [selectedCard, setSelectedCard] = useState(null);
 
   const CardItem = ({ card , isSelected, onSelect}) => {

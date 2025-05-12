@@ -165,6 +165,36 @@ export const ordersApi = api.injectEndpoints({
         'AgentOrdersData'
       ],
     }),
+
+
+
+
+
+
+
+
+
+    uploadFileForFileReader: builder.mutation({
+      query: (body) => {
+        return {
+          url: `/upload_file_get_url`,
+          method: 'POST',
+          body,
+        };
+      },
+      
+    }),
+
+    uploadFileLinkForFileReader: builder.mutation({
+      query: (body) => {
+        return {
+          // url: `http://192.168.100.67:8000/extract`,
+          url: `http://20.196.31.116:8001/extract`,
+          method: 'POST',
+          body,
+        };
+      },
+    })
   }),
 });
 
@@ -183,5 +213,7 @@ export const {
   useGetDesclaimerQuery,
   useAddBannerInterestMutation,
   useAddFileDownloadedMutation,
-  useAgentInitiateOrderMutation
+  useAgentInitiateOrderMutation,
+  useUploadFileForFileReaderMutation,
+  useUploadFileLinkForFileReaderMutation,
 } = ordersApi;

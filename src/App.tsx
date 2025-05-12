@@ -20,6 +20,7 @@ import PublicRoute from "./PrivateRoute";
 import OrderInitiate from "./pages/OrderInitiate/OrderInitiate";
 import FAQS from "./pages/FAQS/FAQS";
 import PendingOrders from "./pages/PendingOrders/PendingOrders";
+import UnpaidOrders from "./pages/UnpaidOrders/UnpaidOrders";
 
 export default function App() {
   const user = useSelector((state) => state.auth?.user);
@@ -40,6 +41,7 @@ export default function App() {
             <Route index path="/" element={<Home />} />
 
             <Route path="/orders" element={<Orders />} />
+            {/* <Route path="/orders/:batchid" element={<UnpaidOrders />} /> */}
             <Route path="/my-pending-orders" element={<PendingOrders />} />
 
             {/* <Route path="/order-list" element={<OrderList  />} /> */}

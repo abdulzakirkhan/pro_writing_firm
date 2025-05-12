@@ -14,6 +14,7 @@ export default function ({
   title = "Order List",
   btnTitle,
   onClick,
+  selectedOrders
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -95,9 +96,9 @@ export default function ({
 
         {/* Right Side: Buttons + Search */}
         <div className="flex items-center flex-wrap gap-3">
-          <button
+          <button disabled={selectedOrders.length < 1}
             onClick={onClick}
-            className="bg-[#157BA7] text-white text-sm px-4 py-1.5 min-w-[96px] max-w-[150px] h-[39px] rounded"
+            className={`${selectedOrders.length > 0 ? "bg-[#157BA7]" : "bg-gray-400 cursor-not-allowed opacity-70 "} text-white text-sm px-4 py-1.5 min-w-[96px] max-w-[150px] h-[39px] rounded`}
           >
             {btnTitle}
           </button>

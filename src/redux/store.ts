@@ -3,13 +3,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, PersistConfig } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
-
+import shared from "./sharedSlice/sharedSlice"
 import authReducer from './auth/authSlice';
 import { api } from './service'; // RTK Query API slice
 
 // Combine all reducers into one rootReducer
 const rootReducer = combineReducers({
   auth: authReducer,
+  shared,
   [api.reducerPath]: api.reducer,
 });
 

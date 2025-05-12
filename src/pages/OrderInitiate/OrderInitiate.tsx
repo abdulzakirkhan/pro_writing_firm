@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetStandardValuesQuery } from "../../redux/sharedApi/sharedApi";
 import {
@@ -8,10 +8,14 @@ import {
   useGetAllPaperSubjectForOrdersQuery,
   useGetPaperTopicFromCourseQuery,
 } from "../../redux/agentdashboard/agentApi";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
 import * as Yup from "yup";
 import { CATEGORY_LEVELS } from "../../constants/apiUrls";
-import { useAgentInitiateOrderMutation } from "../../redux/ordersApi/ordersApi";
+import {
+  useAgentInitiateOrderMutation,
+  useUploadFileForFileReaderMutation,
+  useUploadFileLinkForFileReaderMutation,
+} from "../../redux/ordersApi/ordersApi";
 import { convertDateToYYYYMMDD } from "../../config/indext";
 import toast, { Toaster } from "react-hot-toast";
 import { IoMdArrowDropdown } from "react-icons/io";
@@ -31,20 +35,20 @@ interface FormValues {
   paperSubject: string;
 }
 
-const initialValues: FormValues = {
-  taskSheet: null,
-  additionalModule: null,
-  // client: "",
-  deadline: "",
-  wordCount: "",
-  // subject: "",
-  course: "",
-  papertopic: "",
-  batch: "",
-  category: "",
-  paperSubject: "",
-};
-const FILE_SIZE_LIMIT_MB = 10;
+// const initialValues: FormValues = {
+//   taskSheet: null,
+//   additionalModule: null,
+//   // client: "",
+//   deadline: "",
+//   wordCount: "",
+//   // subject: "",
+//   course: "",
+//   papertopic: "",
+//   batch: "",
+//   category: "",
+//   paperSubject: "",
+// };
+const FILE_SIZE_LIMIT_MB = 30;
 const SUPPORTED_FORMATS = [
   "application/pdf",
   "image/png",
@@ -56,9 +60,14 @@ const validationSchema = Yup.object({
   taskSheet: Yup.mixed()
     .required("Task sheet is required")
     .test("fileSize", "File too large", (value) => {
+      // If value is string (URL) → skip file size check
+      if (typeof value === "string") return true;
+  
       return value && value.size <= FILE_SIZE_LIMIT_MB * 1024 * 1024;
     })
     .test("fileFormat", "Unsupported file format", (value) => {
+      if (typeof value === "string") return true;
+  
       return value && SUPPORTED_FORMATS.includes(value.type);
     }),
 
@@ -88,6 +97,9 @@ export default function OrderInitiate() {
   const { data: standarValues } = useGetStandardValuesQuery(
     user?.agent_user_id
   );
+  const [apiParsedData, setApiParsedData] = useState(null);
+  const [uploadFileForFileReader, { isLoading:uploadFileForFileReaderLoading, error:oploadFileForFileReaderError }] = useUploadFileForFileReaderMutation();
+  const [uploadFileLinkForFileReader,{isLoading:uploadFileLinkForFileReaderLoading,error:uploadFileLinkForFileReaderError}] = useUploadFileLinkForFileReaderMutation();
 
   const [agentInitaiteOrder, { isLoading: agentInitaiateOrderLoading }] =
     useAgentInitiateOrderMutation();
@@ -108,29 +120,23 @@ export default function OrderInitiate() {
     isLoading: getAllPaperSubjectAndBatchesLoading,
     error: getAllPaperSubjectAndBatchesError,
   } = useGetAllPaperSubjectForOrdersQuery();
-  // console.log("standarValues", standarValues)
 
-  // console.log("agentCreditLimit", agentCreditLimit)
-  // console.log("getAllPaperSubjectAndBatches", getAllPaperSubjectAndBatches)
-
-  // const [selectedSubject, setSelectedSubject] = useState()
   const [selectedClient, setSelectedClient] = useState([]);
-  // const [selectedBatch, setSelectedBatch] = useState()
-  // const [selectedCategory, setSelectedCategory] = useState()
-  // const [selectedDeadline, setSelectedDeadline] = useState()
+
   const [selectedCourse, setSelectedCourse] = useState();
   const [fileName, setFileName] = useState();
   const [preview, setPreview] = useState<string | null>(null);
   const [taskSheetPre, setTaskSheetPre] = useState<string | null>(null);
   const [addintionalModule, setAdditionalModule] = useState();
+  const [fileReader, setFileReader] = useState(null)
   const {
     data: paperTopic,
     isLoading: paperTopicLoading,
     error: paperTopicError,
-  } = useGetPaperTopicFromCourseQuery(selectedCourse?.id);
+  } = useGetPaperTopicFromCourseQuery(selectedCourse?.id || selectedCourse);
   const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [selectedClientIds, setSelectedClientIds] = useState<number[]>([]);
-  // console.log("paperTopic", paperTopic)
+
   const {
     data: allAgentClients,
     isLoading: allAgentClientsLoading,
@@ -139,7 +145,6 @@ export default function OrderInitiate() {
 
   const courses = getAllCourses?.result || [];
   const dateInputRef = useRef<HTMLInputElement | null>(null);
-
   const clients = allAgentClients?.result || [];
   const paperTopics = paperTopic?.result || [];
   const subjectTopics = getAllPaperSubjectAndBatches?.paper_subject || [];
@@ -152,11 +157,131 @@ export default function OrderInitiate() {
     e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>
   ) => {
     e.stopPropagation();
-    e.preventDefault()
+    e.preventDefault();
     e.nativeEvent.stopImmediatePropagation();
     setFileName(null);
     setTaskSheetPre(null);
   };
+  // const { setFieldValue } = useFormikContext();
+  const [ptopic, setPtopic] = useState('');
+  const [courseApi, setCourseApi] = useState('');
+  const [wordCountApi, setWordCountApi] = useState('');
+  const [deadlineApi, setDeadlineApi] = useState('');
+  const [taskSheetApi, setTaskSheetApi] = useState('');
+ 
+  const sendAPI = async (res, type) => {
+    try {
+      // console.log('resposne', { res, type });
+      const formData = new FormData();
+
+      formData.append('file_link', res?.data?.file_url); // Replace with actual ID
+      formData.append('customer_id', '100');
+      formData.append('file_type', type);
+      setTaskSheetApi(res?.data?.file_url)
+      uploadFileLinkForFileReader(formData)
+        .unwrap()
+        .then((res) => {
+          const { word_count: wc, deadline, paper_topic } = res.data;
+          setPtopic(paper_topic)
+          setWordCountApi(wc);
+          setCourseApi('7')
+          const ndAp =convertDateToYYYYMMDD(deadline)
+          setDeadlineApi(ndAp)
+
+          // // …the rest stays the same
+          // setFileReaderPaperTopic(paper_topic);
+          // setFileReaderWordCount(wc);
+          // setValue('wordCount', wc);
+          const py={id: '7', label: 'General '}
+          setSelectedCourse(py);
+          // setValue('course', '7');
+        });
+    } catch (error) {
+      console.error('file parsing failed', error);
+    }
+  };
+
+const getFileType = (fileUrl: string): string | null => {
+  if (!fileUrl) return null; // no url? return null
+
+  const urlParts = fileUrl.split("?"); // remove any query params
+  const cleanUrl = urlParts[0];
+
+  const extensionMatch = cleanUrl.match(/\.([a-zA-Z0-9]+)$/); // extract extension
+
+  if (extensionMatch) {
+    return extensionMatch[1].toLowerCase(); // return extension like 'pdf', 'png'
+  }
+
+  return null; // no extension found
+};
+
+
+
+
+
+
+
+
+  useEffect(() => {
+    const uploadFile = async () => {
+      if (taskSheetPre) {
+        const formData = new FormData();
+        formData.append("filemsg", fileReader);
+        try {
+          const response = await uploadFileForFileReader(formData).then(
+             (response) =>{
+              // console.log(response.data)
+              const filetype= getFileType(response.data.file_url);
+              // console.log("filetype :",filetype)
+              sendAPI(response,filetype)
+             }
+          ).catch(
+            (error) =>{
+              console.log(error)
+            }
+          )
+          // console.log("Response :", response);
+          // const url=response?.file_url;
+
+          // if(response.status_code ===200){
+
+          // }
+
+        } catch (error) {
+          console.error("Upload error", error);
+        }
+      }
+    };
+  
+    uploadFile();
+  }, [taskSheetPre])
+  
+
+
+
+  const initialValues: FormValues = {
+    taskSheet: taskSheetApi,
+    additionalModule: null,
+    // client: "",
+    deadline: deadlineApi,
+    wordCount: wordCountApi,
+    // subject: "",
+    course: courseApi,
+    papertopic: ptopic,
+    batch: "",
+    category: "",
+    paperSubject: "",
+  };
+  if(uploadFileForFileReaderLoading || uploadFileLinkForFileReaderLoading){
+    return(
+      <div className="w-full md:h-[80vh]">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+        </div>
+      </div>
+    )
+  }
   return (
     <>
       <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -165,6 +290,7 @@ export default function OrderInitiate() {
         </h1>
 
         <Formik
+         enableReinitialize
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={async (values, actions) => {
@@ -286,6 +412,11 @@ export default function OrderInitiate() {
               setPreview(null);
               setTaskSheetPre(null);
               setSelectedClientIds([]);
+              setPtopic("")
+              setCourseApi("")
+              setWordCountApi("")
+              setDeadlineApi("")
+              setTaskSheetApi("")
             } catch (error) {
               console.error("Submission Error:", error);
               alert("An unexpected error occurred.");
@@ -306,14 +437,14 @@ export default function OrderInitiate() {
                         <input
                           type="file"
                           name="taskSheet"
-                          accept=".pdf,.docx,.jpg,.jpeg,.png"
+                          accept=".pdf,.docx,.jpg,.txt,.doc,.jpeg,.png"
                           className="sr-only"
                           onChange={(event) => {
                             event.stopPropagation();
-                            event.preventDefault()
+                            event.preventDefault();
                             const file = event.currentTarget.files?.[0] || null;
-                            // console.log("file", file)
-                            setFileName(file?.name);
+                            setFileName(file.name);
+                            setFileReader(file)
                             setTaskSheetPre(URL.createObjectURL(file));
                             setFieldValue("taskSheet", file);
                           }}
@@ -335,17 +466,18 @@ export default function OrderInitiate() {
                             />
                           </svg>
                         )}
-                        <p
-                          className="text-xs flex gap-3 items-center text-gray-500"
-                        >
-                          {fileName ? fileName :"PDF, DOCX up to 10MB"}
+                        <p className="text-xs flex gap-3 items-center text-gray-500">
+                          {fileName ? fileName : "PDF, DOCX up to 10MB"}
                         </p>
                       </div>
                       {fileName && (
-                        <RxCross2 size={30} className="text-red-500 absolute -top-5 -right-4 cursor-pointer" onClick={handleImageToggle} />
+                        <RxCross2
+                          size={30}
+                          className="text-red-500 absolute -top-5 -right-4 cursor-pointer"
+                          onClick={handleImageToggle}
+                        />
                       )}
                     </div>
-
                   </label>
                   <ErrorMessage
                     name="taskSheet"
@@ -399,15 +531,19 @@ export default function OrderInitiate() {
                             : "PDF, DOCX up to 10MB"}
                         </p>
                       </div>
-                    {addintionalModule && (
-                    <RxCross2 size={30} className="text-red-500 absolute -top-5 -right-5 cursor-pointer" onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault()
-                      e.nativeEvent.stopImmediatePropagation();
-                      setAdditionalModule(null);
-                      setPreview(null)
-                    }} />
-                    )}
+                      {addintionalModule && (
+                        <RxCross2
+                          size={30}
+                          className="text-red-500 absolute -top-5 -right-5 cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            e.nativeEvent.stopImmediatePropagation();
+                            setAdditionalModule(null);
+                            setPreview(null);
+                          }}
+                        />
+                      )}
                     </div>
                   </label>
                 </div>
@@ -497,12 +633,11 @@ export default function OrderInitiate() {
                     name="course"
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                       setFieldValue("course", e.target.value); // Set value in Formik
-                      console.log("COURSE", e.target.value);
                       const selectCourse = courses.find(
                         (course) => course.id === e.target.value
                       );
                       setSelectedCourse(selectCourse);
-                      // console.log("selectCourse",selectCourse)
+                      // console.log("selectCourse",selectCourse.id)
                     }}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
                   >
@@ -550,18 +685,25 @@ export default function OrderInitiate() {
                   <label className="block text-sm font-medium text-gray-700">
                     Paper Topics *
                   </label>
+                  {selectedCourse?.id === "7" ? <Field
+                    type="text"
+                    name="papertopic"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                    placeholder="Enter word count"
+                  />:
                   <Field
                     as="select"
                     name="papertopic"
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
                   >
-                    <option value="">Select Subject</option>
+                    <option value="">Select Topic</option>
                     {paperTopics.map((subject) => (
                       <option key={subject?.id} value={subject?.label}>
                         {subject?.label}
                       </option>
                     ))}
                   </Field>
+                  }
                   <ErrorMessage
                     name="papertopic"
                     component="div"

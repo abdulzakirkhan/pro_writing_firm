@@ -2,7 +2,6 @@ import { FaDownload } from "react-icons/fa";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { Link } from "react-router";
 const PaymentCard = ({ order, onClick, isSelected , index}) => {
-  // console.log("order",order)
   return (
     <div
       className={`${isSelected && order?.paymentStatus !== "Paid" ? "bg-[#ACD6D4]" :"bg-white"} ${order?.paymentStatus === "Paid" ? "cursor-not-allowed" :""} rounded-xl flex flex-col gap-4 shadow px-5 pt-8 w-full h-[210px] relative overflow-hidden`}
@@ -12,14 +11,14 @@ const PaymentCard = ({ order, onClick, isSelected , index}) => {
       <div>
         <div className="flex justify-between items-start">
           <h3 className="text-[#13A09D] text-xl font-bold mb-1">
-            {order?.batchName}
+            {order?.batchNo}
           </h3>
           <div className="absolute top-8 right-6">
             <label className="inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 checked={isSelected}
-                onChange={order.paymentStatus === "Paid" ? null : () => onClick(index)}
+                onChange={order.paymentStatus === "Paid" ? null : () => onClick(order?.batchid)}
                 className={`sr-only peer`}
               />
               <div className="w-5 h-5 rounded-full border border-gray-400 peer-checked:bg-teal-600 transition" />

@@ -165,4 +165,85 @@ const getColor = (isLightColor, param) => {
     );
   }
 };
-export { getConsumableAmounts, calculatePaymentFees, calculatePaymentVatFees,getFormattedPriceWith3,getLast12Months ,getColor};
+
+const getIntOrderConsumableAmnts = (
+  walletAmount = 0,
+  rewardAmount = 0,
+  orderAmount = 0,
+  discountPercent = 0, // Discount percentage based on initial order amount
+  isWithVat = false
+) => {
+ 
+  const storeValues = store?.getState();
+  const minimumCardAmount = Number(
+    storeValues?.shared?.minimumCardAmount ?? 0.6
+  );
+  const SERVICE_FEE_PERCENT = Number(
+    storeValues?.shared?.serviceChargePercentage ?? 4
+  );
+  const VAT_PERCENT = Number(
+    isWithVat ? storeValues?.shared?.vatFeePercentage ?? 20 : 0
+  );
+
+  let walletConsumableAmount = 0;
+  let rewardConsumableAmount = 0;
+  let totalWalletConsumableAmount = 0;
+  let cardConsumableAmount = 0;
+  let finalDiscountAmount = 0;
+  let actualServiceFee = 0;
+  let actualVatFee = 0;
+  let additionalAmount = 0;
+  
+
+  
+  // Apply discount directly to the order amount
+  finalDiscountAmount = (discountPercent / 100) * orderAmount;
+  orderAmount -= finalDiscountAmount;
+
+  // First, consume from rewards (high priority)
+  rewardConsumableAmount = Math.min(rewardAmount, orderAmount);
+  orderAmount -= rewardConsumableAmount;
+
+  // If order amount is still remaining, consume from wallet
+  if (orderAmount > 0) {
+    walletConsumableAmount = Math.min(walletAmount, orderAmount);
+    orderAmount -= walletConsumableAmount;
+  }
+
+  // Calculate total wallet consumable amount before card fees
+  totalWalletConsumableAmount = rewardConsumableAmount + walletConsumableAmount;
+
+  // Check if there is any remaining amount that needs to be covered by card
+  if (orderAmount > 0) {
+    cardConsumableAmount = orderAmount;
+
+    // Ensure card amount meets the minimumCardAmount
+    if (minimumCardAmount > 0 && cardConsumableAmount < minimumCardAmount) {
+      additionalAmount = minimumCardAmount - cardConsumableAmount;
+      cardConsumableAmount = minimumCardAmount;
+    }
+
+    // Recalculate service fee and VAT based on the adjusted card amount
+    actualServiceFee = (SERVICE_FEE_PERCENT / 100) * cardConsumableAmount;
+    actualVatFee = (VAT_PERCENT / 100) * cardConsumableAmount;
+
+    // Add service fee and VAT to card amount
+    cardConsumableAmount += actualServiceFee + actualVatFee;
+  } else {
+    // Recalculate total wallet consumable amount if no card amount is used
+    totalWalletConsumableAmount =
+      walletConsumableAmount + rewardConsumableAmount;
+  }
+
+  return {
+    walletConsumableAmount: Number(walletConsumableAmount) ?? 0,
+    rewardConsumableAmount: Number(rewardConsumableAmount) ?? 0,
+    totalWalletConsumableAmount: Number(totalWalletConsumableAmount) ?? 0,
+    cardConsumableAmount: Number(cardConsumableAmount) ?? 0,
+    finalDiscountAmount: Number(finalDiscountAmount) ?? 0,
+    actualServiceFee: Number(actualServiceFee) ?? 0,
+    actualVatFee: Number(actualVatFee) ?? 0,
+    additionalAmount: Number(additionalAmount) ?? 0,
+  };
+};
+export { getConsumableAmounts, getIntOrderConsumableAmnts,calculatePaymentFees, calculatePaymentVatFees,getFormattedPriceWith3,getLast12Months ,getColor};

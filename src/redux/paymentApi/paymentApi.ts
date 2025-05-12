@@ -7,6 +7,18 @@ export const paymentApi = api.injectEndpoints({
         const formData = new FormData();
         formData.append("clientid", clientId);
         return {
+          url: `/getclientcarddetailofwallets_agent`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      providesTags: ["PaymentCards"],
+    }),
+    getAllClientCards: builder.query({
+      query: (clientId) => {
+        const formData = new FormData();
+        formData.append("clientid", clientId);
+        return {
           url: `/getclientcarddetailof_agent`,
           method: "POST",
           body: formData,
@@ -204,6 +216,7 @@ export const paymentApi = api.injectEndpoints({
 
 export const {
   useGetAllCardsQuery,
+  useGetAllClientCardsQuery,
   useAddCardMutation,
   useGetpaymentHistryQuery,
   useMakePaymentForOrdersMutation,

@@ -179,11 +179,7 @@ export default function MyClients() {
   // console.log("agentClients",agentClients)
 
   const clientsData = agentClients?.result?.clientsListData || [];
-  const {
-    data: allAgentClients,
-    isLoading: allAgentClientsLoading,
-    error: allAgentClientsError,
-  } = useGetAllClientsForOrderQuery(user?.agent_user_id);
+
 
   const [selectedSubject, setSelectedSubject] = useState([]);
   const [selectedBatches, setSelectedBatches] = useState([]);
@@ -307,8 +303,21 @@ export default function MyClients() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   useEffect(() => {
-    setTitle("My Clients");
+    setTitle("My Students");
   }, [setTitle]);
+
+
+
+  if(agentPieChartLoading || getAllPaperSubjectAndBatchesLoading || barChartDataSubjectWiseLoading){
+    return (
+      <div className="w-full h-[80vh]">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+        </div>
+      </div>
+    )
+  }
+  
   return (
     <>
       {clientProfile ? (

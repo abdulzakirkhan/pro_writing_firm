@@ -423,6 +423,21 @@ export const agentApi = api.injectEndpoints({
         'creditLimitAgent',
       ],
     }),
+
+
+
+    getAgentUnpaidOrdersListBatch: builder.query({
+      query: (data) => {
+        const formData = new FormData();
+        formData.append('agent_id', data.agentId);
+        return {
+          url: `/get_batch_wise_order_list_unpaid_partialpaid`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      providesTags: ['AgentBatchOrdersUnPaid'],
+    }),
   }),
 });
 
@@ -459,5 +474,8 @@ export const {
 
   useGetAgentPendingOrdersQuery,
   useDeleteOrderMutation,
-  useMovePendingOrderMutation
+  useMovePendingOrderMutation,
+
+
+  useGetAgentUnpaidOrdersListBatchQuery
 } = agentApi;

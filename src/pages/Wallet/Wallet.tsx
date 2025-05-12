@@ -47,7 +47,7 @@ export default function Wallet() {
   const { setTitle } = useTitle();
   const [showModal, setShowModal] = useState(false)
   const user = useSelector((state) => state.auth?.user);
-  const {data: getAllCards = { result: { result: {} } },isLoading: allCardsLoading,refetch: getAllCardsRefech,} = useGetAllCardsQuery(user?.userid);
+  const {data: getAllCards = { result: { result: {} } },isLoading: allCardsLoading,refetch: getAllCardsRefech,} = useGetAllCardsQuery(user?.agent_user_id);
   const allCards = Array.isArray(getAllCards) ? getAllCards : [];
   const {data: walletAmount,isLoading: walletAmountLoading,refetch: walletAmountRefech,} = useGetWalletAmountQuery(
     {
@@ -62,9 +62,9 @@ export default function Wallet() {
 
   
   const handleAddCard = async (formData) => {
-    console.log("formData :" , formData)
     // console.log("formData :" , formData?.stripeToken)
     // return
+    console.log("Card :",formData)
     const res = await addCard({
       clientid:user?.agent_user_id,
       cardtype: formData?.cardDetails?.brand,
@@ -93,26 +93,24 @@ export default function Wallet() {
 
   const PAYMENT_ERROR = 'Stripe API Error: Your card was declined.';
   const handlePayment= async ({card,amount}) => {
-    // console.log("object",card)
+    console.log("object",card)
     // console.log("amount",amount)
     setSelectedId(card?.id)
+    // return
     try {
       const selectedCard = allCards?.find((card) => card?.id == selectedId);
-      // const payload={
-      //   currency:getCurrency(user?.currency) ,
-      //   amount:amount,
-      //   userId:user?.agent_user_id,
-      //   token:selectedCard?.stripekey,
-      //   viafrom:"stripe"
-      // }
+      // console.log("selectedCard :",selectedCard)
+      // return
+      const payload={
+        currency:getCurrency(user?.currency) ,
+        amount:amount,
+        userId:user?.agent_user_id,
+        token:selectedCard?.stripekey,
+        viafrom:"stripe"
+      }
       // console.log("payload :", payload)
-      const res = await makePayment({
-        currency: getCurrency(user?.currency),
-        amount: amount,
-        userId: user?.agent_user_id,
-        token: "tok_1RJB3XIDvqClqRenS3ZoHZNS",
-        viafrom: 'stripe',
-      });
+      // return
+      const res = await makePayment(payload);
 
 
       const { data: respData, error } = res || {};
