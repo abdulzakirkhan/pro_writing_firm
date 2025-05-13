@@ -80,7 +80,7 @@ export default function NotificationDropdown() {
 
             {/* Notifications List */}
             <ul className="space-y-3">
-              {notifications.map((notification) => (
+              {/* {notifications.map((notification) => (
                 <li
                   key={notification.id} onClick={() =>handleClick(notification?.id)}
                   className={`p-4 rounded-lg shadow-sm transition-colors ${
@@ -119,7 +119,49 @@ export default function NotificationDropdown() {
                     )}
                   </div>
                 </li>
-              ))}
+              ))} */}
+              {notifications.length === 0 ? (
+  <p className="text-center text-gray-500 py-4">No notifications</p>
+) : (
+  notifications.map((notification) => (
+    <li
+      key={notification.id}
+      onClick={() => handleClick(notification?.id)}
+      className={`p-4 rounded-lg shadow-sm transition-colors ${
+        notification.read_status === "0"
+          ? "bg-white border-l-4 border-blue-500 hover:bg-gray-50"
+          : "bg-gray-50"
+      }`}
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <p
+            className={`text-sm ${
+              notification.read_status === "0"
+                ? "font-medium text-gray-900"
+                : "text-gray-700"
+            }`}
+          >
+            {notification.message}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            {new Date(notification.utctime).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })}
+          </p>
+        </div>
+        {notification.read_status === "0" && (
+          <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
+        )}
+      </div>
+    </li>
+  ))
+)}
             </ul>
 
             {/* Close Button */}
