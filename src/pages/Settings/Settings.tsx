@@ -61,34 +61,29 @@ const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     const file = e.target.files[0];
     if (!file) return;
 
-   console.log("Uploading file:", file.name, file.type);
-  //  return
-    // ✅ Validate file type
   if (!allowedTypes.includes(file.type)) {
-    alert("Only JPG and PNG images are allowed.");
+    toast.error("Only JPG and PNG images are allowed.");
     return;
   }
       const formData = new FormData();
       formData.append('imageof', file);
       formData.append("clientid", user?.agent_user_id);
-      // return
     try {
     const response = await updateProfile(formData).unwrap();
-    console.log("RESPONSE :",response)
-    // Use image URL from server if available
-    if (response?.imageUrl) {
+    // console.log("response :",response)
+    if (response?.filepath) {
+      toast.success("Profile Image Updated Successfully !")
       setImage(response.imageUrl);
+      // toast.success("Updated Successfully !")
     } else {
       const reader = new FileReader();
       reader.onload = (event) => {
-        // setImage(event.target.result);
       };
       reader.readAsDataURL(file);
     }
 
   } catch (error) {
-    console.error("Upload failed:", error);
-    alert("Failed to upload profile image.");
+    toast.error("Failed to upload profile image.")
   }
   };
   useEffect(() => {
@@ -100,7 +95,6 @@ const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
   }, [profileData]);
   const dispatch = useDispatch();
 
-console.log("image :",image)
   const ProfileTab = () => (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -216,7 +210,6 @@ console.log("image :",image)
           </Form>
         )}
       </Formik>
-      <Toaster position="top-right" />
     </div>
   );
   const NotificationsTab = () => {
@@ -447,10 +440,13 @@ console.log("image :",image)
   };
   useEffect(() => {
     setTitle("Settings");
+    // toast.success("Loaded")
   }, [setTitle]);
 
   return (
     <>
+    <Toaster position="top-right" reverseOrder={false} />
+
       <div className="p-6">
         {/* Tab Header */}
         <div className="flex justify-center gap-6 mb-6">
