@@ -6,43 +6,6 @@ import { useSelector } from "react-redux";
 import { getCurrency } from "../../config/indext";
 import toast, { Toaster } from "react-hot-toast";
 
-const History = [
-  {
-    id: 1,
-    method: "**** **** **** 1234",
-    date: "12/01/2023",
-    time: "12:00:23",
-    amount: "$100",
-  },
-  {
-    id: 2,
-    method: "**** **** **** 1234",
-    date: "12/04/2024",
-    time: "16:20:00",
-    amount: "$900",
-  },
-  {
-    id: 3,
-    method: "**** **** **** 5678",
-    date: "20/11/2024",
-    time: "20:10:40",
-    amount: "$500",
-  },
-  {
-    id: 4,
-    method: "**** **** **** 5678",
-    date: "01/01/2025",
-    time: "20:10:40",
-    amount: "$1,000",
-  },
-  {
-    id: 5,
-    method: "**** **** **** 5678",
-    date: "01/01/2025",
-    time: "20:10:40",
-    amount: "$1,000",
-  },
-];
 export default function Wallet() {
   const { setTitle } = useTitle();
   const [showModal, setShowModal] = useState(false)
@@ -59,7 +22,6 @@ export default function Wallet() {
   const [addCard, { isLoading: addCardLoading }] = useAddWalletCardMutation();
   const [makePayment, { isLoading: makePaymentLoading }] = useMakeWalletPaymentMutation();
   const [selectedId, setSelectedId] = useState();
-
   
   const handleAddCard = async (formData) => {
     // console.log("formData :" , formData?.stripeToken)
@@ -167,7 +129,6 @@ export default function Wallet() {
     </div>
   )
   const oldHistory= paymentHistory || []
-  // console.log("oldHistory",oldHistory)
 
 
   const availableWallet= walletAmount?.amount || 0
@@ -209,13 +170,13 @@ export default function Wallet() {
                 </tr>
             </thead>
             <tbody className="text-gray-700">
-                {History.map((entry, index) => (
+                {oldHistory.map((entry, index) => (
                 <tr key={entry.id} className="border-b last:border-none">
                     <td className="py-2 min-w-[40px]">{index + 1}.</td>
-                    <td className="py-2 !min-w-[160px]">{entry.method}</td>
-                    <td className="py-2 !min-w-[160px]">{entry.date}</td>
-                    <td className="py-2 !min-w-[160px]">{entry.time}</td>
-                    <td className="py-2 !min-w-[160px] font-bold">{entry.amount}</td>
+                    <td className="py-2 !min-w-[160px]">{`${"*".repeat(entry?.transactionkey.length - 1)}${entry?.transactionkey.slice(-1)}`}</td>
+                    <td className="py-2 !min-w-[160px]">{entry?.addeddate}</td>
+                    <td className="py-2 !min-w-[160px]">{entry?.addedtime}</td>
+                    <td className="py-2 !min-w-[160px] font-bold">{entry?.amount}</td>
                 </tr>
                 ))}
             </tbody>
