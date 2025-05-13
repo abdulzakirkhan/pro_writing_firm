@@ -5,13 +5,14 @@ import { useGetProfileQuery } from "../../redux/profileApi/profileApi";
 export default function UserDropdown() {
   const user = useSelector((state) => state.auth?.user);
   const { data: profileData } = useGetProfileQuery(user?.agent_user_id);
+  console.log("profileData",profileData?.filepath)
   return (
     <div className="relative">
       <div
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src="/images/user/owner.jpg" alt="User" />
+          <img src={profileData?.filepath || ""} alt="User" />
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">{profileData?.name}</span>
