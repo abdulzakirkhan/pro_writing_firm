@@ -54,6 +54,7 @@ const SUPPORTED_FORMATS = [
   "image/png",
   "image/jpeg",
   "image/jpg",
+  "application/msword", 
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 const validationSchema = Yup.object({
@@ -219,9 +220,9 @@ const getFileType = (fileUrl: string): string | null => {
 
 
 
+// console.log("standardRates :",standarValues?.result[0]?.standardRates)
 
-
-
+// let nrw = standardRates?.[category];
 
   useEffect(() => {
     const uploadFile = async () => {
@@ -294,6 +295,7 @@ const getFileType = (fileUrl: string): string | null => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={async (values, actions) => {
+            // console.log("category",values)
             try {
               const {
                 wordCount,
@@ -306,6 +308,7 @@ const getFileType = (fileUrl: string): string | null => {
                 taskSheet,
                 additionalModule,
               } = values;
+              // console.log("category",values)
               const wordCountNum = parseInt(wordCount.toString(), 10);
               const clients = selectedClientIds;
               // console.log("clients",clients)
@@ -315,10 +318,10 @@ const getFileType = (fileUrl: string): string | null => {
                 const proceed = window.confirm(
                   "Without providing any additional module, results may be affected. Do you want to continue?"
                 );
-                if (!proceed) {
-                  actions.setSubmitting(false);
-                  return;
-                }
+                // if (!proceed) {
+                //   actions.setSubmitting(false);
+                //   return;
+                // }
               }
 
               const slabRanges = Object.keys(ratesSlabes || {});
@@ -326,7 +329,7 @@ const getFileType = (fileUrl: string): string | null => {
                 (a, b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0])
               );
 
-              let rate = standardRates?.[category];
+              let rate = standardRates[category];
 
               for (const range of slabRanges) {
                 const [start, end] = range.split("-").map(Number);
@@ -417,10 +420,12 @@ const getFileType = (fileUrl: string): string | null => {
               setWordCountApi("")
               setDeadlineApi("")
               setTaskSheetApi("")
+              setFileName("")
             } catch (error) {
               console.error("Submission Error:", error);
               alert("An unexpected error occurred.");
             } finally {
+              actions.resetForm()
               actions.setSubmitting(false);
             }
           }}
@@ -470,7 +475,7 @@ const getFileType = (fileUrl: string): string | null => {
                           {fileName ? fileName : "PDF, DOCX up to 10MB"}
                         </p>
                       </div>
-                      {fileName && (
+                      {taskSheetPre && (
                         <RxCross2
                           size={30}
                           className="text-red-500 absolute -top-5 -right-4 cursor-pointer"
