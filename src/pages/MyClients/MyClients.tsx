@@ -443,7 +443,7 @@ export default function MyClients() {
               <div className="w-full lg:col-span-4">
                 <div className="bg-white rounded-2xl h-full shadow-md p-6">
                   <h2 className="text-center text-gray-600 text-2xl font-medium mb-4">
-                    Client’s Profile
+                    Student's Profile
                   </h2>
 
                   {/* Avatar & Basic Info */}
