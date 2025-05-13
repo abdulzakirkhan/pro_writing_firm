@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTitle } from "../../context/TitleContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { LuEyeClosed } from "react-icons/lu";
@@ -16,15 +16,16 @@ import { ChangeUser } from "../../redux/auth/authSlice";
 export default function Settings() {
   const user = useSelector((state) => state.auth?.user);
   const { data: profileData } = useGetProfileQuery(user?.agent_user_id);
+   const [updateProfile, { isLoading: updateProfileLoading }] =useUpdateProfileMutation();
   const { setTitle } = useTitle();
   const [activeTab, setActiveTab] = useState("profile");
   const [changePassword, { isLoading: changePasswordLoading }] =
     useChangePasswordMutation();
   const [showPassword, setShowPassword] = useState(false);
+    const fileInputRef = useRef(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [updateProfile, { isLoading: updateProfileLoading }] =
-    useUpdateProfileMutation();
+  const [image, setImage] = useState(profileData?.filepath || "")
   const tabClass = (tab: string) =>
     `cursor-pointer text-sm font-medium px-4 pb-2 ${
       activeTab === tab
@@ -52,22 +53,72 @@ export default function Settings() {
     { group: "Orders", options: ["Metrics", "Pie Chart"] },
     { group: "Clients", options: ["Graphs", "Pie Chart"] },
   ];
+    const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const handleFileChange =async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+   console.log("Uploading file:", file.name, file.type);
+  //  return
+    // ✅ Validate file type
+  if (!allowedTypes.includes(file.type)) {
+    alert("Only JPG and PNG images are allowed.");
+    return;
+  }
+      const formData = new FormData();
+      formData.append('imageof', file);
+      formData.append("clientid", user?.agent_user_id);
+      // return
+    try {
+    const response = await updateProfile(formData).unwrap();
+    console.log("RESPONSE :",response)
+    // Use image URL from server if available
+    if (response?.imageUrl) {
+      setImage(response.imageUrl);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        // setImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+  } catch (error) {
+    console.error("Upload failed:", error);
+    alert("Failed to upload profile image.");
+  }
+  };
   useEffect(() => {
     if (profileData?.name) {
       setName(profileData?.name);
       setEmail(profileData?.email);
+      setImage(profileData?.filepath)
     }
   }, [profileData]);
   const dispatch = useDispatch();
 
+console.log("image :",image)
   const ProfileTab = () => (
     <div>
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
-          <img
-            src="https://randomuser.me/api/portraits/men/1.jpg"
-            className="w-16 h-16 rounded-full"
-          />
+          <div className="w-16 h-16 relative">
+            <img
+              src={image}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-full rounded-full object-cover"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
           <div>
             <p className="font-bold text-lg">{profileData?.name}</p>
             <p className="text-sm text-gray-500">{profileData?.email}</p>
