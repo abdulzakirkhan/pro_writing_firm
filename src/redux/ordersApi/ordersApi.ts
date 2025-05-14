@@ -194,7 +194,19 @@ export const ordersApi = api.injectEndpoints({
           body,
         };
       },
-    })
+    }),
+
+    getFilePreviewFromZip: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('orderid', body.orderid);
+        return {
+          url: `/get_file_url_for_preview`,
+          method: 'POST',
+          body:formData,
+        };
+      },
+    }),
   }),
 });
 
@@ -216,4 +228,5 @@ export const {
   useAgentInitiateOrderMutation,
   useUploadFileForFileReaderMutation,
   useUploadFileLinkForFileReaderMutation,
+  useGetFilePreviewFromZipMutation
 } = ordersApi;

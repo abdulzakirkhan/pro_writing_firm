@@ -6,7 +6,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 // import { isValidPhoneNumber } from 'react-phone-number-input';
 import { isValidPhoneNumber } from 'libphonenumber-js';
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useVerifySignupMutation } from "../../redux/auth/authApi";
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -55,7 +55,11 @@ export default function SignUpForm() {
         // console.log("formDataObj" , formDataObj)
         const signupRes= await verifySignup(formData);
         const { error, data: respData } = signupRes || {};
-        console.log("signupRes",signupRes)
+        if(error){
+          console.log(error?.data?.message)
+          toast.error(error?.data?.message)
+        }
+        // console.log("signupRes",signupRes)
         if (error){
           toast.error(error?.data?.message);
         }
@@ -71,6 +75,7 @@ export default function SignUpForm() {
   })
 
   return (
+    <>
     <div className="flex flex-col flex-1 lg:justify-center items-center -mt-6">
       <div className="w-[233px]">
         <img src="/images/logo/favicon.png" alt="Logo" className="w-full" />
@@ -229,5 +234,7 @@ export default function SignUpForm() {
         </div>
       </form>
     </div>
+    <Toaster position="top-right" reverseOrder={false} />
+    </>
   );
 }

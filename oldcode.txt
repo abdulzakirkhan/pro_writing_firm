@@ -1,119 +1,101 @@
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Tooltip,
-    Legend,
-  } from 'chart.js';
-  import { Bar } from 'react-chartjs-2';
-  
-  ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
-  
-  const subjectColors = {
-    OOP: '#0DA8D8',
-    'Data Structures': '#A3D79A',
-    Business: '#FBB343',
-    English: '#F76631',
-    'Essay writing': '#D33316',
-    Calculus: '#FCAE30',
-  };
-  
-  const OrderSubjectChart = () => {
-    const labels = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July'];
-  
-    const data = {
-      labels,
-      datasets: [
-        {
-          label: 'OOP',
-          data: [30, 0, 0, 40, 0, 20, 30],
-          backgroundColor: subjectColors.OOP,
-          stack: 'orders',
-        },
-        {
-          label: 'Data Structures',
-          data: [20, 10, 10, 15, 0, 10, 0],
-          backgroundColor: subjectColors['Data Structures'],
-          stack: 'orders',
-        },
-        {
-          label: 'Business',
-          data: [10, 10, 5, 10, 0, 5, 0],
-          backgroundColor: subjectColors.Business,
-          stack: 'orders',
-        },
-        {
-          label: 'English',
-          data: [5, 0, 5, 10, 20, 5, 0],
-          backgroundColor: subjectColors.English,
-          stack: 'orders',
-        },
-        {
-          label: 'Essay writing',
-          data: [10, 0, 5, 5, 0, 0, 0],
-          backgroundColor: subjectColors['Essay writing'],
-          stack: 'orders',
-        },
-        {
-          label: 'Calculus',
-          data: [4, 8, 5, 5, 0, 0, 0],
-          backgroundColor: subjectColors.Calculus,
-          stack: 'orders',
-        },
-      ],
-    };
-  
-    const options = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top' as const,
-          labels: {
-            boxWidth: 12,
-            boxHeight: 12,
-            font: { size: 12 },
-          },
-        },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}`,
-          },
-        },
-      },
-      scales: {
-        x: {
-          stacked: true,
-          grid: { display: false },
-          ticks: {
-            font: { size: 12 },
-            color: '#4B5563',
-          },
-        },
-        y: {
-          stacked: true,
-          beginAtZero: true,
-          max: 100,
-          ticks: {
-            stepSize: 20,
-            color: '#999',
-            font: { size: 12 },
-          },
-          grid: {
-            color: '#e5e5e5',
-          },
-        },
-      },
-    };
-  
-    return (
-      <div className="w-full h-[310px]">
-        <h2 className="text-md font-semibold mb-4">Orders</h2>
-        <Bar data={data} options={options} />
-      </div>
-    );
-  };
-  
-  export default OrderSubjectChart;
-  
+ console.log("location",location.pathname)
+          let tableRows = "";
+          const orderIds: string[] = [];
+          selectOrders[0]?.orders?.forEach((order, index) => {
+            orderIds.push(order?.id);
+            tableRows += `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${order?.id}</td>
+                    <td>${order?.price}</td>
+                  </tr>`;
+          });
+
+          const tableHTML = `
+          <div id="payment-table" class="p-4 bg-white rounded-lg shadow-md mx-auto">
+            <table class="min-w-full table-auto border border-gray-200 rounded-md">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Sr No</th>
+                  <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Order ID</th>
+                  <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Price</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                ${tableRows}
+              </tbody>
+            </table>
+            <p class="mt-4 text-right font-semibold text-gray-800">
+              Remaining: ${paymentType == "partial" ? total - partialAmount : 0}
+            </p>
+          </div>
+          `;
+
+          const tableParent = document.getElementById("table-Image");
+          tableParent.innerHTML = tableHTML;
+
+          // 2. Wait for rendering
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          const element = document.getElementById("table-Image");
+          const canvas = await html2canvas(element);
+
+          // 4. Convert canvas to blob
+          const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/png")
+          );
+
+          if (!blob || blob.size < 100) {
+            console.error("Blob is empty or invalid — image likely failed.");
+            return;
+          }
+
+          // 5. Create File and append to FormData
+
+          const file = new File([blob], "order_table.png", {
+            type: "image/png",
+          });
+          const formData = new FormData();
+            // console.log("Screenshot File created:", file);
+            formData.append("screenshot", file);
+            formData.append("token", token);
+            formData.append("agent_id", user?.agent_user_id);
+            formData.append("currency", getCurrency(user?.currency));
+            formData.append("amount", getFormattedPriceWith3(cardConsumableAmount));
+            formData.append(
+              "serviceCharges",
+              getFormattedPriceWith3(acutalServiceFee)
+            );
+            formData.append("orderid", orderIds.join(","));
+            formData.append(
+              "rewardamount",
+              getFormattedPriceWith3(consumableObj.rewardConsumableAmount)
+            );
+            formData.append(
+              "walletamount",
+              getFormattedPriceWith3(consumableObj.walletConsumableAmount)
+            );
+            formData.append("vat", getFormattedPriceWith3(actualVatFee));
+            formData.append(
+              "additionalAmount",
+              getFormattedPriceWith3(consumableObj.additionalAmount)
+            );
+
+            const res = await makeMeezanPayment(formData);
+
+            const { data: respData, error } = res || {};
+            if (respData) {
+            if (respData?.result == 'Successfully Paid') {
+              toast.success("Successfully Paid")
+              console.log("params")
+              setTimeout(() => {
+                navigate("/orders", { replace: true });
+              }, 2000); 
+              setStep(3); // optionally show success step
+            } else {
+              toast.error("Something went wrong.")
+            // navigation.navigate(navigationRoutes.ORDER_DETAILS);
+            }
+            if (error) {
+              toast.error("Something went wrong. Please try again.");
+            }
+          }

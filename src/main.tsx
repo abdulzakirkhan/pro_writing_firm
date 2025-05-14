@@ -18,7 +18,7 @@ createRoot(document.getElementById("root")!).render(
     <Provider store={store}>
       <ThemeProvider>
         <AppWrapper>
-        <Elements stripe={stripePromise}>
+        <Elements stripe={stripePromise}> 
           <App />
           </Elements>
         </AppWrapper>

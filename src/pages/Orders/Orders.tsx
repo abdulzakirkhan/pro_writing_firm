@@ -30,6 +30,8 @@ import {
   useGetAllCardsQuery,
   useGetAllClientCardsQuery,
   useGetWalletAmountQuery,
+  useMakeMeezanPamentLinkMutation,
+  useMakeMeezanPaymentMutation,
   useMakePaymentForOrdersMutation,
 } from "../../redux/paymentApi/paymentApi.js";
 import {
@@ -51,7 +53,7 @@ import OrderList from "../OrderList/OrderList.js";
 import { useGetStandardValuesQuery } from "../../redux/sharedApi/sharedApi.js";
 import { useGetProfileQuery } from "../../redux/profileApi/profileApi.js";
 import { useGetRewardAmountsQuery } from "../../redux/rewardsApi/rewardsApi.js";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 interface Category {
   id: any;
@@ -170,7 +172,7 @@ export default function Orders() {
 
   const { data: profileData } = useGetProfileQuery(user?.agent_user_id);
   const { data: rewardAmounts } = useGetRewardAmountsQuery();
-
+  const [makeMeezanPayment, { isLoading: makeMeezanPaymentLoading }] =useMakeMeezanPaymentMutation();
   // console.log("getAllClientCards :",getAllClientCards)
 
   const academicLevels = TypeOfPaperData?.result?.Academic_level;
@@ -318,13 +320,12 @@ export default function Orders() {
   // console.log("total :",total)
   const amnt = Number(walletAmount?.amount || 0);
   const [withVat, setWithVat] = useState(true);
-    const [paymentType, setPaymentType] = useState("full"); // "full" or "partial"
-    const [partialAmount, setPartialAmount] = useState("");
-    const [partialInput, setPartialInput] = useState("");
-    const amountRef = useRef<HTMLInputElement | null>(null);
+  const [paymentType, setPaymentType] = useState("full"); // "full" or "partial"
+  const [partialAmount, setPartialAmount] = useState("");
+  const [partialInput, setPartialInput] = useState("");
+  const amountRef = useRef<HTMLInputElement | null>(null);
 
-
-    // const partialAmount=amountRef.current?.value
+  // const partialAmount=amountRef.current?.value
   const consumableObj = getConsumableAmounts(
     isChecked ? walletAmount?.amount : 0,
     isChecked ? walletAmount?.rewardsamount : 0,
@@ -359,14 +360,15 @@ export default function Orders() {
   const { serviceChargePercentage, vatFeePercentage } = useSelector(
     (state) => state?.shared
   );
-  const [Html, setHtml] = useState()
+  const [Html, setHtml] = useState();
   // console.log("batchesDataUnpaid",batchesDataUnpaid)
   const serviceChargeFee = serviceChargePercentage;
   const vatChargeFee = vatFeePercentage;
 
   const { standardValues } = useGetStandardValuesQuery(user?.agent_user_id);
   const STANDARD_VALUES = standardValues?.result?.[0];
-
+  const [meezanPaymentLink, { isLoading: meezanPaymentLinkLoading }] =
+    useMakeMeezanPamentLinkMutation();
   const fourPercent = Number((total * 0.04).toFixed(2));
   const vatPercent = Number((total * 0.2).toFixed(2));
   const allCards = Array.isArray(getAllClientCards) ? getAllClientCards : [];
@@ -380,7 +382,7 @@ export default function Orders() {
   const [paymentScreenshot, setPaymentScreenshot] = useState(null);
   const elements = useElements();
   const stripe = useStripe();
-  const [isLoadinPaying, setIsLoadinPaying] = useState(false)
+  const [isLoadinPaying, setIsLoadinPaying] = useState(false);
   const handlePayment = async (onNext) => {
     try {
       // setIsLoadinPaying(true);
@@ -397,16 +399,15 @@ export default function Orders() {
       const orderIds: string[] = [];
       selectOrders[0]?.orders?.forEach((order, index) => {
         orderIds.push(order?.id);
-         tableRows += `
+        tableRows += `
                   <tr>
                     <td>${index + 1}</td>
                     <td>${order?.id}</td>
                     <td>${order?.price}</td>
                   </tr>`;
-
       });
-      
-        const tableHTML = `
+
+      const tableHTML = `
           <div id="payment-table" class="p-4 bg-white rounded-lg shadow-md mx-auto">
             <table class="min-w-full table-auto border border-gray-200 rounded-md">
               <thead class="bg-gray-100">
@@ -424,31 +425,32 @@ export default function Orders() {
               Remaining: ${paymentType == "partial" ? total - partialAmount : 0}
             </p>
           </div>
-        `; 
+        `;
 
+      const tableParent = document.getElementById("table-Image");
+      tableParent.innerHTML = tableHTML;
 
-        const tableParent = document.getElementById("table-Image")
-        tableParent.innerHTML = tableHTML;
+      // 2. Wait for rendering
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const element = document.getElementById("table-Image");
+      const canvas = await html2canvas(element);
 
-        // 2. Wait for rendering
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        const element=document.getElementById("table-Image")
-        const canvas = await html2canvas(element);
+      // 4. Convert canvas to blob
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/png")
+      );
 
-        // 4. Convert canvas to blob
-        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob || blob.size < 100) {
+        console.error("Blob is empty or invalid — image likely failed.");
+        return;
+      }
 
-        if (!blob || blob.size < 100) {
-          console.error("Blob is empty or invalid — image likely failed.");
-          return;
-        }
+      // 5. Create File and append to FormData
 
-// 5. Create File and append to FormData
-
-    const file = new File([blob], "order_table.png", { type: "image/png" });
-    const formData = new FormData();
-    // console.log("Screenshot File created:", file);
-    formData.append("screenshot", file);
+      const file = new File([blob], "order_table.png", { type: "image/png" });
+      const formData = new FormData();
+      // console.log("Screenshot File created:", file);
+      formData.append("screenshot", file);
       formData.append("token", stripeToken);
       formData.append("agent_id", user?.agent_user_id);
       formData.append("currency", getCurrency(user?.currency));
@@ -471,26 +473,12 @@ export default function Orders() {
         "additionalAmount",
         getFormattedPriceWith3(consumableObj.additionalAmount)
       );
-      const objectPayload ={
-        "token": stripeToken,
-        "agent_id": user?.agent_user_id,
-        "currency": getCurrency(user?.currency),
-        "amount":getFormattedPriceWith3(cardConsumableAmount),
-        "serviceCharges":getFormattedPriceWith3(acutalServiceFee),
-        "orderid":orderIds.join(","),
-        "rewardamount":getFormattedPriceWith3(consumableObj.rewardConsumableAmount),
-        "walletamount":getFormattedPriceWith3(consumableObj.walletConsumableAmount),
-        "vat":getFormattedPriceWith3(actualVatFee),
-        "additionalAmount":getFormattedPriceWith3(consumableObj.additionalAmount),
-        "file":file
-      }
-      console.log("objectPayload :",objectPayload)
       // return
       const { data: respData, error } = await makePaymentForOrders(formData);
 
       if (respData?.result === "Successfully Paid") {
         toast.success("Payment successful!");
-        setIsLoadinPaying(false)
+        setIsLoadinPaying(false);
         onNext();
         // navigate("/payment-success", {
         //   state: {
@@ -522,19 +510,19 @@ export default function Orders() {
       console.error("Payment Error:", error);
       toast.error("Payment failed. Please try again.");
     } finally {
-      setSelectedOrders([])
-      setIsLoadinPaying(false)
+      setSelectedOrders([]);
+      setIsLoadinPaying(false);
     }
   };
 
-  const navigate =useNavigate()
+  const navigate = useNavigate();
   // console.log("getAllClientCards :",getAllClientCards)
 
+  const [selectedMethod, setSelectedMethod] = useState<"bank" | "gateway">(
+    "bank"
+  );
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
     // console.log("cardConsumableAmount :",cardConsumableAmount)
-    const [selectedMethod, setSelectedMethod] = useState<"bank" | "gateway">(
-      "gateway"
-    );
 
     // const handleSelect = (method: "bank" | "gateway") => {
     //   setSelectedMethod(method);
@@ -557,12 +545,51 @@ export default function Orders() {
       // setPaymentType("full"); // Reset on change
       // setPartialAmount("");
     };
+    const isOnlyWalletAmountPayment =
+      consumableObj?.totalWalletConsumableAmount > 0 &&
+      consumableObj?.cardConsumableAmount == 0
+        ? true
+        : false;
+    const handleNext = async () => {
+      const value = Number(amountRef.current?.value);
+      setPartialAmount(value);
+      if (selectedMethod === "gateway") {
+        onNext();
+      } else {
+        const meezanLinkRes = await meezanPaymentLink({
+          amount: getFormattedPriceWith3(
+            Number(cardConsumableAmount) + Number(acutalServiceFee)
+          ),
+          currency: currency,
+        });
+        if (meezanLinkRes?.data?.link || isOnlyWalletAmountPayment) {
+          if (meezanLinkRes?.data?.link) {
+            window.location.href = meezanLinkRes.data.link;
+          } else {
+            toast.error("No payment link found.");
+          }
+        }
+      }
+    };
+    const navigate = useNavigate();
+    const location = useLocation();
+    useEffect(() => {
+      const meezanPaymentProccess = async () => {
+        const params = new URLSearchParams(location.search);
+        const status = params.get("status");
+        console.log("status",status)
+        const token = params.get("token"); 
+        if (status === "Receipt" || status === "Order Success") {
+         console.log("status",status)
+        } else if (status === "payment_declined") {
+          console.log("status",status)
+          toast.error("Payment failed or was declined.");
+          // optionally setStep(1) or take user back
+        }
+      };
+      meezanPaymentProccess()
+    }, [location.search]);
 
-    const handleNext = () => {
-      const value =Number(amountRef.current?.value)
-      setPartialAmount(value)
-      onNext()
-    }
     return (
       <div className="grid grid-cols-1 px-12">
         {/* Left Card */}
@@ -598,7 +625,9 @@ export default function Orders() {
                     checked={isChecked}
                     type="checkbox"
                     className="sr-only peer"
-                    onChange={availableBalance > 0 ? handleSwitchChange : () => {}}
+                    onChange={
+                      availableBalance > 0 ? handleSwitchChange : () => {}
+                    }
                   />
                   <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-700 after:border-[#C6BCBC] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600 relative" />
                 </label>
@@ -661,11 +690,11 @@ export default function Orders() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div
-              // onClick={() => handleSelect("bank")}
-              className={`cursor-not-allowed border rounded-2xl p-6 shadow-md transition-all duration-300 ${
+              onClick={() => handleSelect("bank")}
+              className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
                 selectedMethod === "bank"
                   ? "border-[#13A09D] bg-[#E6F8F7]"
-                  : "border-gray-300 bg-white"
+                  : "border-gray-300 bg-white hover:border-[#13A09D]"
               }`}
             >
               <h3 className="text-lg font-semibold mb-2">Bank Transfer</h3>
@@ -699,7 +728,7 @@ export default function Orders() {
             {/* Payment Gateway Card */}
             <div
               onClick={(e) => {
-                e.stopPropagation()
+                e.stopPropagation();
                 handleSelect("gateway");
                 setWithVat(true);
               }}
@@ -743,8 +772,8 @@ export default function Orders() {
               <div className="flex gap-4 border-b border-gray-300 mb-4">
                 <button
                   onClick={() => {
-                    if(paymentType !== "full"){
-                      setPaymentType("full")
+                    if (paymentType !== "full") {
+                      setPaymentType("full");
                     }
                   }}
                   className={`pb-2 font-semibold ${
@@ -757,9 +786,9 @@ export default function Orders() {
                 </button>
                 <button
                   onClick={() => {
-                     if (paymentType !== "partial") {
-                        setPaymentType("partial");
-                      }
+                    if (paymentType !== "partial") {
+                      setPaymentType("partial");
+                    }
                   }}
                   className={`pb-2 font-semibold ${
                     paymentType === "partial"
@@ -779,7 +808,7 @@ export default function Orders() {
                       Enter Amount
                     </label>
                     <input
-                    ref={amountRef}
+                      ref={amountRef}
                       type="number"
                       // min="0"
                       className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#13A09D]"
@@ -950,74 +979,85 @@ export default function Orders() {
       );
     };
 
-    if(isLoadinPaying){
-      return(
+    if (isLoadinPaying) {
+      return (
         <div className="e-full h-[70vh]">
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
           </div>
         </div>
-      )
+      );
     }
     return (
       <>
-        <div className="mx-auto bg-white p-6 shadow rounded-xl w-full max-w-md">
-          <div className="">
-            <div className="mb-2">
-              <label className="block mb-1">Card Number</label>
-              <CardNumberElement className="border p-3 rounded w-full" />
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block mb-1">Expiry</label>
-                <CardExpiryElement className="border p-3 rounded w-full" />
+        {selectedMethod !== "bank" && (
+          <div className="mx-auto bg-white p-6 shadow rounded-xl w-full max-w-md">
+            <div className="">
+              <div className="mb-2">
+                <label className="block mb-1">Card Number</label>
+                <CardNumberElement className="border p-3 rounded w-full" />
               </div>
-              <div>
-                <label className="block mb-1">CVC</label>
-                <CardCvcElement className="border p-3 rounded w-full" />
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block mb-1">Expiry</label>
+                  <CardExpiryElement className="border p-3 rounded w-full" />
+                </div>
+                <div>
+                  <label className="block mb-1">CVC</label>
+                  <CardCvcElement className="border p-3 rounded w-full" />
+                </div>
+              </div>
+              <div className="text-center pt-2 pb-5">
+                <button
+                  onClick={handleAddWalletCard}
+                  className="h-[48px] w-[120px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition"
+                >
+                  Add
+                </button>
               </div>
             </div>
-            <div className="text-center pt-2 pb-5">
+            <div className="grid grid-cols-1 gap-6 py-5">
+              {allCards.map((card, index) => (
+                <CardItem
+                  card={card}
+                  key={card.id || index}
+                  isSelected={selectedCard?.id === card.id}
+                  onSelect={setSelectedCard}
+                />
+              ))}
+            </div>
+            <div className="flex justify-center mt-8">
               <button
-                onClick={handleAddWalletCard}
-                className="h-[48px] w-[120px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition"
+                onClick={() => handlePayment(onNext)}
+                className="bg-teal-600 text-white px-6 py-2 rounded"
               >
-                Add
+                Pay Now
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-6 py-5">
-            {allCards.map((card, index) => (
-              <CardItem
-                card={card}
-                key={card.id || index}
-                isSelected={selectedCard?.id === card.id}
-                onSelect={setSelectedCard}
-              />
-            ))}
+        )}
+
+        {selectedMethod === "bank" && (
+          <div className="mx-auto bg-white p-6 shadow rounded-xl w-full max-w-md">
+            <h1>Bank</h1>
           </div>
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={() => handlePayment(onNext)}
-            className="bg-teal-600 text-white px-6 py-2 rounded"
-          >
-            Pay Now
-          </button>
-        </div>
-        </div>
+        )}
 
-        <div className="mx-auto mt-5 bg-white p-6 shadow rounded-xl w-full" id="table-Image" style={{opacity:"-44"}}></div>
-
+        <div
+          className="mx-auto mt-5 bg-white p-6 shadow rounded-xl w-full"
+          id="table-Image"
+          style={{ opacity: "-44" }}
+        ></div>
       </>
     );
   }
 
   function PaymentSuccess() {
     const backToOrders = () => {
-      setStep(1)
+      setStep(1);
       setMakePayment(false);
       setPaymentMethod(false);
-      navigate("/orders")
+      navigate("/orders");
     };
     return (
       <div className="flex justify-center">

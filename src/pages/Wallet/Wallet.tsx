@@ -37,7 +37,7 @@ export default function Wallet() {
     const { data: respData, error } = res;
     if (respData) {
       if (respData?.result == 'Client Card Detail Added Successfully') {
-        console.log("object")
+        toast.success("Client Card Detail Added Successfully'")
         return true;
       } else{
         console.log("error")
@@ -67,10 +67,10 @@ export default function Wallet() {
         currency:getCurrency(user?.currency) ,
         amount:amount,
         userId:user?.agent_user_id,
-        token:selectedCard?.stripekey,
+        token:card?.stripekey,
         viafrom:"stripe"
       }
-      // console.log("payload :", payload)
+      console.log("payload :", payload)
       // return
       const res = await makePayment(payload);
 
