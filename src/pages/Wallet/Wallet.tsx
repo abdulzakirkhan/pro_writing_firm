@@ -55,7 +55,7 @@ export default function Wallet() {
 
   const PAYMENT_ERROR = 'Stripe API Error: Your card was declined.';
   const handlePayment= async ({card,amount}) => {
-    console.log("object",card)
+    // console.log("object",card)
     // console.log("amount",amount)
     setSelectedId(card?.id)
     // return
@@ -70,7 +70,7 @@ export default function Wallet() {
         token:card?.stripekey,
         viafrom:"stripe"
       }
-      console.log("payload :", payload)
+  
       // return
       const res = await makePayment(payload);
 
