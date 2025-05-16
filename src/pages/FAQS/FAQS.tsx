@@ -24,6 +24,7 @@ export default function FAQS() {
         : "text-gray-600 hover:bg-gray-50"
     }`;
     
+    console.log("getFaqCategories :",getFaqCategories)
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Tabs */}
@@ -54,7 +55,7 @@ export default function FAQS() {
               <div key={i} className="h-20 bg-gray-100 rounded-xl"></div>
             ))}
           </div>
-        ) : getFaqQuestions?.length > 0 ? (
+        ) : getFaqCategories?.length > 0 && getFaqQuestions?.length > 0 ? (
           <ul className="space-y-4">
             {getFaqQuestions.map((q, idx) => (
               <li 
@@ -69,8 +70,8 @@ export default function FAQS() {
           </ul>
         ) : (
           <div className="text-center py-8">
-            <div className="text-gray-400 mb-4 text-4xl">📭</div>
-            <p className="text-gray-500">No questions found in this category</p>
+            {/* <div className="text-gray-400 mb-4 text-4xl">📭</div> */}
+            <p>No data found</p>
           </div>
         )}
       </div>

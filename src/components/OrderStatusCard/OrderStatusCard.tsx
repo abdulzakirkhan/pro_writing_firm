@@ -45,6 +45,8 @@ const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ card, data }) => {
     }
   }, [card?.paymentStatus,card?.downloadFile]);
 
+
+
   return (
     <Link
       to={`/order/${card.id}/order-summary`}
@@ -69,10 +71,10 @@ const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ card, data }) => {
           />
         </div>
         <p className="text-sm font-bold text-gray-700 mt-2">
-          {/* {isCompleted ? 'Completed' : isInProgress ? 'Inprogress' : 'Pending'} */}
+          {card?.orderStatus}
         </p>
       </div>
-
+      
       {/* Info Section */}
       <div className="flex-1 px-3">
         <p className="font-bold text-sm">{card.clientName}</p>
@@ -130,6 +132,10 @@ const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ card, data }) => {
         <p className="text-sm mt-2">
           Price:{" "}
           <span className="text-[#157BA7] font-semibold">${card.price}</span>
+        </p>
+        <p className="text-sm  font-semibold text-[#D33316] my-0 -mt-1">
+          Due:{" "}
+          <span className="">${Number(card?.balaceamount).toFixed(0)}</span>
         </p>
         <p className={`text-sm`}>
           Status:{" "}

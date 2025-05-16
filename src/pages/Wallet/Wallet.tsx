@@ -128,7 +128,7 @@ export default function Wallet() {
       </div>
     </div>
   )
-  const oldHistory= paymentHistory || []
+  const oldHistory=  []
 
 
   const availableWallet= walletAmount?.amount || 0
@@ -137,6 +137,9 @@ export default function Wallet() {
   useEffect(() => {
     setTitle("Wallet");
   }, [setTitle]);
+
+  console.log("oldHistory :",oldHistory)
+  
   return (
     <>
     <div className="p-6 space-y-6">
@@ -170,15 +173,25 @@ export default function Wallet() {
                 </tr>
             </thead>
             <tbody className="text-gray-700">
-                {oldHistory.map((entry, index) => (
-                <tr key={entry.id} className="border-b last:border-none">
-                    <td className="py-2 min-w-[40px]">{index + 1}.</td>
-                    <td className="py-2 !min-w-[160px]">{`${"*".repeat(entry?.transactionkey.length - 1)}${entry?.transactionkey.slice(-1)}`}</td>
-                    <td className="py-2 !min-w-[160px]">{entry?.addeddate}</td>
-                    <td className="py-2 !min-w-[160px]">{entry?.addedtime}</td>
-                    <td className="py-2 !min-w-[160px] font-bold">{entry?.amount}</td>
-                </tr>
-                ))}
+                {oldHistory.length > 0 ? (
+                    oldHistory.map((entry, index) => (
+                      <tr key={entry.id} className="border-b last:border-none">
+                        <td className="py-2 min-w-[40px]">{index + 1}.</td>
+                        <td className="py-2 !min-w-[160px]">
+                          {`${"*".repeat(entry?.transactionkey.length - 1)}${entry?.transactionkey.slice(-1)}`}
+                        </td>
+                        <td className="py-2 !min-w-[160px]">{entry?.addeddate}</td>
+                        <td className="py-2 !min-w-[160px]">{entry?.addedtime}</td>
+                        <td className="py-2 !min-w-[160px] font-bold">{entry?.amount}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="text-center text-gray-500 py-4">
+                        No Top-up history found.
+                      </td>
+                    </tr>
+                  )}
             </tbody>
             </table>
         </div>

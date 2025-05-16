@@ -52,22 +52,16 @@ export default function PendingOrders() {
       </div>
     );
 
-  if (error)
-    return (
-      <div className="text-center py-12">
-        <div className="text-red-500 mb-4 text-4xl">⚠️</div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Failed to load orders
-        </h2>
-        <p className="text-gray-600 mb-4">Please try refreshing the page</p>
-        <button
-          onClick={refetch}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Retry
-        </button>
-      </div>
-    );
+  // if (error)
+  //   console.log("Error :",error?.data?.message)
+  //   return (
+  //     <div className="text-center py-12">
+  //       {/* <div className="text-red-500 mb-4 text-4xl">⚠️</div> */}
+  //       <h2 className="text-xl font-semibold text-gray-800 mb-2">
+  //         {error?.data?.message}
+  //       </h2>
+  //     </div>
+  //   );
   //   const confirmDeleteOrder = async () => {
   //     try {
   //       let payload = {
@@ -121,10 +115,10 @@ export default function PendingOrders() {
 
         {pendingOrders.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-green-500 mb-4 text-6xl">🎉</div>
+            {/* <div className="text-green-500 mb-4 text-6xl">🎉</div>
             <h2 className="text-xl font-semibold text-gray-800 mb-2">
               All caught up!
-            </h2>
+            </h2> */}
             <p className="text-gray-600">No pending orders at the moment</p>
           </div>
         ) : (

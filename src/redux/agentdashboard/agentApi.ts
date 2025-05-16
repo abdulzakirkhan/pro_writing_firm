@@ -152,7 +152,7 @@ export const agentApi = api.injectEndpoints({
         formData.append('agent_id', data.agentId);
         formData.append('payment_status', data.selectedFilters);
         formData.append('type_of_paper', data.selectedSubject);
-        formData.append('categoty', data.selectedCategoryList);
+        formData.append('categoty', data.slectedCatId);
         return {
           url: `/get_batch_wise_order_list`,
           method: 'POST',

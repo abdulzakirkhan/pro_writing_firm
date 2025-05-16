@@ -56,13 +56,13 @@ export default function Settings() {
     const handleImageClick = () => {
     fileInputRef.current?.click();
   };
-const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+const allowedTypes = ['image/png'];
     const handleFileChange =async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
   if (!allowedTypes.includes(file.type)) {
-    toast.error("Only JPG and PNG images are allowed.");
+    toast.error("Only PNG images are allowed.");
     return;
   }
       const formData = new FormData();

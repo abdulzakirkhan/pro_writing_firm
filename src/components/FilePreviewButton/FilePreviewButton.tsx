@@ -1,11 +1,12 @@
-// FilePreviewButton.tsx — cleaned up for percentage-based preview using @react-pdf-viewer/core only
+// FilePreviewButton.tsx — improved layout for full-width PDF viewer
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { FaTimes, FaFileAlt } from "react-icons/fa";
 import { Worker, Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
 import type { DocumentLoadEvent } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
+import toast from "react-hot-toast";
+import { RxCross1 } from "react-icons/rx";
 
 interface PreviewOrderFileProps {
   fileUrl: string;
@@ -70,18 +71,15 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [paymentPercentage, setPaymentPercentage] = useState(0);
   const [allowedPages, setAllowedPages] = useState(0);
+
   const fileType = fileUrl?.split(".").pop()?.toLowerCase();
   const isWordDoc = ["doc", "docx"].includes(fileType || "");
 
   useEffect(() => {
     const validPrice = Math.max(0, Number(price));
-    const validBalance = Math.max(
-      0,
-      Math.min(Number(balanceAmount), validPrice)
-    );
+    const validBalance = Math.max(0, Math.min(Number(balanceAmount), validPrice));
     const paidAmount = validPrice - validBalance;
-    const percentage =
-      validPrice > 0 ? Math.round((paidAmount / validPrice) * 100) : 0;
+    const percentage = validPrice > 0 ? Math.round((paidAmount / validPrice) * 100) : 0;
     setPaymentPercentage(percentage);
   }, [price, balanceAmount]);
 
@@ -93,7 +91,7 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
         setPreviewUrl(pdfLink);
         setShowPreview(true);
       } else {
-        alert("Failed to convert document. Please try again.");
+        toast.error("Failed to convert document. Please try again.");
       }
     } else {
       setPreviewUrl(fileUrl);
@@ -103,13 +101,9 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
 
   const onDocumentLoad = (e: DocumentLoadEvent) => {
     const totalPages = e.doc.numPages;
-    const allowed = Math.max(
-      1,
-      Math.floor((paymentPercentage / 100) * totalPages)
-    );
-    setAllowedPages(allowed);
+    const allowed = Math.max(1, Math.floor((paymentPercentage / 100) * totalPages));
+    setAllowedPages(allowed); // fixed for now — update if you want dynamic control
   };
-  console.log("allowed pages:", allowedPages);
 
   return (
     <>
@@ -122,34 +116,52 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
       </button>
 
       {showPreview && previewUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-5xl h-[90vh]">
+        <div onClick={(e) =>{
+          e.stopPropagation();
+          e.preventDefault()
+        }} className="fixed cursor-default inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+          <div className="relative bg-white rounded-lg shadow-xl w-full h-[90vh] flex flex-col">
             <button
-              className="absolute top-2 right-2 p-2 text-gray-600 hover:text-gray-900"
+              className="flex justify-end p-2 text-gray-600 hover:text-gray-900"
               onClick={() => setShowPreview(false)}
             >
-              <FaTimes />
+              <RxCross1 size={35} />
             </button>
 
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-              <Viewer
-                fileUrl={previewUrl}
-                onDocumentLoad={onDocumentLoad}
-                defaultScale={SpecialZoomLevel.PageFit}
-                renderPage={(props) => {
-                  if (props.pageIndex >= allowedPages) return <><div className="p-2 text-sm text-center text-gray-600">
-              Showing {allowedPages} page(s) — {paymentPercentage}% paid
-            </div></>;
-                  return (
-                    <>
-                      {props.canvasLayer.children}
-                      {props.textLayer.children}
-                      {props.annotationLayer.children}
-                    </>
-                  );
-                }}
-              />
-            </Worker>
+            <div className="!w-full overflow-auto">
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                <Viewer
+                  fileUrl={previewUrl}
+                  onDocumentLoad={onDocumentLoad}
+                  defaultScale={SpecialZoomLevel.PageFit}
+                  renderPage={(props) => {
+  const isLocked = props.pageIndex >= allowedPages;
+
+  if (isLocked) {
+    return (
+      <div className="relative w-full h-[1200px] flex items-center justify-center bg-gray-100 border-b border-gray-300">
+        <div className="text-center px-4">
+          <p className="text-xl font-semibold text-gray-700">Page Locked</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Make a payment to access below pages.
+          </p>
+          {/* Optionally add a payment button here */}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative !w-full h-full">
+      {props.canvasLayer.children}
+      {props.textLayer.children}
+      {props.annotationLayer.children}
+    </div>
+  );
+}}
+                />
+              </Worker>
+            </div>
 
             <div className="p-2 text-sm text-center text-gray-600">
               Showing {allowedPages} page(s) — {paymentPercentage}% paid

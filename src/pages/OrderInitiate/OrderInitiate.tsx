@@ -128,7 +128,7 @@ export default function OrderInitiate() {
   const [fileName, setFileName] = useState();
   const [preview, setPreview] = useState<string | null>(null);
   const [taskSheetPre, setTaskSheetPre] = useState<string | null>(null);
-  const [addintionalModule, setAdditionalModule] = useState();
+  const [addintionalModule, setAdditionalModule] = useState("");
   const [fileReader, setFileReader] = useState(null)
   const {
     data: paperTopic,
@@ -283,6 +283,8 @@ const getFileType = (fileUrl: string): string | null => {
       </div>
     )
   }
+
+  console.log("clients :",clients)
   return (
     <>
       <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -421,6 +423,7 @@ const getFileType = (fileUrl: string): string | null => {
               setDeadlineApi("")
               setTaskSheetApi("")
               setFileName("")
+              setAdditionalModule("")
             } catch (error) {
               console.error("Submission Error:", error);
               alert("An unexpected error occurred.");

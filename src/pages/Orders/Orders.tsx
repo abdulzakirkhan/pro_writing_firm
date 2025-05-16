@@ -70,8 +70,13 @@ export default function Orders() {
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
   const [categories, setCategories] = useState<Category[]>(
-    TypeOfPaperData?.result?.Category_list || ["All"]
+    TypeOfPaperData?.result?.Category_list || [
+      { id: "All", ordercategoryname: "All" },
+    ]
   );
+
+  // console.log("TypeOfPaperData :",TypeOfPaperData?.result?.Category_list)
+
   const payload8 = {
     agentId: user?.agent_user_id,
   };
@@ -105,7 +110,7 @@ export default function Orders() {
     useMakePaymentForOrdersMutation();
   const [isChecked, setIsChecked] = useState(false);
 
-  const firstCategory = categories[0].ordercategoryname || ["All"];
+  const firstCategory = categories[0] || ["All"];
   // const categories = TypeOfPaperData?.result?.Category_list;
   const subjects = TypeOfPaperData?.result?.Type_of_paperlist || [];
   // const {data: agentOrdersData,isLoading: agentOrdersDataLoading,error,} = useGetAgentOrdersDataQuery();
@@ -144,13 +149,18 @@ export default function Orders() {
   } = useGetAllClientCardsQuery(user?.agent_user_id);
   const [showSubjectDropdown, setShowSubjectDropdown] =
     useState<boolean>(false);
-  const firstSubjectValue = subjects?.[0]?.value || ["All"];
+  const firstSubjectValue = subjects?.[0]?.value || "All";
   const [selectedSubject, setSelectedSubject] =
     useState<any>(firstSubjectValue);
 
   const [selectedAcademicLevel, setSelectedAcademicLevel] = useState<string[]>([
     "Academic Level",
   ]);
+  const [selectedCategory, setSelectedCategory] = useState<{
+    id: string;
+    ordercategoryname: string;
+  } | null>(null);
+  const [slectedCatId, setslectedCatId] = useState("All");
   const [selectedCategoryList, setSelectedCategoryList] =
     useState<any[]>(firstCategory);
   let payload = {
@@ -172,7 +182,8 @@ export default function Orders() {
 
   const { data: profileData } = useGetProfileQuery(user?.agent_user_id);
   const { data: rewardAmounts } = useGetRewardAmountsQuery();
-  const [makeMeezanPayment, { isLoading: makeMeezanPaymentLoading }] =useMakeMeezanPaymentMutation();
+  const [makeMeezanPayment, { isLoading: makeMeezanPaymentLoading }] =
+    useMakeMeezanPaymentMutation();
   // console.log("getAllClientCards :",getAllClientCards)
 
   const academicLevels = TypeOfPaperData?.result?.Academic_level;
@@ -239,7 +250,7 @@ export default function Orders() {
     agentId: user?.agent_user_id,
     selectedFilters,
     selectedSubject,
-    selectedCategoryList,
+    slectedCatId,
   };
 
   const {
@@ -311,13 +322,12 @@ export default function Orders() {
     selectedOrders.includes(batch.batchid)
   );
   const allOrders = matchingBatches.flatMap((batch) => batch.orders || []);
-  // console.log("allOrders :",allOrders)
 
   const total = allOrders.reduce((sum, order) => {
     const price = Number(order?.balaceamount) || 0;
     return sum + price;
   }, 0);
-  // console.log("total :",total)
+  console.log("total :", total);
   const amnt = Number(walletAmount?.amount || 0);
   const [withVat, setWithVat] = useState(true);
   const [paymentType, setPaymentType] = useState("full"); // "full" or "partial"
@@ -332,7 +342,7 @@ export default function Orders() {
     paymentType === "full" ? total : partialAmount,
     withVat
   );
-
+  console.log("paymentType :", paymentType);
   const totalWalletConsumableAmount = consumableObj.totalWalletConsumableAmount;
   const cardConsumableAmount = consumableObj.cardConsumableAmount;
 
@@ -355,13 +365,10 @@ export default function Orders() {
     discountPercentage,
     false
   );
-  // console.log("withVatConsumable :",withVatConsumable)
-  // console.log("withoutVatConsumable :",withoutVatConsumable)
   const { serviceChargePercentage, vatFeePercentage } = useSelector(
     (state) => state?.shared
   );
   const [Html, setHtml] = useState();
-  // console.log("batchesDataUnpaid",batchesDataUnpaid)
   const serviceChargeFee = serviceChargePercentage;
   const vatChargeFee = vatFeePercentage;
 
@@ -373,9 +380,7 @@ export default function Orders() {
   const vatPercent = Number((total * 0.2).toFixed(2));
   const allCards = Array.isArray(getAllClientCards) ? getAllClientCards : [];
   const [selectedId, setSelectedId] = useState();
-  // selectOrders[0]?.orders?.forEach((order) => {
-  //   console.log("Order Balance price :",order?.balaceamount)
-  // });
+
   const [selectedCard, setSelectedCard] = useState(null);
   const [addCard, { isLoading: addCardLoading }] = useAddCardMutation();
   const [isAddWallet, setIsAddWallet] = useState(false);
@@ -385,7 +390,6 @@ export default function Orders() {
   const [isLoadinPaying, setIsLoadinPaying] = useState(false);
   const handlePayment = async (onNext) => {
     try {
-      // setIsLoadinPaying(true);
       const selectedCard = allCards?.find((card) => card?.id === selectedId);
       const stripeToken = selectedCard?.stripekey || allCards?.[0]?.stripekey;
       if (!stripeToken) {
@@ -449,7 +453,6 @@ export default function Orders() {
 
       const file = new File([blob], "order_table.png", { type: "image/png" });
       const formData = new FormData();
-      // console.log("Screenshot File created:", file);
       formData.append("screenshot", file);
       formData.append("token", stripeToken);
       formData.append("agent_id", user?.agent_user_id);
@@ -473,9 +476,29 @@ export default function Orders() {
         "additionalAmount",
         getFormattedPriceWith3(consumableObj.additionalAmount)
       );
+
+      const payload = {
+        token: stripeToken,
+        agent_id: user?.agent_user_id,
+        screenshot: file,
+        currency: getCurrency(user?.currency),
+        amount: getFormattedPriceWith3(cardConsumableAmount),
+        serviceCharges: getFormattedPriceWith3(acutalServiceFee),
+        orderid: orderIds.join(","),
+        rewardamount: getFormattedPriceWith3(
+          consumableObj.rewardConsumableAmount
+        ),
+        walletamount: getFormattedPriceWith3(
+          consumableObj.walletConsumableAmount
+        ),
+        vat: getFormattedPriceWith3(actualVatFee),
+        additionalAmount: getFormattedPriceWith3(
+          consumableObj.additionalAmount
+        ),
+      };
+      // console.log("payload :",payload)
       // return
       const { data: respData, error } = await makePaymentForOrders(formData);
-
       if (respData?.result === "Successfully Paid") {
         toast.success("Payment successful!");
         setIsLoadinPaying(false);
@@ -497,7 +520,8 @@ export default function Orders() {
         //   },
         // });
       } else {
-        toast.error(respData?.result || "Payment failed.");
+        console.log("respData :", error);
+        // toast.error(respData?.result || "Payment failed.");
         // setIsLoadinPaying(false)
       }
 
@@ -507,7 +531,6 @@ export default function Orders() {
       }
     } catch (error) {
       // setIsLoadinPaying(false)
-      console.error("Payment Error:", error);
       toast.error("Payment failed. Please try again.");
     } finally {
       setSelectedOrders([]);
@@ -516,20 +539,16 @@ export default function Orders() {
   };
 
   const navigate = useNavigate();
-  // console.log("getAllClientCards :",getAllClientCards)
 
   const [selectedMethod, setSelectedMethod] = useState<"bank" | "gateway">(
     "bank"
   );
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
-    // console.log("cardConsumableAmount :",cardConsumableAmount)
-
     // const handleSelect = (method: "bank" | "gateway") => {
     //   setSelectedMethod(method);
     // };
     const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const checked = e.target.checked;
-      // console.log("CHEKED",checked)
       setIsChecked(checked);
 
       // if (checked) {
@@ -538,7 +557,7 @@ export default function Orders() {
       //   setAvailableBalance((prev) => prev + total);
       // }
     };
-
+    const [paymentUrl, setPaymentUrl] = useState("");
     // const [selectedMethod, setSelectedMethod] = useState(null); // "bank" or "gateway"
     const handleSelect = (method) => {
       setSelectedMethod(method);
@@ -553,18 +572,22 @@ export default function Orders() {
     const handleNext = async () => {
       const value = Number(amountRef.current?.value);
       setPartialAmount(value);
+
       if (selectedMethod === "gateway") {
         onNext();
       } else {
         const meezanLinkRes = await meezanPaymentLink({
           amount: getFormattedPriceWith3(
-            Number(cardConsumableAmount) + Number(acutalServiceFee)
+            Number(cardConsumableAmount) + Number(serviceChargeFee)
           ),
-          currency: currency,
+          currency,
         });
-        if (meezanLinkRes?.data?.link || isOnlyWalletAmountPayment) {
-          if (meezanLinkRes?.data?.link) {
-            window.location.href = meezanLinkRes.data.link;
+
+        const link = meezanLinkRes?.data?.link;
+
+        if (link || isOnlyWalletAmountPayment) {
+          if (link) {
+            window.location.href=link
           } else {
             toast.error("No payment link found.");
           }
@@ -573,79 +596,90 @@ export default function Orders() {
     };
     const navigate = useNavigate();
     const location = useLocation();
-    useEffect(() => {
-      const meezanPaymentProccess = async () => {
-        const params = new URLSearchParams(location.search);
-        const status = params.get("status");
-        console.log("status",status)
-        const token = params.get("token"); 
-        if (status === "Receipt" || status === "Order Success") {
-         console.log("status",status)
-        } else if (status === "payment_declined") {
-          console.log("status",status)
-          toast.error("Payment failed or was declined.");
-          // optionally setStep(1) or take user back
-        }
-      };
-      meezanPaymentProccess()
-    }, [location.search]);
+    // useEffect(() => {
+    //   const meezanPaymentProccess = async () => {
+    //     const params = new URLSearchParams(location.search);
+    //     const status = params.get("status");
+    //     const token = params.get("token");
+
+    //     console.log("params", params);
+    //     console.log("status", status);
+    //     console.log("token", token);
+
+    //     if (status === "Receipt" || status === "Order Success") {
+    //       toast.success("Payment successful!");
+
+    //       // ✅ Redirect to success page (change URL as needed)
+    //       navigate("/orders");
+    //       setStep(3)
+    //     } else if (status === "payment_declined") {
+    //       toast.error("Payment failed or was declined.");
+
+    //       // Optionally redirect back to step 1 or a retry page
+    //       // navigate("/payment/failed");
+    //     }
+    //   };
+
+    //   meezanPaymentProccess();
+    // }, [location.search]);
 
     return (
-      <div className="grid grid-cols-1 px-12">
-        {/* Left Card */}
-        <div className="w-full lg:col-span-7 bg-white rounded-xl p-6 shadow">
-          <h2 className="text-center text-teal-700 font-semibold text-lg mb-6">
-            Payment Method
-          </h2>
-          <div className="border-[2px] flex flex-col justify-center gap-4 h-[123px] border-[#C6BCBC] mb-6 px-4 py-3 rounded-lg ">
-            <div className="flex justify-between items-center">
-              {/* Wallet Icon + Label */}
-              <div className="flex items-center gap-3">
-                <div className="text-xl text-gray-600">
-                  {/* Replace with a real icon if you use one like react-icons */}
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M2 6a2 2 0 012-2h16a2 2 0 012 2v2H2V6zm0 4h20v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8zm14 2a1 1 0 100 2h2a1 1 0 100-2h-2z" />
-                  </svg>
+      <>
+        <div className="grid grid-cols-1 px-12">
+          {/* Left Card */}
+          <div className="w-full lg:col-span-7 bg-white rounded-xl p-6 shadow">
+            <h2 className="text-center text-teal-700 font-semibold text-lg mb-6">
+              Payment Method
+            </h2>
+            <div className="border-[2px] flex flex-col justify-center gap-4 h-[123px] border-[#C6BCBC] mb-6 px-4 py-3 rounded-lg ">
+              <div className="flex justify-between items-center">
+                {/* Wallet Icon + Label */}
+                <div className="flex items-center gap-3">
+                  <div className="text-xl text-gray-600">
+                    {/* Replace with a real icon if you use one like react-icons */}
+                    <svg
+                      width="24"
+                      height="24"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M2 6a2 2 0 012-2h16a2 2 0 012 2v2H2V6zm0 4h20v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8zm14 2a1 1 0 100 2h2a1 1 0 100-2h-2z" />
+                    </svg>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-800">
+                    Wallet
+                  </span>
                 </div>
-                <span className="text-lg font-semibold text-gray-800">
-                  Wallet
+
+                {/* Availability + Toggle */}
+                <div className="flex flex-col items-end">
+                  {/* Toggle switch */}
+                  <label className="inline-flex items-center cursor-pointer mt-1">
+                    <input
+                      checked={isChecked}
+                      type="checkbox"
+                      className="sr-only peer"
+                      onChange={
+                        availableBalance > 0 ? handleSwitchChange : () => {}
+                      }
+                    />
+                    <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-700 after:border-[#C6BCBC] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600 relative" />
+                  </label>
+                </div>
+              </div>
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-green-500 text-sm font-medium">
+                  Available:
+                </span>
+                <span className="text-green-600 font-semibold text-sm">
+                  {" "}
+                  {currency} {availableBalance}
                 </span>
               </div>
-
-              {/* Availability + Toggle */}
-              <div className="flex flex-col items-end">
-                {/* Toggle switch */}
-                <label className="inline-flex items-center cursor-pointer mt-1">
-                  <input
-                    checked={isChecked}
-                    type="checkbox"
-                    className="sr-only peer"
-                    onChange={
-                      availableBalance > 0 ? handleSwitchChange : () => {}
-                    }
-                  />
-                  <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-700 after:border-[#C6BCBC] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600 relative" />
-                </label>
-              </div>
             </div>
-            <div className="flex justify-between items-center gap-2">
-              <span className="text-green-500 text-sm font-medium">
-                Available:
-              </span>
-              <span className="text-green-600 font-semibold text-sm">
-                {" "}
-                {currency} {availableBalance}
-              </span>
-            </div>
-          </div>
 
-          {/* Card form */}
-          {/* <button
+            {/* Card form */}
+            {/* <button
             onClick={() => setIsAddWallet(true)}
             className="w-full h-[48px] rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition my-2"
           >
@@ -688,170 +722,174 @@ export default function Orders() {
             ))}
           </div> */}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div
-              onClick={() => handleSelect("bank")}
-              className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
-                selectedMethod === "bank"
-                  ? "border-[#13A09D] bg-[#E6F8F7]"
-                  : "border-gray-300 bg-white hover:border-[#13A09D]"
-              }`}
-            >
-              <h3 className="text-lg font-semibold mb-2">Bank Transfer</h3>
-              <div className="flex justify-between items-center">
-                <span>Price :</span>
-                <span>{total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Proceesing Fee :</span>
-                <span>04 %</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="line-through">Vat (20%):</span>
-                <span className="line-through">04 %</span>
-              </div>
-              {isChecked && (
-                <div className="flex text-red-500 justify-between items-center">
-                  <span className="">Wallet:</span>
-                  <span>
-                    -{currency} {availableBalance}
-                  </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div
+                onClick={() => handleSelect("bank")}
+                className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
+                  selectedMethod === "bank"
+                    ? "border-[#13A09D] bg-[#E6F8F7]"
+                    : "border-gray-300 bg-white hover:border-[#13A09D]"
+                }`}
+              >
+                <h3 className="text-lg font-semibold mb-2">Bank Transfer</h3>
+                <div className="flex justify-between items-center">
+                  <span>Price :</span>
+                  <span>{total.toFixed(2)}</span>
                 </div>
-              )}
-              <div className="flex justify-end mt-2 items-center">
-                <span className="text-[#12A09D] font-semibold">
-                  Total {currency} {total.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            {/* Payment Gateway Card */}
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelect("gateway");
-                setWithVat(true);
-              }}
-              className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
-                selectedMethod === "gateway"
-                  ? "border-[#13A09D] bg-[#E6F8F7]"
-                  : "border-gray-300 bg-white hover:border-[#13A09D]"
-              }`}
-            >
-              <h3 className="text-lg font-semibold mb-2">Payment Gateway</h3>
-              <div className="flex justify-between items-center">
-                <span>Price :</span>
-                <span>{total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Proceesing Fee :</span>
-                <span>04 %</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="">Vat (20%):</span>
-                <span>04 %</span>
-              </div>
-              {isChecked && (
-                <div className="flex text-red-500 justify-between items-center">
-                  <span className="">Wallet:</span>
-                  <span>
-                    -{currency} {availableBalance}
-                  </span>
+                <div className="flex justify-between items-center">
+                  <span>Proceesing Fee :</span>
+                  <span>04 %</span>
                 </div>
-              )}
-              <div className="flex justify-end mt-2 items-center">
-                <span className="text-[#12A09D] font-semibold">
-                  Total {currency} {total.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </div>
-          {selectedMethod && (
-            <div className="mt-6 px-20">
-              {/* Tabs */}
-              <div className="flex gap-4 border-b border-gray-300 mb-4">
-                <button
-                  onClick={() => {
-                    if (paymentType !== "full") {
-                      setPaymentType("full");
-                    }
-                  }}
-                  className={`pb-2 font-semibold ${
-                    paymentType === "full"
-                      ? "border-b-2 border-[#13A09D] text-[#13A09D]"
-                      : "text-gray-600"
-                  }`}
-                >
-                  Full Payment
-                </button>
-                <button
-                  onClick={() => {
-                    if (paymentType !== "partial") {
-                      setPaymentType("partial");
-                    }
-                  }}
-                  className={`pb-2 font-semibold ${
-                    paymentType === "partial"
-                      ? "border-b-2 border-[#13A09D] text-[#13A09D]"
-                      : "text-gray-600"
-                  }`}
-                >
-                  Partial Payment
-                </button>
-              </div>
-
-              {/* Content Based on Tab */}
-              <div className="mt-4">
-                {paymentType === "partial" && (
-                  <div className="py-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Enter Amount
-                    </label>
-                    <input
-                      ref={amountRef}
-                      type="number"
-                      // min="0"
-                      className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#13A09D]"
-                      placeholder="Enter partial payment amount"
-                      // value={partialAmount}
-                    />
+                <div className="flex justify-between items-center">
+                  <span className="line-through">Vat (20%):</span>
+                  <span className="line-through">04 %</span>
+                </div>
+                {isChecked && (
+                  <div className="flex text-red-500 justify-between items-center">
+                    <span className="">Wallet:</span>
+                    <span>
+                      -{currency} {availableBalance}
+                    </span>
                   </div>
                 )}
-                <div className="bg-gray-50 p-4 rounded-md shadow-sm">
-                  <h4 className="font-semibold text-gray-700 mb-2">
-                    Payment Summary
-                  </h4>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Price:</span>
+                <div className="flex justify-end mt-2 items-center">
+                  <span className="text-[#12A09D] font-semibold">
+                    Total {currency} {total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Payment Gateway Card */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelect("gateway");
+                  setWithVat(true);
+                }}
+                className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
+                  selectedMethod === "gateway"
+                    ? "border-[#13A09D] bg-[#E6F8F7]"
+                    : "border-gray-300 bg-white hover:border-[#13A09D]"
+                }`}
+              >
+                <h3 className="text-lg font-semibold mb-2">Payment Gateway</h3>
+                <div className="flex justify-between items-center">
+                  <span>Price :</span>
+                  <span>{total.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Proceesing Fee :</span>
+                  <span>04 %</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="">Vat (20%):</span>
+                  <span>04 %</span>
+                </div>
+                {isChecked && (
+                  <div className="flex text-red-500 justify-between items-center">
+                    <span className="">Wallet:</span>
                     <span>
-                      {currency} {total.toFixed(2)}
+                      -{currency} {availableBalance}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Processing Fee (4%) :</span>
-                    <span>
-                      {currency} {fourPercent}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>VAT (20%):</span>
-                    <span>{currency} 4%</span>
-                  </div>
-                  {isChecked && (
+                )}
+                <div className="flex justify-end mt-2 items-center">
+                  <span className="text-[#12A09D] font-semibold">
+                    Total {currency} {total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {selectedMethod && (
+              <div className="mt-6 px-20">
+                {/* Tabs */}
+                <div className="flex gap-4 border-b border-gray-300 mb-4">
+                  <button
+                    onClick={() => {
+                      if (paymentType !== "full") {
+                        setPaymentType("full");
+                      }
+                    }}
+                    className={`pb-2 font-semibold ${
+                      paymentType === "full"
+                        ? "border-b-2 border-[#13A09D] text-[#13A09D]"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    Full Payment
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (paymentType !== "partial") {
+                        setPaymentType("partial");
+                      }
+                    }}
+                    className={`pb-2 font-semibold ${
+                      paymentType === "partial"
+                        ? "border-b-2 border-[#13A09D] text-[#13A09D]"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    Partial Payment
+                  </button>
+                </div>
+
+                {/* Content Based on Tab */}
+                <div className="mt-4">
+                  {paymentType === "partial" && (
+                    <div className="py-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Enter Amount
+                      </label>
+                      <input
+                        ref={amountRef}
+                        type="number"
+                        // min="0"
+                        className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#13A09D]"
+                        placeholder="Enter partial payment amount"
+                        // value={partialAmount}
+                        // onChange={(e) => {
+                        //   setPartialAmount(e.target.value);
+                        // }}
+                      />
+                    </div>
+                  )}
+                  <div className="bg-gray-50 p-4 rounded-md shadow-sm">
+                    <h4 className="font-semibold text-gray-700 mb-2">
+                      Payment Summary
+                    </h4>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Price:</span>
+                      <span>
+                        {currency} {total.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Processing Fee (4%) :</span>
+                      <span>
+                        {currency} {fourPercent}
+                      </span>
+                    </div>
+                    {selectedMethod === "gateway" && paymentType === "full" && (
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>VAT (20%):</span>
+                        <span>
+                          {currency}
+                          {getFormattedPriceWith3(actualVatFee)}
+                        </span>
+                      </div>
+                    )}
+                    {/* {isChecked && (
                     <>
                       {paymentType == "partial" ? (
                         <div className="flex justify-between items-center">
-                          <span className="text-red-500">Wallet:</span>
+                          <span className="text-red-500">Wallet</span>
                           {partialAmount > availableBalance &&
-                          paymentType == "partial" ? (
+                          paymentType === "partial" &&(
                             <div className="text-[#12a09d]">
                               <span>Payable Amount</span>{" "}
-                              <span>{partialAmount - availableBalance}</span>
+                              <span>{total - partialAmount}</span>
                             </div>
-                          ) : (
-                            <span className="text-red-500">
-                              -{currency} {Number(partialAmount) || 0}
-                            </span>
                           )}
                         </div>
                       ) : (
@@ -863,28 +901,40 @@ export default function Orders() {
                         </div>
                       )}
                     </>
-                  )}
-                  <div className="flex justify-between text-base font-semibold text-[#13A09D] mt-2">
+                  )} */}
+
+                    <div className="flex justify-between items-center">
+                      {paymentType === "full" && (
+                        <span className="text-red-500">Wallet</span>
+                      )}
+                      {total > availableBalance && paymentType === "full" && (
+                        <span className="line-through text-red-500">
+                          {availableBalance}
+                        </span>
+                      )}
+                    </div>
+                    {/* <div className="flex justify-between text-base font-semibold text-[#13A09D] mt-2">
                     <span>Payable Amount:</span>
                     <span>
                       {currency} {total.toFixed(2)}
                     </span>
+                  </div> */}
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="text-center">
-            <button
-              onClick={handleNext}
-              className="bg-teal-600 text-white px-12 rounded-md py-2 outline-none mt-4 hover:bg-teal-700 transition"
-            >
-              Next
-            </button>
+            <div className="text-center">
+              <button
+                onClick={handleNext}
+                className="bg-teal-600 text-white px-12 rounded-md py-2 outline-none mt-4 hover:bg-teal-700 transition"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -896,16 +946,13 @@ export default function Orders() {
     onBack: () => void;
   }) {
     const handleAddWalletCard = async () => {
-      // console.log("object")
       // if (!stripe || !elements) return;
 
       const cardElement = elements.getElement(CardNumberElement);
       // if (!cardElement) return;
-      // console.log("object")
       const { token, error } = await stripe.createToken(cardElement, {
         name: "Card Holder", // optional
       });
-      // console.log("token", token);
       // return
       if (token) {
         const res = await addCard({
@@ -921,9 +968,7 @@ export default function Orders() {
             toast.success("Card Detail Added Successfully");
             return true;
           }
-          console.log("object", respData);
         }
-        // console.log("object")
         // toast.success("Wallet Added Successfuly")
         // onClick({
         //   stripeToken: token.id,
@@ -1085,10 +1130,14 @@ export default function Orders() {
       prev.includes(batch) ? prev.filter((b) => b !== batch) : [...prev, batch]
     );
   };
-  const toggleCateg = (batch: string) => {
-    setSelectedCategoryList((prev) =>
-      prev.includes(batch) ? prev.filter((b) => b !== batch) : [...prev, batch]
-    );
+  const toggleCateg = (category: { id: string; ordercategoryname: string }) => {
+    setSelectedCategoryList((prev) => {
+      const isSelected = prev.some((c) => c.id === category.id);
+      setslectedCatId(cat?.id);
+      return isSelected
+        ? prev.filter((c) => c.id !== category.id)
+        : [...prev, category];
+    });
   };
 
   // const data=agentBatchOrderList?.result
@@ -1428,23 +1477,26 @@ export default function Orders() {
 
                       {/* Dropdown Category */}
 
-                      <div className="mb-4">
+                      <div className="mb-4 relative">
                         <button
                           onClick={() => setShowCategory(!showCategory)}
-                          className="flex items-center justify-between w-full text-sm font-medium"
+                          className="flex items-center justify-between w-full border rounded p-2 text-sm font-medium"
                         >
-                          {selectedCategoryList || "Category"}{" "}
-                          <IoMdArrowDropdown />
+                          {selectedCategory?.ordercategoryname ||
+                            "Select Category"}
+                          <IoMdArrowDropdown className="ml-2" />
                         </button>
+
                         {showCategory && (
-                          <div className="border max-h-48 overflow-y-auto rounded p-2 mt-1 space-y-1 bg-white shadow">
+                          <div className="absolute z-10 w-full border max-h-48 overflow-y-auto rounded p-2 mt-1 space-y-1 bg-white shadow">
                             {categories.map((cat, index) => (
                               <div
                                 key={`${cat.id}-${index}`}
                                 className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
                                 onClick={() => {
-                                  toggleCateg(cat);
-                                  setShowUniversityDropdown(false);
+                                  setSelectedCategory(cat);
+                                  setShowCategory(false);
+                                  // setShowUniversityDropdown(false); // if you want to close another dropdown
                                 }}
                               >
                                 {cat?.ordercategoryname}
@@ -1466,9 +1518,9 @@ export default function Orders() {
                 <Loader />
               </div>
             ) : (
-              newCardDAta
-                .slice(0, 3)
-                .map((card, idx) => <OrderCard key={idx} card={card} />)
+              newCardDAta.map((card, idx) => (
+                <OrderCard key={idx} card={card} />
+              ))
             )}
           </div>
         </>

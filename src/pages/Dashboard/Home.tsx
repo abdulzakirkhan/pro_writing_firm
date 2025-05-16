@@ -76,7 +76,6 @@ export default function Home() {
   const { data: agentCreditLimit ,isLoading: agentCreditLimitLoading,error: agentCreditLimitError,} = useGetAgentCreditLimitsQuery(
     user?.agent_user_id
   );
-  console.log("startDate",startDate)
   const { data: agentCostData, isLoading: agentCostLoading } =
     useGetAgentCostDataQuery(payload);
   const graphData = agentCostData?.result?.graph_data || [];
@@ -94,7 +93,6 @@ export default function Home() {
         .map((b: { id: string }) => String(b.id)); // ensure ids are strings
 
       setSelectedBatches(allBatchIds);
-      console.log("allBatchIds", allBatchIds);
     } else {
       setSelectedBatches((prev) =>
         prev.includes(String(batch.id))
@@ -188,7 +186,6 @@ export default function Home() {
   const blinker = Number(showBlinker?.result?.show_blinker_true || 0);
   const blinker_text = showBlinker?.result?.blinker_text || "";
 
-// console.log("topClientsData?.result :",topClientsData?.result)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = dropdownRef.current;
