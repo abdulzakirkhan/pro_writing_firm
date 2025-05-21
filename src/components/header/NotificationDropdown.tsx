@@ -26,7 +26,6 @@ export default function NotificationDropdown() {
     const body = new FormData();
     body.append("notification_id", id);
     const res = await markNotificationbyId(body);
-    console.log("res :", res);
   };
 
   // Close modal on outside click
