@@ -182,7 +182,7 @@ export default function Wallet() {
         </div>
 
         {/* Table */}
-        <div className="bg-white p-6 rounded-xl shadow-md">
+        {paymentHistoryLoading ? <div className="mt-32"> <Loader /></div> : <div className="bg-white p-6 rounded-xl shadow-md">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">History</h3>
           <div className="overflow-auto h-[452px]">
             <table className="w-full h-[452px] text-sm text-left border-collapse">
@@ -245,7 +245,9 @@ export default function Wallet() {
               </tbody>
             </table>
           </div>
-        </div>
+        </div>}
+
+
       </div>
 
       {showModal && (
