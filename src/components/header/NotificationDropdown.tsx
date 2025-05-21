@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { RxCross1 } from "react-icons/rx";
-import { useGetNotificationByIdQuery, useMarkReadNotificationMutation } from "../../redux/agentdashboard/agentApi";
+import {
+  useGetNotificationByIdQuery,
+  useMarkReadNotificationMutation,
+} from "../../redux/agentdashboard/agentApi";
 import { useSelector } from "react-redux";
 
 export default function NotificationDropdown() {
@@ -13,19 +16,19 @@ export default function NotificationDropdown() {
     isLoading: getNotificationsByIdLoading,
     error: getNotificationsByIdError,
   } = useGetNotificationByIdQuery(user?.agent_user_id);
-  const [markNotificationbyId, { isLoading: markNotificationbyIdLoading }] =useMarkReadNotificationMutation();
+  const [markNotificationbyId, { isLoading: markNotificationbyIdLoading }] =
+    useMarkReadNotificationMutation();
 
   const notifications = getNotificationsById?.result || [];
 
-
-  const handleClick =async (id) => {
+  const handleClick = async (id) => {
     // console.log("CLICKED ON :",id)
     const body = new FormData();
-    body.append('notification_id', id);
+    body.append("notification_id", id);
     const res = await markNotificationbyId(body);
-    console.log("res :",res)
-  }
- 
+    console.log("res :", res);
+  };
+
   // Close modal on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -43,7 +46,7 @@ export default function NotificationDropdown() {
     };
   }, [open]);
 
-  console.log("notifications :",notifications)
+  const unreadCount = notifications.filter(n => n.read_status === "0").length;
 
   return (
     <div className="relative">
@@ -69,7 +72,13 @@ export default function NotificationDropdown() {
       </div>
 
       {/* Red Dot */}
-      <div className="w-2 h-2 top-3 end-3 rounded-full bg-red-500 absolute"></div>
+      
+      {/* <div className="w-2 h-2 top-3 end-3 rounded-full bg-red-500 absolute"></div> */}
+      {unreadCount > 0 && (
+        <div className="absolute top-1 z-0 end-2 bg-red-500 text-white text-xs font-semibold w-4 h-4 rounded-full flex items-center justify-center">
+          {unreadCount}
+        </div>
+      )}
 
       {/* Modal */}
       {open && (
@@ -123,40 +132,42 @@ export default function NotificationDropdown() {
                 </li>
               ))} */}
               {notifications.length === 0 ? (
-  <p className="text-center text-gray-500 py-4">No notifications</p>
-) : (
-  notifications.map((notification) => (
-    <li
-      key={notification.id}
-      onClick={() => handleClick(notification?.id)}
-      className={`p-4 rounded-lg shadow-sm transition-colors ${
-        notification.read_status === "0"
-          ? "bg-white border-l-4 border-blue-500 hover:bg-gray-50"
-          : "bg-gray-50"
-      }`}
-    >
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <p
-            className={`text-sm ${
-              notification.read_status === "0"
-                ? "font-medium text-gray-900"
-                : "text-gray-700"
-            }`}
-          >
-            {notification.message}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {notification?.utctime}
-          </p>
-        </div>
-        {notification.read_status === "0" && (
-          <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
-        )}
-      </div>
-    </li>
-  ))
-)}
+                <p className="text-center text-gray-500 py-4">
+                  No notifications
+                </p>
+              ) : (
+                notifications.map((notification) => (
+                  <li
+                    key={notification.id}
+                    onClick={() => handleClick(notification?.id)}
+                    className={`p-4 rounded-lg shadow-sm transition-colors ${
+                      notification.read_status === "0"
+                        ? "bg-white border-l-4 border-blue-500 hover:bg-gray-50"
+                        : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p
+                          className={`text-sm ${
+                            notification.read_status === "0"
+                              ? "font-medium text-gray-900"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {notification?.utctime}
+                        </p>
+                      </div>
+                      {notification.read_status === "0" && (
+                        <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
+                      )}
+                    </div>
+                  </li>
+                ))
+              )}
             </ul>
 
             {/* Close Button */}
