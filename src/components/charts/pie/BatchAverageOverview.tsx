@@ -15,7 +15,7 @@ const BatchAverageOverview = ({pieChartData}) => {
     datasets: [
       {
         data: pieChartData.map(item => item.value),
-        backgroundColor: ['#13A09D', '#1E8AD3', '#F4A300'],
+        backgroundColor: ['#6da5f9', '#1E8AD3', '#F4A300'],
         borderWidth: 0
       }
     ]
@@ -40,8 +40,8 @@ const BatchAverageOverview = ({pieChartData}) => {
       }
     }
   };
-  const colorMap = ['bg-[#13A09D]', 'bg-[#1E8AD3]', 'bg-[#F4A300]','bg-[#13A09D]'];
-  const textColorMap = ['text-[#13A09D]', 'text-[#1E8AD3]', 'text-[#F4A300]','text-[#13A09D]'];
+  const colorMap = ['bg-[#6da5f9]', 'bg-[#1E8AD3]', 'bg-[#F4A300]','bg-[#6da5f9]'];
+  const textColorMap = ['text-[#6da5f9]', 'text-[#1E8AD3]', 'text-[#F4A300]','text-[#6da5f9]'];
   return (
     <div className="bg-white rounded-lg shadow p-4 w-full">
       <h2 className="text-center font-semibold mb-4">Batch Average Overview</h2>

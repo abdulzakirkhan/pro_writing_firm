@@ -39,7 +39,7 @@ const CreditUsageChart : React.FC<CreditUsageChartProps>  = ({creditLimit,usedCr
             );
   
             gradient.addColorStop(0.28, '#254E5C');
-            gradient.addColorStop(0.7, '#13A09D');
+            gradient.addColorStop(0.7, '#6da5f9');
   
             return [gradient,"#E5E5E5"]; // used, remaining
           },

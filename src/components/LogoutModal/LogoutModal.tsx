@@ -43,18 +43,18 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
 
       {/* Modal Content */}
       <div className="relative z-10 bg-white flex flex-col justify-center w-[509px] h-[255px] p-6 rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-semibold text-teal-700 mb-3">Logout Account</h2>
+        <h2 className="text-2xl font-semibold text-[#6da5f9] mb-3">Logout Account</h2>
         <p className="text-[20px] pr-6 font-[400] text-gray-700 mb-6">Are you sure you wan to logout from your account? </p>
         <div className="flex justify-center gap-4">
           <button
             onClick={onCancel}
-            className="w-[206px] h-[48px] rounded border border-teal-600 text-teal-600 hover:bg-teal-50 transition"
+          className="w-[206px] h-[48px] rounded border border-[#6da5f9] text-[#6da5f9] hover:bg-teal-50 transition"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="w-[206px] h-[48px] rounded bg-teal-600 text-white hover:bg-teal-700 transition"
+            className="w-[206px] h-[48px] rounded bg-[#6da5f9] text-white transition"
           >
             Logout
           </button>

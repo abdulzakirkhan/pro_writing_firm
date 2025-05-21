@@ -44,7 +44,7 @@ const percentage = Number(order?.completePercentage)
             </p>
             <p className="text-xs text-gray-500 mt-1">Order ID: {order?.id}</p>
             <div>
-            <button className={` ${order?.orderStatus === "In Progress" || order?.orderStatus === "unpaid" ? "bg-[#6D6D6D] disabled:disabled cursor-no-drop" :"bg-[#13A09D] hover:bg-[#0e8b85] transition  "} text-white px-3 py-1.5 text-sm rounded flex items-center gap-1`}>
+            <button className={` ${order?.orderStatus === "In Progress" || order?.orderStatus === "unpaid" ? "bg-[#6D6D6D] disabled:disabled cursor-no-drop" :"bg-[#6da5f9] hover:bg-[#0e8b85] transition  "} text-white px-3 py-1.5 text-sm rounded flex items-center gap-1`}>
               <FaDownload size={12} />
               Download File
             </button>
@@ -67,7 +67,7 @@ const percentage = Number(order?.completePercentage)
         </div>
         <div className="text-sm text-right mt-2">
           <p className="font-semibold text-gray-700">
-            {/* Price: <span className="text-[#13A09D]">${price.toFixed(1)}</span> */}
+            {/* Price: <span className="text-[#6da5f9]">${price.toFixed(1)}</span> */}
           </p>
           <p className="text-sm">
             Status:{" "}

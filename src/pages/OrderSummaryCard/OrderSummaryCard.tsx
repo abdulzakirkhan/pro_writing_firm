@@ -116,7 +116,7 @@ const OrderSummaryCard = () => {
       <div className="">
         <Link
           to={"/orders"}
-          className="flex items-center text-xl text-[#13A09D]"
+          className="flex items-center text-xl text-[#6da5f9]"
         >
           <RiArrowLeftSLine size={30} /> Back
         </Link>
@@ -176,7 +176,7 @@ const OrderSummaryCard = () => {
             {/* Download + Marks */}
             <div className="mt-4 flex justify-between items-center">
               <button
-                className={`flex items-center gap-2 ${orderDetails?.downloadFile ? "bg-[#13A09D]"  :"bg-gray-500" }  text-white px-4 py-2 rounded text-sm`}
+                className={`flex items-center gap-2 ${orderDetails?.downloadFile ? "bg-[#6da5f9]"  :"bg-gray-500" }  text-white px-4 py-2 rounded text-sm`}
                 onClick={() => {
                   if (!orderDetails?.downloadFile) {
                     alert("No file available for download.");
@@ -353,7 +353,7 @@ const OrderSummaryCard = () => {
                   {/* Confirm Button */}
                   <button
                     onClick={handleSubmit}
-                    className="w-full bg-[#13A09D] text-white font-medium py-2 rounded hover:bg-teal-600 transition"
+                    className="w-full bg-[#6da5f9] text-white font-medium py-2 rounded hover:bg-teal-600 transition"
                   >
                     Confirm
                   </button>

@@ -20,7 +20,7 @@ export default function FAQS() {
   const tabClass = (tab: string) =>
     `px-6 py-3 rounded-xl transition-all duration-300 cursor-pointer text-lg font-medium ${
       activeTab === tab 
-        ? "bg-gradient-to-r from-[#13A09D] to-[#0D7C7A] text-white shadow-lg" 
+        ? "bg-gradient-to-r from-[#6da5f9] to-[#0D7C7A] text-white shadow-lg" 
         : "text-gray-600 hover:bg-gray-50"
     }`;
     
@@ -60,9 +60,9 @@ export default function FAQS() {
             {getFaqQuestions.map((q, idx) => (
               <li 
                 key={idx} 
-                className="group p-6 bg-white rounded-xl border border-gray-200 hover:border-[#13A09D] transition-all duration-300 shadow-sm hover:shadow-md relative overflow-hidden"
+                className="group p-6 bg-white rounded-xl border border-gray-200 hover:border-[#6da5f9] transition-all duration-300 shadow-sm hover:shadow-md relative overflow-hidden"
               >
-                <div className="absolute left-0 top-0 w-1 h-full bg-[#13A09D] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute left-0 top-0 w-1 h-full bg-[#6da5f9] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <h4 className="text-lg font-semibold text-gray-800 mb-2">Q: {q.question}</h4>
                 <p className="text-gray-600">A: {q.answer}</p>
               </li>

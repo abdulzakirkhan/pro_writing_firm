@@ -29,7 +29,7 @@ export default function Settings() {
   const tabClass = (tab: string) =>
     `cursor-pointer text-sm font-medium px-4 pb-2 ${
       activeTab === tab
-        ? "text-[#13A09D] border-[#13A09D]"
+        ? "text-[#6da5f9] border-[#6da5f9]"
         : "text-gray-500 border-transparent"
     }`;
   const notifications = [
@@ -118,7 +118,7 @@ const allowedTypes = ['image/png'];
             <p className="text-sm text-gray-500">{profileData?.email}</p>
           </div>
         </div>
-        {/* <button type="submit" className="bg-[#13A09D] text-white px-4 py-1 rounded">
+        {/* <button type="submit" className="bg-[#6da5f9] text-white px-4 py-1 rounded">
           Edit
         </button> */}
       </div>
@@ -202,7 +202,7 @@ const allowedTypes = ['image/png'];
             <div className="lg:col-span-2 text-center">
               <button
                 type="submit"
-                className="bg-[#13A09D] text-white px-4 py-1 w-1/3 rounded-lg h-[34px]"
+                className="bg-[#6da5f9] text-white px-4 py-1 w-1/3 rounded-lg h-[34px]"
               >
                 Update
               </button>
@@ -228,7 +228,7 @@ const allowedTypes = ['image/png'];
                 defaultChecked={n.enabled}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-300 peer-checked:bg-[#13A09D] rounded-full peer peer-focus:ring-2 ring-[#13A09D] transition duration-300"></div>
+              <div className="w-11 h-6 bg-gray-300 peer-checked:bg-[#6da5f9] rounded-full peer peer-focus:ring-2 ring-[#6da5f9] transition duration-300"></div>
               <div className="absolute ml-1 w-4 h-4 bg-white rounded-full shadow transform peer-checked:translate-x-5 transition duration-300"></div>
             </label>
           </div>
@@ -240,7 +240,7 @@ const allowedTypes = ['image/png'];
     <div className="space-y-6">
       {dashboardOptions.map((section, idx) => (
         <div key={idx}>
-          <h4 className="text-md font-semibold text-[#13A09D] mb-2">
+          <h4 className="text-md font-semibold text-[#6da5f9] mb-2">
             {section.group}
           </h4>
           <div className="space-y-3">
@@ -258,7 +258,7 @@ const allowedTypes = ['image/png'];
                     defaultChecked={i % 2 === 0}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-300 peer-checked:bg-[#13A09D] rounded-full transition duration-300"></div>
+                  <div className="w-11 h-6 bg-gray-300 peer-checked:bg-[#6da5f9] rounded-full transition duration-300"></div>
                   <div className="absolute w-4 h-4 left-1 top-1 bg-white rounded-full shadow peer-checked:translate-x-5 transition duration-300"></div>
                 </label>
               </div>
@@ -428,7 +428,7 @@ const allowedTypes = ['image/png'];
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-[#13A09D] text-white py-2 rounded-md w-full"
+                className="bg-[#6da5f9] text-white py-2 rounded-md w-full"
               >
                 {isSubmitting ? "Updating..." : "Update Password"}
               </button>

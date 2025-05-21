@@ -18,7 +18,7 @@ export default function OrderSummary({className ="",order,index}: OrderSummaryPr
               className={`w-[47px] h-[48px] flex justify-center items-center rounded-full
           ${order.title === "Complete" ? "bg-[#C4E9C3] text-[#3BB537]" : ""}
           ${order.title === "In Progress" ? "bg-[#F2E4CF] text-[#FCAE30]" : ""}
-          ${index === 0 ? "!bg-[#CDEBEA] !text-[#13A09D]" : ""}`}
+          ${index === 0 ? "!bg-[#CDEBEA] !text-[#6da5f9]" : ""}`}
             >
               {order.icon}
             </div>

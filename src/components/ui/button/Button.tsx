@@ -24,7 +24,7 @@ const Button = ({
   return (
     <button
       {...rest}
-      className={`w-full bg-[#13A09D] text-white rounded-lg hover:bg-[#0F7F7C] transition-colors ${sizeClasses[size]} ${className}`}
+      className={`w-full bg-[#6da5f9] text-white rounded-lg hover:bg-[#0F7F7C] transition-colors ${sizeClasses[size]} ${className}`}
       onClick={onClick}
     >
       {text}

@@ -216,7 +216,7 @@ export default function SignUpForm() {
         <div className="text-center px-10 mb-3">
           <button
             type="submit"
-            className="w-full bg-[#13A09D] text-white py-2 px-4 rounded-lg hover:bg-[#0F7F7C] transition-colors"
+            className="w-full bg-[#6da5f9] text-white py-2 px-4 rounded-lg hover:bg-[#0F7F7C] transition-colors"
           >
             Sign Up
           </button>

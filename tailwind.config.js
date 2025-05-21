@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        tealish: '#13A09D', // Add your brand color
+        tealish: '#6da5f9', // Add your brand color
       },
     },
   },

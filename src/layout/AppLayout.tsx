@@ -41,10 +41,10 @@ const LayoutContent: React.FC = () => {
         </div>
         <div
           className={`flex-1 transition-all ${isChatPage && "lg:!ml-0"} duration-300 ease-in-out ${
-            isExpanded || isHovered ? "lg:ml-[120px]" : "lg:ml-[120px]"
+            isExpanded || isHovered ? "lg:ml-[100px]" : "lg:ml-[200px]"
           } ${isMobileOpen ? "ml-0" : ""}`}
         >
-          <AppHeader />
+          <AppHeader setShowLogoutModal={setShowLogoutModal} />
           <div className={` ${!isChatPage && "p-4 mx-auto md:p-6"} max-w-(--breakpoint-2xl)`}>
             <Outlet />
           </div>

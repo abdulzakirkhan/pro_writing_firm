@@ -28,10 +28,10 @@ const baseUrl=`https://staging.portalteam.org/newfolder/${nwfile}`
       {/* Header Row */}
       <div>
         <div className="flex justify-between items-start">
-          <h3 className="text-[#13A09D] text-xl font-bold mb-1">
+          <h3 className="text-[#6da5f9] text-xl font-bold mb-1">
             {order.batchNo}
           </h3>
-          {/* <MdOutlineKeyboardArrowRight size={35} className="text-[#13A09D]" /> */}
+          {/* <MdOutlineKeyboardArrowRight size={35} className="text-[#6da5f9]" /> */}
           <button onClick={() => {
             // Start download
             const link = document.createElement("a");
@@ -40,7 +40,7 @@ const baseUrl=`https://staging.portalteam.org/newfolder/${nwfile}`
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-          }} className="bg-[#13A09D] text-white text-xs px-3 py-1.5 rounded flex items-center gap-2">
+          }} className="bg-[#6da5f9] text-white text-xs px-3 py-1.5 rounded flex items-center gap-2">
             <FaDownload size={12} />
             Files ({downloadFilesLength})
           </button>

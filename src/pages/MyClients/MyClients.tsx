@@ -90,10 +90,10 @@ export default function MyClients() {
       trend: {
         percent: "8.5%",
         direction: "up",
-        color: "#13A09D",
+        color: "#6da5f9",
         description: "Up from yesterday",
       },
-      badge: <MdOutlineTrendingUp size={28} className="text-[#13A09D]" />,
+      badge: <MdOutlineTrendingUp size={28} className="text-[#6da5f9]" />,
     },
     {
       title: "In Progress",
@@ -312,7 +312,7 @@ export default function MyClients() {
     return (
       <div className="w-full h-[80vh]">
         <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6986F5]"></div>
         </div>
       </div>
     )
@@ -327,7 +327,7 @@ export default function MyClients() {
               <div className="flex px-6 justify-between items-center w-full">
                 <button
                   onClick={() => setMyClientOrders(!myClientOrders)}
-                  className="flex items-center text-[#13A09D] gap-1 text-xl"
+                  className="flex items-center text-[#6da5f9] gap-1 text-xl"
                 >
                   <MdKeyboardArrowLeft size={30} />
                   Back
@@ -434,7 +434,7 @@ export default function MyClients() {
               <div className="w-full lg:col-span-12 py-3">
                 <button
                   onClick={() => setClientProfile(false)}
-                  className="flex items-center text-[#13A09D] gap-1 text-xl"
+                  className="flex items-center text-[#6da5f9] gap-1 text-xl"
                 >
                   <MdKeyboardArrowLeft size={30} />
                   Back
@@ -576,13 +576,13 @@ export default function MyClients() {
                   </div>
 
                   {/* Outstanding Balance Card */}
-                  <div className="flex justify-between items-center lg:w-2/3 h-[140px] bg-[#13A09D] text-white rounded-lg px-6 py-4 shadow-md">
+                  <div className="flex justify-between items-center lg:w-2/3 h-[140px] bg-[#6da5f9] text-white rounded-lg px-6 py-4 shadow-md">
                     <div className="flex flex-col gap-4">
                       <p className="text-sm">Outstanding Balance:</p>
                       <p className="text-2xl font-bold">$20</p>
                     </div>
                     <div className="w-[32px] h-[32px] bg-white rounded-full flex items-center justify-center">
-                      <FaDollarSign className="text-[#13A09D]" size={16} />
+                      <FaDollarSign className="text-[#6da5f9]" size={16} />
                     </div>
                   </div>
                 </div>
@@ -718,7 +718,7 @@ export default function MyClients() {
             <div className="w-full lg:col-span-7">
               <div
                 className="bg-white rounded-xl p-4 shadow max-h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-tealish scrollbar-track-gray-100"
-                style={{ scrollbarColor: "#13A09D !important" }}
+                style={{ scrollbarColor: "#6da5f9 !important" }}
               >
                 {agentClientsLoading ? (
                   <Loader />

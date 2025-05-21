@@ -135,7 +135,7 @@ export default function OrderList() {
       <div className="">
         <Link
           to={"/orders"}
-          className="flex items-center text-xl text-[#13A09D]"
+          className="flex items-center text-xl text-[#6da5f9]"
         >
           <RiArrowLeftSLine size={30} /> Back
         </Link>

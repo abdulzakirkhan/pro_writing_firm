@@ -123,14 +123,14 @@ export default function Home() {
   // const [total, setTotal] = useState(agentCostData?.result?.total_cost || 0)
   const items = [
     {
-      icon: <FaSyncAlt className="text-[#13A09D]" />,
+      icon: <FaSyncAlt className="text-[#6da5f9]" />,
       title: "Current Month",
       subtitle: currentMonthName,
       value: currentMonth,
       valueColor: "text-green-600",
     },
     {
-      icon: <HiMiniChartBarSquare size={25} className="text-[#137DA0]" />,
+      icon: <HiMiniChartBarSquare size={25} className="text-[#8852EE]" />,
       title: "Peak Order Cost",
       subtitle: "March",
       value: peakOrderCost,
@@ -222,7 +222,7 @@ export default function Home() {
     return(
       <div className="w-full md:h-[80vh]">
         <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6986F5]"></div>
         </div>
       </div>
     )
@@ -405,10 +405,10 @@ export default function Home() {
                     <p className="text-sm font-medium text-gray-800">
                       {item.title}
                     </p>
-                    <p className="text-xs text-[#137DA0]">{item.subtitle}</p>
+                    <p className="text-xs font-semibold text-[#8852EE]">{item.subtitle}</p>
                   </div>
                 </div>
-                <div className={`text-sm font-bold ${item.valueColor}`}>
+                <div className={`text-sm font-bold text-[#4DAA4A]`}>
                   {item.value}
                 </div>
               </div>

@@ -21,12 +21,13 @@ import OrderInitiate from "./pages/OrderInitiate/OrderInitiate";
 import FAQS from "./pages/FAQS/FAQS";
 import PendingOrders from "./pages/PendingOrders/PendingOrders";
 import UnpaidOrders from "./pages/UnpaidOrders/UnpaidOrders";
+import AddNewStudent from "./pages/AddNewStudent/AddNewStudent";
 
 export default function App() {
   const user = useSelector((state) => state.auth?.user);
   return (
     <>
-      <PageMeta title="Pro Writng Firm" description="This is React.js " />
+      <PageMeta title="Meta Byte Solutions" description="This is React.js " />
       <Router>
         <ScrollToTop />
         <Routes>
@@ -51,6 +52,7 @@ export default function App() {
               path="/order/:id/order-summary"
               element={<OrderSummaryCard />}
             />
+            <Route path="/ad-new-student" element={<AddNewStudent/>} />
             <Route path="/my-clients" element={<MyClients />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/wallet" element={<Wallet />} />

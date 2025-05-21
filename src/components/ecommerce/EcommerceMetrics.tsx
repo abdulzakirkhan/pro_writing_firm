@@ -25,7 +25,7 @@ export default function EcommerceMetrics({total,totalClient,costIncreasePercenta
       changePercentage: costIncreasePercentage,
       trendDirection: "up",
       icon:<MdOutlineTrendingUp size={20} className={`${typeof costIncreasePercentage === "number" && costIncreasePercentage >= 0 ? "text-[#4DAA4A]" : "text-red-500"}`} />,
-      badge:<AiFillDollarCircle size={35} className="text-primary" />,
+      badge:<AiFillDollarCircle size={35} className="text-[#6da5f9]" />,
     },
     {
       title: "Active Students",
@@ -45,7 +45,7 @@ export default function EcommerceMetrics({total,totalClient,costIncreasePercenta
           <h1 className="text-2xl font-bold text-[#4D4D4D]">{card.title}</h1>
           <div className="mt-5">
             <div className="flex justify-between items-center">
-              <h4 className="mt-2 font-bold text-gray-800 text-2xl">
+              <h4 className="mt-2 font-bold text-[#8852EE] text-2xl">
               {card.value}
               </h4>
               {card.badge}

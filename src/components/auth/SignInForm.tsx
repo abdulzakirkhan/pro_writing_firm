@@ -94,8 +94,8 @@ export default function SignInForm() {
         }}
       />
     <div className="flex flex-col flex-1 lg:justify-center items-center">
-      <div className="w-[233px]">
-        <img src="/images/logo/favicon.png" alt="Logo" className="w-full" />
+      <div className="w-[233px] bg-none">
+        <img src="/images/favicon.png" alt="Logo" className="w-full" />
       </div>
       <h1 className="text-center text-2xl lg:text-4xl font-bold">
         Login to Get Started!
@@ -182,7 +182,7 @@ export default function SignInForm() {
         <div className="text-center px-10">
           <button
             type="submit"
-            className="w-full bg-[#13A09D] text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors"
+            className="w-full bg-[#6da5f9] text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors"
           >
             Login
           </button>

@@ -83,7 +83,7 @@ const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ card, data }) => {
         {card?.paymentStatus === "Paid" && card?.downloadFile && (
           <button
             className={`mt-2 text-white text-xs px-3 h-[38px] rounded flex items-center gap-2 ${
-              card?.downloadFile ? " bg-[#13A09D]" : "bg-gray-500"
+              card?.downloadFile ? " bg-[#6da5f9]" : "bg-gray-500"
             }`}
             onClick={() => {
               if (!card?.downloadFile) {

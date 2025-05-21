@@ -6,7 +6,7 @@ import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import { useTitle } from "../context/TitleContext";
 import { CiMenuFries } from "react-icons/ci";
-const AppHeader: React.FC= () => {
+const AppHeader: React.FC= ({setShowLogoutModal}) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { title } = useTitle();
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -60,7 +60,7 @@ const AppHeader: React.FC= () => {
           >
             <CiMenuFries />
           </button>
-          <h1 className="text-primary text-3xl font-bold">{title}</h1>
+          <h1 className="text-[#6da5f9] text-3xl font-bold">{title}</h1>
         </div>
         <div
           className={`${
@@ -76,10 +76,10 @@ const AppHeader: React.FC= () => {
             {/* <!-- Dark Mode Toggler --> */}
             <NotificationDropdown />
             {/* <!-- Notification Menu Area --> */}
-          <div className="h-10 rounded-2xl w-[3px] !bg-[#13A09D]"></div>
+          <div className="h-10 rounded-2xl w-[3px] !bg-[#6da5f9]"></div>
           </div>
           {/* <!-- User Area --> */}
-          <UserDropdown />
+          <UserDropdown setShowLogoutModal={setShowLogoutModal} />
         </div>
       </div>
     </header>

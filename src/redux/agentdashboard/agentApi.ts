@@ -388,7 +388,9 @@ export const agentApi = api.injectEndpoints({
           body: formData,
         };
       },
-      providesTags: ['AgentPendingOrdersList'],
+      providesTags: ['AgentPendingOrdersList','AgentBatchOrders',
+        'AgentBatchOrdersUnPaid',
+        'creditLimitAgent',],
     }),
 
     deleteOrder: builder.mutation({
@@ -402,7 +404,9 @@ export const agentApi = api.injectEndpoints({
           body: formData,
         };
       },
-      invalidatesTags: ['AgentPendingOrdersList'],
+      invalidatesTags: ['AgentPendingOrdersList','AgentBatchOrders',
+        'AgentBatchOrdersUnPaid',
+        'creditLimitAgent',],
     }),
 
     movePendingOrder: builder.mutation({
@@ -437,6 +441,17 @@ export const agentApi = api.injectEndpoints({
         };
       },
       providesTags: ['AgentBatchOrdersUnPaid'],
+    }),
+
+    agentClientRegistar: builder.mutation({
+      query: (body) => {
+        return {
+          url: `/agent_client_registar_from_app`,
+          method: 'POST',
+          body: body,
+        };
+      },
+      invalidatesTags: ['GetAllAgentClients', 'AgentOrderInititateClients'],
     }),
   }),
 });
@@ -477,5 +492,6 @@ export const {
   useMovePendingOrderMutation,
 
 
-  useGetAgentUnpaidOrdersListBatchQuery
+  useGetAgentUnpaidOrdersListBatchQuery,
+  useAgentClientRegistarMutation
 } = agentApi;

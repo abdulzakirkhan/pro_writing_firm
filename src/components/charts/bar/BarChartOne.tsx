@@ -21,7 +21,7 @@ const BarChartOne = ({title ="",labels, dataSet}) => {
         data: dataSet,
         backgroundColor: (ctx) => {
           const index = ctx.dataIndex;
-          return index === 6 ? '#13A09D' : '#006B9F'; // July is teal, others are blue
+          return index === 6 ? '#6986F5' : '#8852EE'; // July is teal, others are blue
         },
         borderRadius: 5,
         barThickness: 25,

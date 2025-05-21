@@ -28,39 +28,39 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <MdSpaceDashboard />,
+    icon: <MdSpaceDashboard className="hover:text-[#6da5f9]" />,
     name: "Dashboard",
     path: "/",
   },
   {
-    icon: <CgNotes />,
+    icon: <CgNotes className="hover:text-[#6da5f9]" />,
     name: "Orders",
     path: "/orders",
     sPath: "/order-list",
   },
   {
-    icon: <ImUsers  />,
+    icon: <ImUsers className="hover:text-[#6da5f9]"  />,
     name: "My Clients",
     path: "/my-clients",
   },
   {
-    icon: <FaHistory />,
+    icon: <FaHistory className="hover:text-[#6da5f9]" />,
     name: "Payment History",
     path: "/payment-history",
   },
   {
     name: "Wallet",
-    icon: <TbWallet />,
+    icon: <TbWallet className="hover:text-[#6da5f9]" />,
     path: "/wallet",
   },
   {
     name: "Settings",
-    icon: <IoSettingsOutline />,
+    icon: <IoSettingsOutline className="hover:text-[#6da5f9]" />,
     path: "/settings",
   },
   {
     name: "Initiate Order",
-    icon: <PiNote />,
+    icon: <PiNote className="hover:text-[#6da5f9]" />,
     path: "/initiate-order",
   },
   {
@@ -70,7 +70,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "My Pending Orders",
-    icon: <MdPendingActions />,
+    icon: <MdPendingActions className="hover:text-[#6da5f9]" />,
     path: "/my-pending-orders",
   },
 ];
@@ -139,7 +139,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ setShowLogoutModal }) => {
               <span
                 className={`menu-item-icon-size  ${
                   openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "text-[#13A09D]"
+                    ? "text-[#6da5f9]"
                     : "menu-item-icon-inactive"
                 }`}
               >
@@ -165,7 +165,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ setShowLogoutModal }) => {
                 to={nav.path}
                 className={`menu-item ${isExpanded || isHovered || isMobileOpen ? "lg:justify-center" : "!justify-start"} group ${
                   isActive(nav.path)
-                    ? "bg-[#13A09D] text-white"
+                    ? "bg-[#6da5f9] text-white"
                     : "menu-item-inactive"
                 }`}
               >
@@ -298,7 +298,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ setShowLogoutModal }) => {
   return (
     <aside
       className={`fixed flex flex-col lg:mt-0 top-0 left-3 lg:left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${isExpanded || isMobileOpen ? "w-[90%] lg:w-[120px]" : isHovered ? "w-[290px]": "w-[290px]"}
+        ${isExpanded || isMobileOpen ? "w-[90%] lg:w-[100px]" : isHovered ? "w-[290px]": "w-[200px]"}
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
       onMouseLeave={() => setIsHovered(false)}
@@ -310,9 +310,9 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ setShowLogoutModal }) => {
             : " mt-0 py-0 h-[110px]"
         }`}
       >
-        <Link to="/" className="flex w-full items-center justify-center">
+        <Link to="/" className="flex w-full items-center justify-center mt-3">
           <div className="">
-            <img className="h-[80px]" src="/images/logo/logo.png" alt="Logo" />
+            <img className="h-[80px]" src="/favicon.png" alt="Logo" />
           </div>
         </Link>
       </div>

@@ -64,7 +64,7 @@ export default function CostComparisonChart({ graphData }: Props) {
         label: 'Cost Comparison',
         data: costData,
         fill: true,
-        borderColor: '#00A7C5',
+        borderColor: '#8852EE',
         backgroundColor: (context: { chart: any }) => {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
@@ -72,11 +72,11 @@ export default function CostComparisonChart({ graphData }: Props) {
           if (!chartArea) return null;
 
           const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-          gradient.addColorStop(0, 'rgba(0, 167, 197, 0.4)');
-          gradient.addColorStop(1, 'rgba(0, 167, 197, 0.05)');
+          gradient.addColorStop(0, 'rgba(105, 134, 245, 0.4)');
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
           return gradient;
         },
-        pointBackgroundColor: '#00A7C5',
+        pointBackgroundColor: '#8852EE',
         tension: 0.3
       }
     ]

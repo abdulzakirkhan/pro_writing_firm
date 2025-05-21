@@ -125,9 +125,9 @@ export const paymentApi = api.injectEndpoints({
       invalidatesTags: [
         "WalletCards",
         "WalletAmount",
-        "AgentOrdersData",
         "WalletAmount",
         "PaymentCards",
+        "WalletHistory"
       ],
     }),
 
@@ -211,6 +211,21 @@ export const paymentApi = api.injectEndpoints({
         };
       },
     }),
+
+    getWalletHistory: builder.query({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append("clientid", body.agent_id);
+        return {
+          url: `/wallet_transactionhistory_agent`,
+          method: "POST",
+          body:formData
+        };
+      },
+      providesTags: [
+        "WalletHistory","WalletAmount","PaymentCards",
+      ],
+    }),
   }),
 });
 
@@ -229,4 +244,5 @@ export const {
   useMakeMeezanPamentLinkMutation,
   useMakeMeezanPaymentMutation,
   useGetAddOnsPricesQuery,
+  useGetWalletHistoryQuery
 } = paymentApi;

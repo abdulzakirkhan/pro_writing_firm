@@ -72,7 +72,7 @@ export default function PaymentHistory() {
             {/* Amount */}
             <div className="flex justify-between items-center border-b pb-2">
               <h3 className="font-semibold text-lg">Amount:</h3>
-              <span className="text-[#13A09D] font-semibold text-lg">
+              <span className="text-[#6da5f9] font-semibold text-lg">
                 {payment?.currency}
                 {payment.amount}
               </span>

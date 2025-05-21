@@ -496,7 +496,7 @@ export default function Chat() {
             ))}
           </div>
         )}
-        <div className="p-3 border w-1/1 rounded-md border-[#13A09D] flex items-center gap-3 bg-white">
+        <div className="p-3 border w-1/1 rounded-md border-[#6da5f9] flex items-center gap-3 bg-white">
           <input
             onChange={(e) => setMessage(e.target.value)}
             type="text"

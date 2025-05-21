@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetStandardValuesQuery } from "../../redux/sharedApi/sharedApi";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import {
+  useAgentClientRegistarMutation,
   useGetAgentCreditLimitsQuery,
   useGetAllClientsForOrderQuery,
   useGetAllCoursesForOrderQuery,
@@ -16,10 +19,12 @@ import {
   useUploadFileForFileReaderMutation,
   useUploadFileLinkForFileReaderMutation,
 } from "../../redux/ordersApi/ordersApi";
-import { convertDateToYYYYMMDD } from "../../config/indext";
+import { appNameCode, convertDateToYYYYMMDD } from "../../config/indext";
 import toast, { Toaster } from "react-hot-toast";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
+import { useTitle } from "../../context/TitleContext";
+import { Link } from "react-router";
 
 interface FormValues {
   taskSheet: File | null;
@@ -54,7 +59,7 @@ const SUPPORTED_FORMATS = [
   "image/png",
   "image/jpeg",
   "image/jpg",
-  "application/msword", 
+  "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 const validationSchema = Yup.object({
@@ -63,12 +68,12 @@ const validationSchema = Yup.object({
     .test("fileSize", "File too large", (value) => {
       // If value is string (URL) → skip file size check
       if (typeof value === "string") return true;
-  
+
       return value && value.size <= FILE_SIZE_LIMIT_MB * 1024 * 1024;
     })
     .test("fileFormat", "Unsupported file format", (value) => {
       if (typeof value === "string") return true;
-  
+
       return value && SUPPORTED_FORMATS.includes(value.type);
     }),
 
@@ -99,8 +104,20 @@ export default function OrderInitiate() {
     user?.agent_user_id
   );
   const [apiParsedData, setApiParsedData] = useState(null);
-  const [uploadFileForFileReader, { isLoading:uploadFileForFileReaderLoading, error:oploadFileForFileReaderError }] = useUploadFileForFileReaderMutation();
-  const [uploadFileLinkForFileReader,{isLoading:uploadFileLinkForFileReaderLoading,error:uploadFileLinkForFileReaderError}] = useUploadFileLinkForFileReaderMutation();
+  const [
+    uploadFileForFileReader,
+    {
+      isLoading: uploadFileForFileReaderLoading,
+      error: oploadFileForFileReaderError,
+    },
+  ] = useUploadFileForFileReaderMutation();
+  const [
+    uploadFileLinkForFileReader,
+    {
+      isLoading: uploadFileLinkForFileReaderLoading,
+      error: uploadFileLinkForFileReaderError,
+    },
+  ] = useUploadFileLinkForFileReaderMutation();
 
   const [agentInitaiteOrder, { isLoading: agentInitaiateOrderLoading }] =
     useAgentInitiateOrderMutation();
@@ -129,7 +146,7 @@ export default function OrderInitiate() {
   const [preview, setPreview] = useState<string | null>(null);
   const [taskSheetPre, setTaskSheetPre] = useState<string | null>(null);
   const [addintionalModule, setAdditionalModule] = useState("");
-  const [fileReader, setFileReader] = useState(null)
+  const [fileReader, setFileReader] = useState(null);
   const {
     data: paperTopic,
     isLoading: paperTopicLoading,
@@ -164,65 +181,62 @@ export default function OrderInitiate() {
     setTaskSheetPre(null);
   };
   // const { setFieldValue } = useFormikContext();
-  const [ptopic, setPtopic] = useState('');
-  const [courseApi, setCourseApi] = useState('');
-  const [wordCountApi, setWordCountApi] = useState('');
-  const [deadlineApi, setDeadlineApi] = useState('');
-  const [taskSheetApi, setTaskSheetApi] = useState('');
- 
+  const [ptopic, setPtopic] = useState("");
+  const [courseApi, setCourseApi] = useState("");
+  const [wordCountApi, setWordCountApi] = useState("");
+  const [deadlineApi, setDeadlineApi] = useState("");
+  const [taskSheetApi, setTaskSheetApi] = useState("");
+
   const sendAPI = async (res, type) => {
     try {
       // console.log('resposne', { res, type });
       const formData = new FormData();
 
-      formData.append('file_link', res?.data?.file_url); // Replace with actual ID
-      formData.append('customer_id', '100');
-      formData.append('file_type', type);
-      setTaskSheetApi(res?.data?.file_url)
+      formData.append("file_link", res?.data?.file_url); // Replace with actual ID
+      formData.append("customer_id", "100");
+      formData.append("file_type", type);
+      setTaskSheetApi(res?.data?.file_url);
       uploadFileLinkForFileReader(formData)
         .unwrap()
         .then((res) => {
           const { word_count: wc, deadline, paper_topic } = res.data;
-          setPtopic(paper_topic)
+          setPtopic(paper_topic);
           setWordCountApi(wc);
-          setCourseApi('7')
-          const ndAp =convertDateToYYYYMMDD(deadline)
-          setDeadlineApi(ndAp)
+          setCourseApi("7");
+          const ndAp = convertDateToYYYYMMDD(deadline);
+          setDeadlineApi(ndAp);
 
           // // …the rest stays the same
           // setFileReaderPaperTopic(paper_topic);
           // setFileReaderWordCount(wc);
           // setValue('wordCount', wc);
-          const py={id: '7', label: 'General '}
+          const py = { id: "7", label: "General " };
           setSelectedCourse(py);
           // setValue('course', '7');
         });
     } catch (error) {
-      console.error('file parsing failed', error);
+      console.error("file parsing failed", error);
     }
   };
 
-const getFileType = (fileUrl: string): string | null => {
-  if (!fileUrl) return null; // no url? return null
+  const getFileType = (fileUrl: string): string | null => {
+    if (!fileUrl) return null; // no url? return null
 
-  const urlParts = fileUrl.split("?"); // remove any query params
-  const cleanUrl = urlParts[0];
+    const urlParts = fileUrl.split("?"); // remove any query params
+    const cleanUrl = urlParts[0];
 
-  const extensionMatch = cleanUrl.match(/\.([a-zA-Z0-9]+)$/); // extract extension
+    const extensionMatch = cleanUrl.match(/\.([a-zA-Z0-9]+)$/); // extract extension
 
-  if (extensionMatch) {
-    return extensionMatch[1].toLowerCase(); // return extension like 'pdf', 'png'
-  }
+    if (extensionMatch) {
+      return extensionMatch[1].toLowerCase(); // return extension like 'pdf', 'png'
+    }
 
-  return null; // no extension found
-};
+    return null; // no extension found
+  };
 
+  // console.log("standardRates :",standarValues?.result[0]?.standardRates)
 
-
-
-// console.log("standardRates :",standarValues?.result[0]?.standardRates)
-
-// let nrw = standardRates?.[category];
+  // let nrw = standardRates?.[category];
 
   useEffect(() => {
     const uploadFile = async () => {
@@ -230,36 +244,30 @@ const getFileType = (fileUrl: string): string | null => {
         const formData = new FormData();
         formData.append("filemsg", fileReader);
         try {
-          const response = await uploadFileForFileReader(formData).then(
-             (response) =>{
+          const response = await uploadFileForFileReader(formData)
+            .then((response) => {
               // console.log(response.data)
-              const filetype= getFileType(response.data.file_url);
+              const filetype = getFileType(response.data.file_url);
               // console.log("filetype :",filetype)
-              sendAPI(response,filetype)
-             }
-          ).catch(
-            (error) =>{
-              console.log(error)
-            }
-          )
+              sendAPI(response, filetype);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
           // console.log("Response :", response);
           // const url=response?.file_url;
 
           // if(response.status_code ===200){
 
           // }
-
         } catch (error) {
           console.error("Upload error", error);
         }
       }
     };
-  
+
     uploadFile();
-  }, [taskSheetPre])
-  
-
-
+  }, [taskSheetPre]);
 
   const initialValues: FormValues = {
     taskSheet: taskSheetApi,
@@ -274,26 +282,33 @@ const getFileType = (fileUrl: string): string | null => {
     category: "",
     paperSubject: "",
   };
-  if(uploadFileForFileReaderLoading || uploadFileLinkForFileReaderLoading){
-    return(
+  
+ 
+const { setTitle } = useTitle();
+
+  useEffect(() => {
+    setTitle("Initiate Order");
+    // toast.success("Loaded")
+  }, [setTitle]);
+
+
+
+  return (
+    <>
+    {(uploadFileForFileReaderLoading || uploadFileLinkForFileReaderLoading) ? (
       <div className="w-full md:h-[80vh]">
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
         </div>
       </div>
-    )
-  }
-
-  console.log("clients :",clients)
-  return (
-    <>
+    ) :(
       <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">
           Create New Order
         </h1>
 
         <Formik
-         enableReinitialize
+          enableReinitialize
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={async (values, actions) => {
@@ -328,7 +343,8 @@ const getFileType = (fileUrl: string): string | null => {
 
               const slabRanges = Object.keys(ratesSlabes || {});
               slabRanges.sort(
-                (a, b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0])
+                (a, b) =>
+                  parseInt(a.split("-")[0]) - parseInt(b.split("-")[0])
               );
 
               let rate = standardRates[category];
@@ -377,6 +393,7 @@ const getFileType = (fileUrl: string): string | null => {
                   return;
                 }
               }
+              
               const formatedDate = convertDateToYYYYMMDD(deadline);
 
               const formData = new FormData();
@@ -384,7 +401,10 @@ const getFileType = (fileUrl: string): string | null => {
               formData.append("agent_id", user?.agent_user_id);
               formData.append("no_of_copies", selectedClientIds.length);
               formData.append("order_deadline", formatedDate);
-              formData.append("orders_total_price", totalOrderPrice.toString());
+              formData.append(
+                "orders_total_price",
+                totalOrderPrice.toString()
+              );
               formData.append("no_of_words", wordCount.toString());
               formData.append("category", category);
               formData.append(
@@ -417,18 +437,18 @@ const getFileType = (fileUrl: string): string | null => {
               setPreview(null);
               setTaskSheetPre(null);
               setSelectedClientIds([]);
-              setPtopic("")
-              setCourseApi("")
-              setWordCountApi("")
-              setDeadlineApi("")
-              setTaskSheetApi("")
-              setFileName("")
-              setAdditionalModule("")
+              setPtopic("");
+              setCourseApi("");
+              setWordCountApi("");
+              setDeadlineApi("");
+              setTaskSheetApi("");
+              setFileName("");
+              setAdditionalModule("");
             } catch (error) {
               console.error("Submission Error:", error);
               alert("An unexpected error occurred.");
             } finally {
-              actions.resetForm()
+              actions.resetForm();
               actions.setSubmitting(false);
             }
           }}
@@ -450,15 +470,20 @@ const getFileType = (fileUrl: string): string | null => {
                           onChange={(event) => {
                             event.stopPropagation();
                             event.preventDefault();
-                            const file = event.currentTarget.files?.[0] || null;
+                            const file =
+                              event.currentTarget.files?.[0] || null;
                             setFileName(file.name);
-                            setFileReader(file)
+                            setFileReader(file);
                             setTaskSheetPre(URL.createObjectURL(file));
                             setFieldValue("taskSheet", file);
                           }}
                         />
                         {taskSheetPre ? (
-                          <img src={taskSheetPre} alt="" className="max-w-32" />
+                          <img
+                            src={taskSheetPre}
+                            alt=""
+                            className="max-w-32"
+                          />
                         ) : (
                           <svg
                             className="mx-auto h-12 w-12 text-gray-400"
@@ -505,7 +530,8 @@ const getFileType = (fileUrl: string): string | null => {
                           accept=".pdf,.docx,.jpg,.jpeg,.png"
                           className="sr-only"
                           onChange={(event) => {
-                            const file = event.currentTarget.files?.[0] || null;
+                            const file =
+                              event.currentTarget.files?.[0] || null;
                             // console.log("file", file)
                             setPreview(URL.createObjectURL(file));
                             setAdditionalModule(file?.name);
@@ -576,9 +602,9 @@ const getFileType = (fileUrl: string): string | null => {
 
                   {showClientDropdown && (
                     <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow max-h-48 overflow-y-auto">
-                      {clients.map((client) => (
+                      {clients.map((client, index) => (
                         <label
-                          key={client.id}
+                          key={client.id + index}
                           className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
                         >
                           <input
@@ -601,6 +627,10 @@ const getFileType = (fileUrl: string): string | null => {
                           <span className="ml-2 text-sm">{client.label}</span>
                         </label>
                       ))}
+
+                      <div className="py-4 text-center">
+                        <Link to={"/ad-new-student"} className="bg-[#6da5f9] px-6 py-2 rounded-md text-white">Add New Student</Link>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -693,25 +723,27 @@ const getFileType = (fileUrl: string): string | null => {
                   <label className="block text-sm font-medium text-gray-700">
                     Paper Topics *
                   </label>
-                  {selectedCourse?.id === "7" ? <Field
-                    type="text"
-                    name="papertopic"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                    placeholder="Enter word count"
-                  />:
-                  <Field
-                    as="select"
-                    name="papertopic"
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
-                  >
-                    <option value="">Select Topic</option>
-                    {paperTopics.map((subject) => (
-                      <option key={subject?.id} value={subject?.label}>
-                        {subject?.label}
-                      </option>
-                    ))}
-                  </Field>
-                  }
+                  {selectedCourse?.id === "7" ? (
+                    <Field
+                      type="text"
+                      name="papertopic"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                      placeholder="Enter word count"
+                    />
+                  ) : (
+                    <Field
+                      as="select"
+                      name="papertopic"
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
+                    >
+                      <option value="">Select Topic</option>
+                      {paperTopics.map((subject) => (
+                        <option key={subject?.id} value={subject?.label}>
+                          {subject?.label}
+                        </option>
+                      ))}
+                    </Field>
+                  )}
                   <ErrorMessage
                     name="papertopic"
                     component="div"
@@ -745,24 +777,24 @@ const getFileType = (fileUrl: string): string | null => {
                 {/* Similar structure for Subject, Batch, Category, Word Count */}
 
                 {/* <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Paper Topic *
-                  </label>
-                  <Field
-                    type="text"
-                    name="paperTopic"
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                      setFieldValue("paperTopic", e.target.value);
-                    }}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                    placeholder="Paper Topic"
-                  />
-                  <ErrorMessage
-                    name="paperTopic"
-                    component="div"
-                    className="text-red-500 text-sm mt-1"
-                  />
-                </div> */}
+                <label className="block text-sm font-medium text-gray-700">
+                  Paper Topic *
+                </label>
+                <Field
+                  type="text"
+                  name="paperTopic"
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    setFieldValue("paperTopic", e.target.value);
+                  }}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                  placeholder="Paper Topic"
+                />
+                <ErrorMessage
+                  name="paperTopic"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div> */}
               </div>
 
               {/* batches Details Section */}
@@ -812,7 +844,7 @@ const getFileType = (fileUrl: string): string | null => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors duration-200"
+                  className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#6da5f9] focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200"
                 >
                   {isSubmitting ? "Submitting..." : "Create Order"}
                 </button>
@@ -821,6 +853,7 @@ const getFileType = (fileUrl: string): string | null => {
           )}
         </Formik>
       </div>
+    )}
       <Toaster position="top-right" reverseOrder={false} />
     </>
   );

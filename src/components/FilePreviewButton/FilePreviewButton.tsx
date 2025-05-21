@@ -109,7 +109,7 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
     <>
       <button
         onClick={handlePreviewClick}
-        className="text-white bg-[#13A09D] text-xs px-3 py-2 rounded flex items-center gap-1"
+        className="text-white bg-[#6da5f9] text-xs px-3 py-2 rounded flex items-center gap-1"
       >
         <FaFileAlt className="icon" />
         Preview File

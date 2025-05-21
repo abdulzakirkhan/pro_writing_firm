@@ -123,8 +123,8 @@ const TopUpModal = ({ onCancel, onClick ,handlePayment }: TopUpModalProps) => {
               onClick={() => setSelectedAmount(amt)}
               className={`border rounded-lg py-2 font-semibold ${
                 selectedAmount === amt
-                  ? "bg-[#13A09D] text-white"
-                  : "border-[#13A09D] text-[#13A09D]"
+                  ? "bg-[#6da5f9] text-white"
+                  : "border-[#6da5f9] text-[#6da5f9]"
               }`}
             >
               $ {amt.toLocaleString()}

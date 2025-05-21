@@ -267,10 +267,10 @@ export default function Orders() {
       trend: {
         percent: "8.5%",
         direction: "up",
-        color: "#13A09D",
+        color: "#6da5f9",
         description: "Up from yesterday",
       },
-      badge: <MdOutlineTrendingUp size={28} className="text-[#13A09D]" />,
+      badge: <MdOutlineTrendingUp size={28} className="text-[#6da5f9]" />,
     },
     {
       title: "In Progress",
@@ -327,7 +327,7 @@ export default function Orders() {
     const price = Number(order?.balaceamount) || 0;
     return sum + price;
   }, 0);
-  console.log("total :", total);
+  // console.log("total :", total);
   const amnt = Number(walletAmount?.amount || 0);
   const [withVat, setWithVat] = useState(true);
   const [paymentType, setPaymentType] = useState("full"); // "full" or "partial"
@@ -342,7 +342,7 @@ export default function Orders() {
     paymentType === "full" ? total : partialAmount,
     withVat
   );
-  console.log("paymentType :", paymentType);
+  // console.log("paymentType :", paymentType);
   const totalWalletConsumableAmount = consumableObj.totalWalletConsumableAmount;
   const cardConsumableAmount = consumableObj.cardConsumableAmount;
 
@@ -520,8 +520,8 @@ export default function Orders() {
         //   },
         // });
       } else {
-        console.log("respData :", error);
-        // toast.error(respData?.result || "Payment failed.");
+        // console.log("respData :", error);
+        toast.error(respData?.result || "Payment failed.");
         // setIsLoadinPaying(false)
       }
 
@@ -543,6 +543,7 @@ export default function Orders() {
   const [selectedMethod, setSelectedMethod] = useState<"bank" | "gateway">(
     "bank"
   );
+  
   function ChoosePaymentMethod({ onNext }: { onNext: () => void }) {
     // const handleSelect = (method: "bank" | "gateway") => {
     //   setSelectedMethod(method);
@@ -727,8 +728,8 @@ export default function Orders() {
                 onClick={() => handleSelect("bank")}
                 className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
                   selectedMethod === "bank"
-                    ? "border-[#13A09D] bg-[#E6F8F7]"
-                    : "border-gray-300 bg-white hover:border-[#13A09D]"
+                    ? "border-[#6da5f9] bg-[#E6F8F7]"
+                    : "border-gray-300 bg-white hover:border-[#6da5f9]"
                 }`}
               >
                 <h3 className="text-lg font-semibold mb-2">Bank Transfer</h3>
@@ -768,8 +769,8 @@ export default function Orders() {
                 }}
                 className={`cursor-pointer border rounded-2xl p-6 shadow-md transition-all duration-300 ${
                   selectedMethod === "gateway"
-                    ? "border-[#13A09D] bg-[#E6F8F7]"
-                    : "border-gray-300 bg-white hover:border-[#13A09D]"
+                    ? "border-[#6da5f9] bg-[#E6F8F7]"
+                    : "border-gray-300 bg-white hover:border-[#6da5f9]"
                 }`}
               >
                 <h3 className="text-lg font-semibold mb-2">Payment Gateway</h3>
@@ -812,7 +813,7 @@ export default function Orders() {
                     }}
                     className={`pb-2 font-semibold ${
                       paymentType === "full"
-                        ? "border-b-2 border-[#13A09D] text-[#13A09D]"
+                        ? "border-b-2 border-[#6da5f9] text-[#6da5f9]"
                         : "text-gray-600"
                     }`}
                   >
@@ -826,7 +827,7 @@ export default function Orders() {
                     }}
                     className={`pb-2 font-semibold ${
                       paymentType === "partial"
-                        ? "border-b-2 border-[#13A09D] text-[#13A09D]"
+                        ? "border-b-2 border-[#6da5f9] text-[#6da5f9]"
                         : "text-gray-600"
                     }`}
                   >
@@ -845,7 +846,7 @@ export default function Orders() {
                         ref={amountRef}
                         type="number"
                         // min="0"
-                        className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#13A09D]"
+                        className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#6da5f9]"
                         placeholder="Enter partial payment amount"
                         // value={partialAmount}
                         // onChange={(e) => {
@@ -913,7 +914,7 @@ export default function Orders() {
                         </span>
                       )}
                     </div>
-                    {/* <div className="flex justify-between text-base font-semibold text-[#13A09D] mt-2">
+                    {/* <div className="flex justify-between text-base font-semibold text-[#6da5f9] mt-2">
                     <span>Payable Amount:</span>
                     <span>
                       {currency} {total.toFixed(2)}
@@ -1195,7 +1196,7 @@ export default function Orders() {
                         )}
                         {/* Line filled until current */}
                         {index < step - 1 && (
-                          <div className="absolute top-2 left-1/2 w-full h-0.5 bg-[#13A09D] -z-10 transition-all duration-300"></div>
+                          <div className="absolute top-2 left-1/2 w-full h-0.5 bg-[#6da5f9] -z-10 transition-all duration-300"></div>
                         )}
 
                         {/* Dot */}
@@ -1203,14 +1204,14 @@ export default function Orders() {
                           className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
             ${
               isCurrent
-                ? "bg-[#13A09D] border-[#13A09D]"
+                ? "bg-[#6da5f9] border-[#6da5f9]"
                 : "bg-white border-gray-400"
             }`}
                         >
                           <div
                             className={`w-2.5 h-2.5 rounded-full ${
                               isCurrent || isActive
-                                ? "bg-[#13A09D]"
+                                ? "bg-[#6da5f9]"
                                 : "bg-gray-400"
                             }`}
                           ></div>
@@ -1220,7 +1221,7 @@ export default function Orders() {
                         <p
                           className={`mt-2 text-xs text-center ${
                             isCurrent
-                              ? "text-[#13A09D] font-semibold"
+                              ? "text-[#6da5f9] font-semibold"
                               : "text-gray-700"
                           }`}
                         >
@@ -1246,7 +1247,7 @@ export default function Orders() {
                       setIsOrderedList(false);
                       setMakePayment(!makePayment);
                     }}
-                    className="flex text-[#13A09D] items-center gap-1 text-lg font-semibold"
+                    className="flex text-[#6da5f9] items-center gap-1 text-lg font-semibold"
                   >
                     <IoChevronBack size={24} />
                     Back
@@ -1300,7 +1301,7 @@ export default function Orders() {
                         className={`w-[47px] h-[48px] flex justify-center items-center rounded-full
           ${order.title === "Complete" ? "bg-[#C4E9C3] text-[#3BB537]" : ""}
           ${order.title === "In Progress" ? "bg-[#F2E4CF] text-[#FCAE30]" : ""}
-          ${index === 0 ? "bg-[#CDEBEA] text-[#13A09D]" : ""}`}
+          ${index === 0 ? "bg-[#CDEBEA] text-[#6da5f9]" : ""}`}
                       >
                         {order.icon}
                       </div>
@@ -1355,7 +1356,7 @@ export default function Orders() {
                 <h2 className="text-lg font-bold text-black">Order List</h2>
                 <button
                   onClick={handleClickSeeAll}
-                  className="text-[#13A09D] border-b border-[#13A09D] cursor-pointer"
+                  className="text-[#6da5f9] border-b border-[#6da5f9] cursor-pointer"
                 >
                   See All
                 </button>
@@ -1365,7 +1366,7 @@ export default function Orders() {
               <div className="flex items-center flex-wrap gap-3">
                 <button
                   onClick={makePaymentHandle}
-                  className="bg-[#157BA7] text-white text-sm px-4 py-1.5 min-w-[96px] max-w-[150px] h-[39px] rounded"
+                  className="bg-[#8852EE] text-white text-sm px-4 py-1.5 min-w-[96px] max-w-[150px] h-[39px] rounded"
                 >
                   Payment
                 </button>

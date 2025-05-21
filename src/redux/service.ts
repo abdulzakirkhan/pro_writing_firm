@@ -24,6 +24,7 @@ export const api = createApi({
     'AgentOrderInititateClients',
     'AgentPendingOrdersList',
     "PaymentCards",
+    "WalletHistory"
   ],
   endpoints: (builder) => ({}), // Define your endpoints here
 });

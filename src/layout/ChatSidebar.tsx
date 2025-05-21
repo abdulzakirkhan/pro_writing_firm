@@ -34,7 +34,7 @@ const ChatSidebar: React.FC = () => {
         <div className="p-4">
           <div className="flex items-center justify-between">
             <Link to="/">
-              <MdOutlineArrowBackIos size={26} className="text-[#13A09D]" />
+              <MdOutlineArrowBackIos size={26} className="text-[#6da5f9]" />
             </Link>
             {/* Close sidebar on mobile */}
             <button

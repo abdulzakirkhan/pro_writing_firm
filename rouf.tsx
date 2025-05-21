@@ -1,201 +1,110 @@
-import React, { useState, useRef } from "react";
-import {
-  View,
-  ScrollView,
-  Modal,
-  Text,
-  Dimensions,
-  TouchableOpacity
-} from "react-native";
-import { WebView } from "react-native-webview";
-import { useNavigation } from "@react-navigation/native";
-import Pdf from "react-native-pdf";
-
-const PreviewOrderFile = ({ route }) => {
-  const { fileUrl, paymentPercentage = 0.5 } = route?.params || {};
-  const fileType = fileUrl?.split('.').pop()?.toLowerCase();
-  const navigation = useNavigation();
-
-  const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [restricted, setRestricted] = useState(false);
-
-  const [numPages, setNumPages] = useState(0);
-  const [allowedPages, setAllowedPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const scrollViewRef = useRef(null);
-
-  // DOCX: Scroll restriction logic
-  const handleScroll = (event) => {
-    const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
-    const scrollPosition = contentOffset.y + layoutMeasurement.height;
-    const totalHeight = contentSize.height;
-
-    if (scrollPosition >= totalHeight * paymentPercentage && scrollEnabled) {
-      setScrollEnabled(false);
-      setRestricted(true);
-      setModalVisible(true);
-      scrollViewRef.current?.scrollTo({
-        y: totalHeight * paymentPercentage,
-        animated: false
-      });
-    }
-  };
-
-  // PDF: Page-based restriction
-  const handlePdfLoadComplete = (pages) => {
-    const allowed = Math.max(1, Math.ceil(pages * paymentPercentage));
-    console.log("Allowed pages",allowed)
-    setNumPages(pages);
-    setAllowedPages(allowed);
-  };
-
-  const handlePdfPageChanged = (page) => {
-    setCurrentPage(page);
-    if (page >= allowedPages && !restricted) {
-      setRestricted(true);
-      setModalVisible(true);
-    }
-  };
-
-  const handleAccessDenied = () => {
-    setModalVisible(false);
-    setRestricted(false);
-    navigation.navigate("AgentOrders");
-  };
-
-  return (
-    <View style={{ flex: 1 }}>
-
-      {/* ✅ DOCX Preview with scroll control */}
-      {fileType === "docx" && !restricted && (
-        <ScrollView
-          ref={scrollViewRef}
-          style={{ flex: 1 }}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          scrollEnabled={scrollEnabled}
-        >
-          <View style={{ height: Dimensions.get("window").height * 3 }}>
-            <WebView
-              source={{
-                uri: `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`
-              }}
-              style={{
-                height: Dimensions.get("window").height * 1.5,
-                width: Dimensions.get("window").width
-              }}
-              scrollEnabled={false}
-            />
-          </View>
-        </ScrollView>
-      )}
-
-      {/* ✅ PDF Preview with page restriction */}
-      {fileType === "pdf" && (
-        <View style={{ flex: 1 }}>
-          <Pdf
-            source={{ uri: `https://icseindia.org/document/sample.pdf`, cache: true }}
-            trustAllCerts={false}
-            onLoadComplete={handlePdfLoadComplete}
-            onPageChanged={handlePdfPageChanged}
-            onError={(error) => console.log("PDF Error:", error)}
-            style={{ flex: 1, width: Dimensions.get("window").width }}
-          />
-
-          {/* Overlay to block PDF when restricted */}
-          {restricted && (
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.9)",
-                justifyContent: "center",
-                alignItems: "center",
-                zIndex: 999
-              }}
-            >
-              <Text style={{ color: "white", fontSize: 16, marginBottom: 20, textAlign: "center" }}>
-                You can only preview the first {allowedPages} pages. Unlock the full file by paying.
-              </Text>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#13A09D",
-                  padding: 12,
-                  borderRadius: 5
-                }}
-                onPress={handleAccessDenied}
-              >
-                <Text style={{ color: "white", fontWeight: "bold" }}>Go to Payment</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* ✅ Common Modal for both PDF & DOCX */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 p-4">
+  {pendingOrders.map((order, index) => {
+    const batch = batches.find(b => b.id === order.batch_id);
+    return (
+      <div
+        key={order.pendinglistid}
+        className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 hover:border-gray-200 group relative overflow-hidden"
       >
-        <View style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "rgba(0,0,0,0.9)", // Matching black overlay
-          zIndex: 999,
-          elevation: 10
-        }}>
-          <View style={{
-            backgroundColor: "white",
-            padding: 20,
-            borderRadius: 10,
-            alignItems: "center",
-            width: "80%",
-          }}>
-            <Text style={{ fontSize: 16, textAlign: "center", marginBottom: 20 }}>
-              You’ve reached the preview limit. Please make payment to continue.
-            </Text>
-            <TouchableOpacity
-              onPress={handleAccessDenied}
-              style={{ backgroundColor: "#13A09D", padding: 10, borderRadius: 5 }}
-            >
-              <Text style={{ color: "white" }}>OK</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
-};
+        {/* Status Indicator Ribbon */}
+        <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-cyan-400 to-[#254E5C]"></div>
 
-export default PreviewOrderFile;
+        {/* Card Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-cyan-50 rounded-lg">
+              <ClipboardDocumentIcon className="h-6 w-6 text-cyan-600" />
+            </div>
+            <div>
+              <span className="block font-semibold text-gray-900">Order ID</span>
+              <span className="font-mono text-sm text-cyan-600">#{order.pendinglistid}</span>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setSelectedOrderId(order.pendinglistid);
+              setShowDeleteModal(true);
+            }}
+            className="p-2 hover:bg-red-50 rounded-full transition-colors"
+          >
+            <TrashIcon className="h-5 w-5 text-red-400 hover:text-red-600" />
+          </button>
+        </div>
 
-
-
-
-{fileType === "docx" && (
-              <div ref={scrollViewRef} onScroll={handleScroll}
-                className="h-[80vh]"
-                
-              >
-                <Iframe
-                  url={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                    fileUrl
-                  )}`}
-                  width="100%"
-                //   height={`${iframeHeight}px`}
-                className="h-[80vh]"
-                  display="block"
-                  position="relative"
-                />
-                {/* <div className="p-4 text-sm text-gray-600">
-                  Scroll limit: {paymentPercentage}% of document available
-                </div> */}
+        {/* Order Details */}
+        <div className="space-y-6">
+          {/* Batch Info */}
+          <div className="bg-gray-50 p-4 rounded-xl">
+            <div className="flex items-center space-x-3">
+              <CubeIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Batch</p>
+                <p className="font-semibold text-gray-900">{batch?.label || 'N/A'}</p>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* User Info Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <UserCircleIcon className="h-5 w-5" />
+                <span className="text-sm font-medium">Agent</span>
+              </div>
+              <p className="font-semibold text-gray-900 truncate">{order.agent_name}</p>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <UserIcon className="h-5 w-5" />
+                <span className="text-sm font-medium">Client</span>
+              </div>
+              <p className="font-semibold text-gray-900 truncate">
+                {order.clientname || 'No Name'}
+              </p>
+            </div>
+          </div>
+
+          {/* Paper Details */}
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <DocumentTextIcon className="h-5 w-5" />
+                <span className="text-sm font-medium">Topic</span>
+              </div>
+              <p className="font-semibold text-gray-900 leading-tight">
+                {order.paper_topc}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-indigo-50 p-3 rounded-lg">
+                <p className="text-xs font-medium text-indigo-600 mb-1">Words</p>
+                <p className="font-bold text-indigo-700 text-xl">{order.no_of_words}</p>
+              </div>
+              <div className="bg-emerald-50 p-3 rounded-lg">
+                <p className="text-xs font-medium text-emerald-600 mb-1">Price</p>
+                <div className="flex items-center">
+                  <CurrencyDollarIcon className="h-5 w-5 text-emerald-600 mr-1" />
+                  <span className="font-bold text-emerald-700 text-xl">{order.price}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <button 
+            onClick={() => {
+              setSelectedOrderId(order.pendinglistid);
+              setShowMoveOrderModal(true);
+            }}
+            className="w-full bg-gradient-to-r from-cyan-500 to-[#254E5C] hover:from-cyan-600 hover:to-[#2c5d6d] text-white font-semibold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02]"
+          >
+            Move to Order List
+            <ArrowRightIcon className="h-4 w-4 inline-block ml-2" />
+          </button>
+        </div>
+      </div>
+    );
+  })}
+</div>

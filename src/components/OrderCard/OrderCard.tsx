@@ -32,10 +32,10 @@ const OrderCard : React.FC<OrderCardProps>  = ({card}) => {
       {/* Header Row */}
       <div>
         <div className="flex justify-between items-start">
-          <h3 className="text-[#13A09D] text-xl font-bold mb-1">
+          <h3 className="text-[#6da5f9] text-xl font-bold mb-1">
             {card?.batchNo}
           </h3>
-          <MdOutlineKeyboardArrowRight size={35} className="text-[#13A09D]" />
+          <MdOutlineKeyboardArrowRight size={35} className="text-[#6da5f9]" />
         </div>
       </div>
       <div className="flex justify-between items-center gap-2">
@@ -43,7 +43,7 @@ const OrderCard : React.FC<OrderCardProps>  = ({card}) => {
           {card?.title} <br />
           Assignment <span className="text-gray-500">({card?.orders.length})</span>
         </p>
-        <button className="bg-[#13A09D] text-white text-xs px-3 py-1.5 rounded flex items-center gap-2">
+        <button className="bg-[#6da5f9] text-white text-xs px-3 py-1.5 rounded flex items-center gap-2">
           <FaDownload size={12} />
           Files ({card?.fileCount})
         </button>
