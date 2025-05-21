@@ -70,9 +70,7 @@ export default function Chat() {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
-    console.log("Stoped")
   };
-  console.log("audio url", audioUrl)
   const startRecording = async () => {
     try {
       console.log("Start")
@@ -294,7 +292,6 @@ export default function Chat() {
     }
   }, [messages]);
 
-console.log("messages :",messages)
   return (
     <div className="flex flex-col h-auto lg:h-full relative">
       {/* Header */}
