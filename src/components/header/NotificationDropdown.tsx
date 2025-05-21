@@ -43,6 +43,8 @@ export default function NotificationDropdown() {
     };
   }, [open]);
 
+  console.log("notifications :",notifications)
+
   return (
     <div className="relative">
       {/* Notification Icon */}
@@ -145,14 +147,7 @@ export default function NotificationDropdown() {
             {notification.message}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {new Date(notification.utctime).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })}
+            {notification?.utctime}
           </p>
         </div>
         {notification.read_status === "0" && (
