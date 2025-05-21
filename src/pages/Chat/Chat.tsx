@@ -39,7 +39,7 @@ export default function Chat() {
   } = useGetAllChatsQuery({ id: user?.agent_user_id, page });
 
   const result = getAllChats?.result;
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(getAllChats?.result || []);
 
   const {
     data: currentUserChatSession,
@@ -240,34 +240,50 @@ export default function Chat() {
 
   useEffect(() => {
     if (getAllChats?.result) {
-      setMessages(getAllChats.result);
+      setMessages(getAllChats?.result);
     }
   }, [getAllChats]);
-  useEffect(() => {
-    const channel = pusher.subscribe("demo_pusher");
-    channel.bind_global((eventName: string, data: any) => {
-      const chatMessage = {
-        id: message?.mid,
-        message: message?.msg,
-        msgfile: message?.msgfile,
-        messagefrom: message?.msgfrom,
-        orderSummary: message?.orderSummary,
-        msgstatus: message?.msgstatus,
-        date: message?.msgdate,
-        time: message?.tsdate,
-        respondTo: message?.respondTo,
-      };
-      setMessages((prev) => {
-        const exists = prev.some((m) => m.id === chatMessage.id);
-        if (exists) return prev;
-        return [chatMessage, ...prev];
-      });
-      return () => {
-        channel.unbind_all();
-        channel.unsubscribe();
-      };
+
+
+ useEffect(() => {
+  const channel = pusher.subscribe("demo_pusher");
+  channel.bind_global((eventName: string, data: any) => {
+    const chatMessage = {
+      id: data?.message?.mid,
+      message: data?.message?.msg,
+      msgfile: data?.message?.msgfile,
+      messagefrom: data?.message?.msgfrom,
+      orderSummary: data?.message?.orderSummary,
+      msgstatus: data?.message?.msgstatus,
+      date: data?.message?.msgdate,
+      time: data?.message?.tsdate,
+      respondTo: data?.message?.respondTo,
+    };
+
+    setMessages((prev) => {
+      const alreadyExists = prev.some((m) => m.id === chatMessage.id);
+      if (alreadyExists) return prev;
+
+      // Remove optimistic message with same content
+      const filtered = prev.filter((m) =>
+        m.msgstatus === "sending" &&
+        m.message === chatMessage.message &&
+        m.messagefrom === chatMessage.messagefrom
+          ? false
+          : true
+      );
+      return [...filtered, chatMessage];
     });
-  }, []);
+  });
+
+  return () => {
+    channel.unbind_all();
+    channel.unsubscribe();
+  };
+}, []);
+
+
+
   useEffect(() => {
     if (scrollRef.current) {
       const scrollElement = scrollRef.current as HTMLElement;
@@ -278,6 +294,7 @@ export default function Chat() {
     }
   }, [messages]);
 
+console.log("messages :",messages)
   return (
     <div className="flex flex-col h-auto lg:h-full relative">
       {/* Header */}
@@ -319,7 +336,7 @@ export default function Chat() {
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto max-h-[550px] px-2 py-4 space-y-4 bg-[#f5f5f5]"
+        className="flex-1 overflow-y-auto max-h-[550px] px-2 pt-8 pb-32 space-y-4 bg-[#f5f5f5]"
       >
         {groupMessagesByDate(messages).map((section, sectionIndex) => (
           <div key={sectionIndex} className="mt-4">
@@ -374,10 +391,10 @@ export default function Chat() {
                     msgArray = [];
                   }
                 }
-
+                const isBlobUrl = msgfile?.startsWith("blob:");
                 return (
                   <div
-                    key={msg.id}
+                    key={msg.id + sectionIndex}
                     className={`flex w-full ${
                       isUser ? "justify-end" : "justify-start"
                     } px-2 mb-1`}
@@ -401,10 +418,10 @@ export default function Chat() {
                       {/* Handle media messages */}
                       {!message && msgfile && (
                         <div className="mt-1">
-                          {isImage ? (
+                          {isImage && msgfile ? (
                             <>
                               <img
-                                src={`https://staging.portalteam.org/newchatfilesuploads/${msgfile}`}
+                                src={isBlobUrl ? msgfile : `https://staging.portalteam.org/newchatfilesuploads/${msgfile}`}
                                 alt="image"
                                 className="max-w-xl rounded-lg"
                               />
@@ -496,6 +513,7 @@ export default function Chat() {
             ))}
           </div>
         )}
+
         <div className="p-3 border w-1/1 rounded-md border-[#6da5f9] flex items-center gap-3 bg-white">
           <input
             onChange={(e) => setMessage(e.target.value)}
