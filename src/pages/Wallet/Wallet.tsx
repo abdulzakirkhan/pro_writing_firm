@@ -203,11 +203,11 @@ export default function Wallet() {
                     <th className="py-2 min-w-[40px]">Sr. No</th>
                     <th className="py-2 min-w-[180px]">Payment Method</th>
                     <th className="py-2 w-[300px]">Description</th>
-                    <th className="py-2 min-w-[120px]">Date</th>
-                    <th className="py-2 min-w-[90px]">Time</th>
+                    <th className="py-2 min-w-[140px]">Date</th>
+                    <th className="py-2 min-w-[120px]">Time</th>
                     <th className="py-2 min-w-[90px]">Amount</th>
-                    <th className="py-2 min-w-[110px]">Service Charges</th>
-                    <th className="py-2 min-w-[110px]">Credited Amount</th>
+                    <th className="py-2 min-w-[130px]">Service Charges</th>
+                    <th className="py-2 min-w-[200px]">Credited Amount</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-700">
