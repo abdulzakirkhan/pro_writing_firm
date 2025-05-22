@@ -377,7 +377,7 @@ export const agentApi = api.injectEndpoints({
     markAllReadNotifications: builder.mutation({
       query: (body) => {
         return {
-          url: `/mark_all_read_notifications`,
+          url: `/Agent_api/mark_all_read_notifications`,
           method: 'POST',
           body,
         };
