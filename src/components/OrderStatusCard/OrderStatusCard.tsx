@@ -45,7 +45,7 @@ const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ card, data }) => {
     }
   }, [card?.paymentStatus,card?.downloadFile]);
 
-console.log("card :",card)
+
 
   return (
     <Link
@@ -135,7 +135,7 @@ console.log("card :",card)
         </p>
         <p className="text-sm  font-semibold text-[#D33316] my-0 -mt-1">
           Due:{" "}
-          <span className="">${card?.paymentStatus === "Un Paid" ? card?.price : card?.paymentStatus === "Paid" ? 0 : card?.balaceamount === null ? 0 : card?.balaceamount}</span>
+          <span className="">${card?.paymentStatus === "Un Paid" ? card?.price : card?.paymentStatus === "Paid" ? 0 : card?.balaceamount === null ? 0 : Number(card?.balaceamount).toFixed(2)}</span>
         </p>
         <p className={`text-sm`}>
           Status:{" "}

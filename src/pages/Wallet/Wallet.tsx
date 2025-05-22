@@ -195,14 +195,14 @@ export default function Wallet() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               History
             </h3>
-            <div className="overflow-auto h-[452px]">
+            <div className="overflow-x-auto h-[452px]">
               <table className="text-sm text-left border-collapse">
                 <thead className="text-[#6da5f9] border-b">
                   <tr>
-                    <th className="py-2 min-w-[40px]">Sr. No</th>
-                    <th className="py-2 min-w-[180px]">Payment Method</th>
-                    <th className="py-2 w-[300px]">Description</th>
-                    <th className="py-2 min-w-[140px]">Date</th>
+                    <th className="py-2 min-w-[70px]">Sr. No</th>
+                    <th className="py-2 min-w-[240px]">Payment Method</th>
+                    <th className="py-2 w-[350px]">Description</th>
+                    <th className="py-2 min-w-[160px]">Date</th>
                     <th className="py-2 min-w-[120px]">Time</th>
                     <th className="py-2 min-w-[90px]">Amount</th>
                     <th className="py-2 min-w-[130px]">Service Charges</th>
@@ -230,11 +230,11 @@ export default function Wallet() {
                               entry?.transactionkey?.length - 1
                             )}${entry?.transactionkey?.slice(-1)}`}
                           </td>
-                          <td className="py-2 text-xs">
+                          <td className="py-2">
                             {entry?.Decription}
                           </td>
-                          <td className="py-2 text-xs">{entry?.addedts}</td>
-                          <td className="py-2 text-xs">{time}</td>
+                          <td className="py-2 ps-1">{entry?.addedts}</td>
+                          <td className="py-2">{time}</td>
                           <td className="py-2 font-bold text-xs">
                             {entry?.currency}{" "}
                             {Number(entry?.amount) +
@@ -243,8 +243,8 @@ export default function Wallet() {
                           <td className="py-2 font-bold text-xs">
                             {entry?.currency} {entry?.servicecharges}
                           </td>
-                          <td className="py-2 font-bold text-xs">
-                            {entry?.currency} {entry?.amount}
+                          <td className="py-2 font-bold text-x">
+                            {entry?.currency} {Math.max(0, Number(entry?.amount))}
                           </td>
                         </tr>
                       );

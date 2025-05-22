@@ -3,12 +3,8 @@ import { FaDownload } from "react-icons/fa";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 const Order = ({ order }) => {
   const orders = order?.orders;
-  const downloadFiles = orders[0]?.downloadFiles;
-  const downloadFilesLength = Array.isArray(downloadFiles)
-    ? downloadFiles.length
-    : !downloadFiles
-    ? 1
-    : 0;
+  const downloadFiles = orders[0]?.downloadFiles === null ? 0 : orders[0].downloadFiles;
+  const downloadFilesLength = Array.isArray(downloadFiles) ? downloadFiles.length : !downloadFiles? 0: 0;
 const nwfile=order.orders[0]?.downloadFile;
 
 const baseUrl=`https://staging.portalteam.org/newfolder/${nwfile}`
@@ -34,6 +30,7 @@ const baseUrl=`https://staging.portalteam.org/newfolder/${nwfile}`
           {/* <MdOutlineKeyboardArrowRight size={35} className="text-[#6da5f9]" /> */}
           <button onClick={() => {
             // Start download
+            if(nwfile === null)return
             const link = document.createElement("a");
             link.href = baseUrl;
             link.download = ""; // optional, you can put custom filename here e.g. "order-file.pdf"
