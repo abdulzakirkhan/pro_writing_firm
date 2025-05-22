@@ -779,7 +779,7 @@ export default function Orders() {
                   <span>{total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Proceesing Fee :</span>
+                  <span>Proceesing Fee (04%):</span>
                   <span>{acutalServiceFee}</span>
                 </div>
                 <div className="flex justify-between items-center">

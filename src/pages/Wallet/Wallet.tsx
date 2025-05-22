@@ -18,7 +18,11 @@ export default function Wallet() {
   const { setTitle } = useTitle();
   const [showModal, setShowModal] = useState(false);
   const user = useSelector((state) => state.auth?.user);
-  const { data, error, isLoading:walletHistoryLoading  } = useGetWalletHistoryQuery({
+  const {
+    data,
+    error,
+    isLoading: walletHistoryLoading,
+  } = useGetWalletHistoryQuery({
     agent_id: user?.agent_user_id,
   });
   const {
@@ -157,8 +161,7 @@ export default function Wallet() {
     setTitle("Wallet");
   }, [setTitle]);
 
-
-  console.log("oldHistory :",oldHistory)
+  console.log("oldHistory :", oldHistory);
   return (
     <>
       <div className="p-6 space-y-6">
@@ -183,72 +186,85 @@ export default function Wallet() {
         </div>
 
         {/* Table */}
-        {paymentHistoryLoading ? <div className="mt-32"> <Loader /></div> : <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">History</h3>
-          <div className="overflow-auto h-[452px]">
-            <table className="text-sm text-left border-collapse">
-              <thead className="text-[#6da5f9] border-b">
-                <tr>
-                  <th className="py-2 !min-w-[40px]">Sr. No</th>
-                  <th className="py-2">Payment Method</th>
-                  <th className="py-2">Decription</th>
-                  <th className="py-2">Date</th>
-                  <th className="py-2">Time</th>
-                  <th className="py-2">Amount</th>
-                  <th className="py-2">Service Charges</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-700">
-                {oldHistory.length > 0 ? (
-                  oldHistory.map((entry, index) => {
-                    const time = entry?.addedts.split(' ')[1]; // "11:44:19"
-
-                    if(walletHistoryLoading){
-                      return(
+        {paymentHistoryLoading ? (
+          <div className="mt-32">
+            {" "}
+            <Loader />
+          </div>
+        ) : (
+          <div className="bg-white p-6 rounded-xl shadow-md">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              History
+            </h3>
+            <div className="overflow-auto h-[452px]">
+              <table className="text-sm text-left border-collapse">
+                <thead className="text-[#6da5f9] border-b">
+                  <tr>
+                    <th className="py-2 min-w-[40px]">Sr. No</th>
+                    <th className="py-2 min-w-[180px]">Payment Method</th>
+                    <th className="py-2 w-[300px]">Description</th>
+                    <th className="py-2 min-w-[120px]">Date</th>
+                    <th className="py-2 min-w-[90px]">Time</th>
+                    <th className="py-2 min-w-[90px]">Amount</th>
+                    <th className="py-2 min-w-[110px]">Service Charges</th>
+                    <th className="py-2 min-w-[110px]">Credited Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-700">
+                  {walletHistoryLoading ? (
+                    <tr>
+                      <td colSpan={8} className="text-center py-4">
                         <Loader />
-                      )
-                    }
-                    return (
-                      <>
-                        <tr key={entry.id} className="border-b last:border-none">
-                          <td className="py-2 min-w-[40px]">{index + 1}.</td>
-                          <td className="py-2 w-[210px] !min-w-[180px]">
+                      </td>
+                    </tr>
+                  ) : oldHistory.length > 0 ? (
+                    oldHistory.map((entry, index) => {
+                      const time = entry?.addedts?.split(" ")[1] || "";
+                      return (
+                        <tr
+                          key={entry.id}
+                          className="border-b last:border-none"
+                        >
+                          <td className="py-2">{index + 1}.</td>
+                          <td className="py-2">
                             {`${"*".repeat(
-                              entry?.transactionkey.length - 1
-                            )}${entry?.transactionkey.slice(-1)}`}
+                              entry?.transactionkey?.length - 1
+                            )}${entry?.transactionkey?.slice(-1)}`}
                           </td>
-                          <td className="py-2 w-[300px]">
-                            <span className="text-xs">{entry?.Decription}</span>
+                          <td className="py-2 text-xs">
+                            {entry?.Decription}
                           </td>
-                          <td className="py-2 !min-w-[160px] text-xs">
-                            {entry?.addedts}
+                          <td className="py-2 text-xs">{entry?.addedts}</td>
+                          <td className="py-2 text-xs">{time}</td>
+                          <td className="py-2 font-bold text-xs">
+                            {entry?.currency}{" "}
+                            {Number(entry?.amount) +
+                              Number(entry?.servicecharges)}
                           </td>
-                          <td className="py-2 !min-w-[160px] text-xs">
-                            {time}
+                          <td className="py-2 font-bold text-xs">
+                            {entry?.currency} {entry?.servicecharges}
                           </td>
-                          <td className="py-2 !min-w-[160px] font-bold text-xs">
-                            {entry?.currency} {Number(entry?.amount) + Number(entry?.servicecharges)}
-                          </td>
-                          <td className="py-2 !min-w-[160px] font-bold text-xs">
-                          {entry?.currency}  {entry?.servicecharges}
+                          <td className="py-2 font-bold text-xs">
+                            {entry?.currency} {entry?.amount}
                           </td>
                         </tr>
-                      </>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="text-center text-gray-500 py-4">
-                      No Top-up history found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="text-center text-gray-500 py-4"
+                      >
+                        No Top-up history found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>}
-
-
+        )}
       </div>
 
       {showModal && (
