@@ -161,7 +161,6 @@ export default function Wallet() {
     setTitle("Wallet");
   }, [setTitle]);
 
-  console.log("oldHistory :", oldHistory);
   return (
     <>
       <div className="p-6 space-y-6">

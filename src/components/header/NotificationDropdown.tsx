@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { RxCross1 } from "react-icons/rx";
 import {
   useGetNotificationByIdQuery,
+  useMarkAllReadNotificationsMutation,
   useMarkReadNotificationMutation,
 } from "../../redux/agentdashboard/agentApi";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 export default function NotificationDropdown() {
   const [open, setOpen] = useState(false);
@@ -19,6 +21,7 @@ export default function NotificationDropdown() {
   const [markNotificationbyId, { isLoading: markNotificationbyIdLoading }] =
     useMarkReadNotificationMutation();
 
+   const [markAllReadNotifications, { isLoading, isSuccess, error }] = useMarkAllReadNotificationsMutation();
   const notifications = getNotificationsById?.result || [];
 
   const handleClick = async (id) => {
@@ -55,16 +58,15 @@ export default function NotificationDropdown() {
 
 
 
-  const handleReadAll = () => {
-    if(unreadNotificationIds.length > 1){
-      const body = new FormData();
-      body.append("notification_ids", unreadNotificationIds.join(","));
-      console.log("id :",unreadNotificationIds)
-    }else if(unreadNotificationIds.length === 1){
-      const singleId =unreadNotificationIds[0]
-      console.log("singleId",singleId)
-    }else{
-      console.log("no unread notifications")
+  const handleReadAll =async () => {
+    try {
+      const fomData=new FormData();
+      fomData.append("agent_id",user?.agent_user_id);
+      console.log("agent_id",user?.agent_user_id)
+      // return
+      const res=await markAllReadNotifications(fomData);
+    } catch (error) {
+      toast.error(error)
     }
   }
   

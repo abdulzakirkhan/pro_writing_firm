@@ -374,6 +374,16 @@ export const agentApi = api.injectEndpoints({
       },
       invalidatesTags: ['Agentnotification'],
     }),
+    markAllReadNotifications: builder.mutation({
+      query: (body) => {
+        return {
+          url: `/mark_all_read_notifications`,
+          method: 'POST',
+          body,
+        };
+      },
+      invalidatesTags: ['Agentnotification'],
+    }),
 
 
 
@@ -478,6 +488,7 @@ export const {
   useInsertRequestRevesionMutation,
   useGetNotificationByIdQuery,
   useMarkReadNotificationMutation,
+  useMarkAllReadNotificationsMutation,
   useGetTopClientsDataQuery,
   useGetAllPaperSubjectForOrdersQuery,
   useGetPaperTopicFromCourseQuery,
