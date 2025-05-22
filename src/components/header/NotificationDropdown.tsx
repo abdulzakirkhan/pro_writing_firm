@@ -47,6 +47,27 @@ export default function NotificationDropdown() {
 
   const unreadCount = notifications.filter(n => n.read_status === "0").length;
 
+
+  
+ const unreadNotificationIds = notifications
+  .filter((n) => n.read_status === "0")
+  .map((n) => n.id) || [];
+
+
+
+  const handleReadAll = () => {
+    if(unreadNotificationIds.length > 1){
+      const body = new FormData();
+      body.append("notification_ids", unreadNotificationIds.join(","));
+      console.log("id :",unreadNotificationIds)
+    }else if(unreadNotificationIds.length === 1){
+      const singleId =unreadNotificationIds[0]
+      console.log("singleId",singleId)
+    }else{
+      console.log("no unread notifications")
+    }
+  }
+  
   return (
     <div className="relative">
       {/* Notification Icon */}
@@ -87,9 +108,10 @@ export default function NotificationDropdown() {
             className="bg-white relative rounded-lg shadow-lg w-[400px] lg:w-[600px] h-full  overflow-y-auto p-6 transform transition-all scale-95 animate-fadeIn"
           >
             <h2 className="text-xl font-semibold mb-4">Notifications</h2>
+            <button className="underline hover:text-[#6DA5F9]" onClick={handleReadAll}>Read All</button>
 
             {/* Notifications List */}
-            <ul className="space-y-3">
+            <ul className="space-y-3 mt-8">
               {/* {notifications.map((notification) => (
                 <li
                   key={notification.id} onClick={() =>handleClick(notification?.id)}

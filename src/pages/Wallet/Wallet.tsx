@@ -158,6 +158,7 @@ export default function Wallet() {
   }, [setTitle]);
 
 
+  console.log("oldHistory :",oldHistory)
   return (
     <>
       <div className="p-6 space-y-6">
@@ -185,7 +186,7 @@ export default function Wallet() {
         {paymentHistoryLoading ? <div className="mt-32"> <Loader /></div> : <div className="bg-white p-6 rounded-xl shadow-md">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">History</h3>
           <div className="overflow-auto h-[452px]">
-            <table className="w-full h-[452px] text-sm text-left border-collapse">
+            <table className="text-sm text-left border-collapse">
               <thead className="text-[#6da5f9] border-b">
                 <tr>
                   <th className="py-2 !min-w-[40px]">Sr. No</th>
@@ -211,24 +212,24 @@ export default function Wallet() {
                       <>
                         <tr key={entry.id} className="border-b last:border-none">
                           <td className="py-2 min-w-[40px]">{index + 1}.</td>
-                          <td className="py-2 !min-w-[160px]">
+                          <td className="py-2 w-[210px] !min-w-[180px]">
                             {`${"*".repeat(
                               entry?.transactionkey.length - 1
                             )}${entry?.transactionkey.slice(-1)}`}
                           </td>
-                          <td className="py-2 !min-w-[160px]">
-                            {entry?.Decription}
+                          <td className="py-2 w-[300px]">
+                            <span className="text-xs">{entry?.Decription}</span>
                           </td>
-                          <td className="py-2 !min-w-[160px]">
+                          <td className="py-2 !min-w-[160px] text-xs">
                             {entry?.addedts}
                           </td>
-                          <td className="py-2 !min-w-[160px]">
+                          <td className="py-2 !min-w-[160px] text-xs">
                             {time}
                           </td>
-                          <td className="py-2 !min-w-[160px] font-bold">
-                            {entry?.currency} {entry?.amount}
+                          <td className="py-2 !min-w-[160px] font-bold text-xs">
+                            {entry?.currency} {Number(entry?.amount) + Number(entry?.servicecharges)}
                           </td>
-                          <td className="py-2 !min-w-[160px] font-bold">
+                          <td className="py-2 !min-w-[160px] font-bold text-xs">
                           {entry?.currency}  {entry?.servicecharges}
                           </td>
                         </tr>

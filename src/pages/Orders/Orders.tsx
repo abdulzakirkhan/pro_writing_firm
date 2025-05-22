@@ -738,18 +738,18 @@ export default function Orders() {
                   <span>{total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Proceesing Fee :</span>
-                  <span>04 %</span>
+                  <span>Proceesing Fee (04%):</span>
+                  <span>{acutalServiceFee}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="line-through">Vat (20%):</span>
-                  <span className="line-through">04 %</span>
+                  <span className="line-through">{actualVatFee}</span>
                 </div>
                 {isChecked && (
                   <div className="flex text-red-500 justify-between items-center">
                     <span className="">Wallet:</span>
                     <span>
-                      -{currency} {availableBalance}
+                      -{currency} {total < availableBalance ? total : availableBalance}
                     </span>
                   </div>
                 )}
@@ -780,17 +780,17 @@ export default function Orders() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Proceesing Fee :</span>
-                  <span>04 %</span>
+                  <span>{acutalServiceFee}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="">Vat (20%):</span>
-                  <span>04 %</span>
+                  <span>{actualVatFee}</span>
                 </div>
                 {isChecked && (
                   <div className="flex text-red-500 justify-between items-center">
                     <span className="">Wallet:</span>
                     <span>
-                      -{currency} {availableBalance}
+                      -{currency} {total < availableBalance ? total : availableBalance}
                     </span>
                   </div>
                 )}
