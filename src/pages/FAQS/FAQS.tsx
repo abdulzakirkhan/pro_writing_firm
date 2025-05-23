@@ -30,9 +30,8 @@ export default function FAQS() {
         : "text-gray-600 hover:bg-gray-50"
     }`;
 
-  console.log("getFaqCategories :", getFaqCategories);
 
-  if (getFaqQuestionLoading || getFaqCategoryLoading) {
+  if (getFaqQuestionLoading || getFaqCategoryLoading || !categoryId || !getFaqCategories.length) {
     return (
       <div className="flex justify-center items-center h-[70vh]">
         <Loader />
