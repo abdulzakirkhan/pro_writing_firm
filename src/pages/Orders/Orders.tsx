@@ -194,7 +194,6 @@ export default function Orders() {
   const totalOrders = agentOrdersData?.result?.Order_count[0]?.Total_orders;
   const completed = agentOrdersData?.result?.Order_count[0]?.total_completed;
   const inProgress = agentOrdersData?.result?.Order_count[0]?.total_inprogress;
-
   const graphData = agentOrdersData?.result?.graph_data || [];
 
   const monthNames = [
@@ -371,7 +370,6 @@ export default function Orders() {
   const [Html, setHtml] = useState();
   const serviceChargeFee = serviceChargePercentage;
   const vatChargeFee = vatFeePercentage;
-
   const { standardValues } = useGetStandardValuesQuery(user?.agent_user_id);
   const STANDARD_VALUES = standardValues?.result?.[0];
   const [meezanPaymentLink, { isLoading: meezanPaymentLinkLoading }] =
@@ -380,7 +378,6 @@ export default function Orders() {
   const vatPercent = Number((total * 0.2).toFixed(2));
   const allCards = Array.isArray(getAllClientCards) ? getAllClientCards : [];
   const [selectedId, setSelectedId] = useState();
-
   const [selectedCard, setSelectedCard] = useState(null);
   const [addCard, { isLoading: addCardLoading }] = useAddCardMutation();
   const [isAddWallet, setIsAddWallet] = useState(false);

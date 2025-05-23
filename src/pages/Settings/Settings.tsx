@@ -443,6 +443,7 @@ const allowedTypes = ['image/png'];
     // toast.success("Loaded")
   }, [setTitle]);
 
+  console.log("user :",user)
   return (
     <>
     <Toaster position="top-right" reverseOrder={false} />
