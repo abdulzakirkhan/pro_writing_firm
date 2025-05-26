@@ -77,14 +77,17 @@ const validationSchema = Yup.object({
       return value && SUPPORTED_FORMATS.includes(value.type);
     }),
 
-  additionalModule: Yup.mixed()
-    .required("Additional module is required")
+    additionalModule: Yup.mixed()
+    .nullable()
     .test("fileSize", "File too large", (value) => {
-      return value && value.size <= FILE_SIZE_LIMIT_MB * 1024 * 1024;
+      if (!value) return true; // Skip if not provided
+      return value.size <= FILE_SIZE_LIMIT_MB * 1024 * 1024;
     })
     .test("fileFormat", "Unsupported file format", (value) => {
-      return value && SUPPORTED_FORMATS.includes(value.type);
+      if (!value) return true; // Skip if not provided
+      return SUPPORTED_FORMATS.includes(value.type);
     }),
+
   // client: Yup.string().required("Client is required"),
   deadline: Yup.string().required("Deadline is required"),
   wordCount: Yup.number()
@@ -660,7 +663,7 @@ export default function OrderInitiate() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Task Sheet *
+                      Task Sheet <span className="text-red-500">*</span>
                       <div className="mt-1 relative flex items-center justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
                         <div className="text-center">
                           <input
@@ -722,7 +725,7 @@ export default function OrderInitiate() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Additional Module *
+                      Additional Module
                       <div className="mt-1 !relative flex items-center justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
                         <div className="text-center">
                           <input
@@ -788,7 +791,7 @@ export default function OrderInitiate() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2 relative" ref={dropdownRef}>
                     <label className="block text-sm font-medium text-gray-700">
-                      Client (No. of Client=No. of Orders)
+                      Client (No. of Client=No. of Orders) <span className="text-red-400">*</span>
                     </label>
                     <button
                       type="button"
@@ -843,7 +846,7 @@ export default function OrderInitiate() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Set Deadline
+                      Set Deadline <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                       <Field
@@ -871,7 +874,7 @@ export default function OrderInitiate() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Course *
+                      Course <span className="text-red-400">*</span>
                     </label>
                     <Field
                       as="select"
@@ -902,7 +905,7 @@ export default function OrderInitiate() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Categories *
+                      Categories <span className="text-red-400">*</span>
                     </label>
                     <Field
                       as="select"
@@ -928,7 +931,7 @@ export default function OrderInitiate() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Paper Topics *
+                      Paper Topics <span className="text-red-400">*</span>
                     </label>
                     {selectedCourse?.id === "7" ? (
                       <Field
@@ -959,7 +962,7 @@ export default function OrderInitiate() {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Paper Subject *
+                      Paper Subject <span className="text-red-400">*</span>
                     </label>
                     <Field
                       as="select"
@@ -1008,7 +1011,7 @@ export default function OrderInitiate() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Batches *
+                      Batches <span className="text-red-400">*</span>
                     </label>
                     <Field
                       as="select"
@@ -1030,7 +1033,7 @@ export default function OrderInitiate() {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Word Count *
+                      Word Count <span className="text-red-400">*</span>
                     </label>
                     <Field
                       type="number"
