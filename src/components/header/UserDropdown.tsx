@@ -34,9 +34,14 @@ export default function UserDropdown({setShowLogoutModal}) {
     <div className="relative" ref={dropdownRef}>
       <div className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400">
         {/* Profile */}
-        <span onClick={handleClick} className="mr-3 cursor-pointer overflow-hidden rounded-full h-11 w-11">
-          <img src={Image} alt="" className="w-full h-full object-cover" />
-        </span>
+        <div className="flex items-center cursor-pointer" onClick={handleClick} >
+          <span className="mr-3 cursor-pointer overflow-hidden rounded-full h-11 w-11">
+            <img src={Image} alt="" className="w-full h-full object-cover" />
+          </span>
+            <span className="block mr-1 font-medium text-theme-sm">
+            {profileData?.name}
+          </span>
+        </div>
 
         {profile && (
           <div className="absolute top-14 right-2 bg-white border border-gray-200 rounded-lg shadow-lg w-56 z-50 transition-all duration-200">
@@ -69,10 +74,6 @@ export default function UserDropdown({setShowLogoutModal}) {
             </ul>
           </div>
         )}
-
-        <span className="block mr-1 font-medium text-theme-sm">
-          {profileData?.name}
-        </span>
       </div>
     </div>
   );
