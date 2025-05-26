@@ -1,66 +1,22 @@
-// FilePreviewButton.tsx — improved layout for full-width PDF viewer
+// FilePreviewButton.tsx
 
 import React, { useState, useEffect } from "react";
-import { FaTimes, FaFileAlt } from "react-icons/fa";
-import { Worker, Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
-import type { DocumentLoadEvent } from "@react-pdf-viewer/core";
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import toast from "react-hot-toast";
+import { FaFileAlt } from "react-icons/fa";
 import { RxCross1 } from "react-icons/rx";
+import toast from "react-hot-toast";
+import {
+  Worker,
+  Viewer,
+  SpecialZoomLevel,
+  type DocumentLoadEvent,
+} from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
 
 interface PreviewOrderFileProps {
   fileUrl: string;
   price?: number;
   balanceAmount?: number;
 }
-
-const urlToBase64 = async (
-  url: string
-): Promise<{ base64: string; name: string }> => {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  const name = url.split("/").pop() || "file.doc";
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = (reader.result as string).split(",")[1];
-      resolve({ base64, name });
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
-
-const convertDocToPdf = async (docUrl: string): Promise<string | null> => {
-  try {
-    const { base64, name } = await urlToBase64(docUrl);
-
-    const response = await fetch(
-      "https://v2.convertapi.com/convert/doc/to/pdf?Secret=secret_9QhreIJ8W8Lh3BWt",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          Parameters: [
-            { Name: "File", FileValue: { Name: name, Data: base64 } },
-            { Name: "StoreFile", Value: true },
-          ],
-        }),
-      }
-    );
-
-    const result = await response.json();
-    if (result?.Files?.[0]?.Url) {
-      return result.Files[0].Url;
-    } else {
-      throw new Error(result?.Message || "No file returned.");
-    }
-  } catch (error) {
-    console.error("Conversion failed:", error);
-    return null;
-  }
-};
 
 const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
   fileUrl,
@@ -79,12 +35,58 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
     const validPrice = Math.max(0, Number(price));
     const validBalance = Math.max(0, Math.min(Number(balanceAmount), validPrice));
     const paidAmount = validPrice - validBalance;
-    const percentage = validPrice > 0 ? Math.round((paidAmount / validPrice) * 100) : 0;
+    const percentage =
+      validPrice > 0 ? Math.round((paidAmount / validPrice) * 100) : 0;
     setPaymentPercentage(percentage);
   }, [price, balanceAmount]);
+const convertDocToPdf = async (docUrl: string): Promise<string | null> => {
+  try {
+    const response = await fetch(docUrl);
+    const blob = await response.blob();
+    const name = docUrl.split("/").pop() || "file.doc";
 
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        const encoded = result.split(",")[1]; // Remove `data:...base64,`
+        resolve(encoded);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const apiResponse = await fetch(
+      "https://v2.convertapi.com/convert/doc/to/pdf?Secret=secret_9QhreIJ8W8Lh3BWt",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Parameters: [
+            { Name: "File", FileValue: { Name: name, Data: base64 } },
+            { Name: "StoreFile", Value: true }
+          ]
+        })
+      }
+    );
+
+    const result = await apiResponse.json();
+
+    if (result?.Files?.[0]?.Url) {
+      return result.Files[0].Url;
+    } else {
+      console.error("ConvertAPI Error:", result?.Message || "Unknown error.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Conversion failed:", error);
+    return null;
+  }
+};
   const handlePreviewClick = async (e: React.MouseEvent) => {
     e.preventDefault();
+
+    // Uncomment below if you want Word-to-PDF conversion via ConvertAPI
     if (isWordDoc) {
       const pdfLink = await convertDocToPdf(fileUrl);
       if (pdfLink) {
@@ -93,16 +95,20 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
       } else {
         toast.error("Failed to convert document. Please try again.");
       }
-    } else {
-      setPreviewUrl(fileUrl);
-      setShowPreview(true);
+      return;
     }
+
+    setPreviewUrl(fileUrl);
+    setShowPreview(true);
   };
 
   const onDocumentLoad = (e: DocumentLoadEvent) => {
     const totalPages = e.doc.numPages;
-    const allowed = Math.max(1, Math.floor((paymentPercentage / 100) * totalPages));
-    setAllowedPages(allowed); // fixed for now — update if you want dynamic control
+    const allowed = Math.max(1, Math.ceil((Number(paymentPercentage) / 100) * Number(totalPages)));
+
+    
+    setAllowedPages(allowed);
+    console.log("allowed :",allowed);
   };
 
   return (
@@ -111,54 +117,58 @@ const FilePreviewButton: React.FC<PreviewOrderFileProps> = ({
         onClick={handlePreviewClick}
         className="text-white bg-[#6da5f9] text-xs px-3 py-2 rounded flex items-center gap-1"
       >
-        <FaFileAlt className="icon" />
+        <FaFileAlt />
         Preview File
       </button>
 
       {showPreview && previewUrl && (
-        <div onClick={(e) =>{
-          e.stopPropagation();
-          e.preventDefault()
-        }} className="fixed cursor-default inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+          className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4"
+        >
           <div className="relative bg-white rounded-lg shadow-xl w-full h-[90vh] flex flex-col">
             <button
-              className="flex justify-end p-2 text-gray-600 hover:text-gray-900"
+              className="absolute top-2 right-12 z-99 text-gray-600 hover:text-gray-900"
               onClick={() => setShowPreview(false)}
             >
-              <RxCross1 size={35} />
+              <RxCross1 size={28} />
             </button>
 
-            <div className="!w-full overflow-auto">
+            <div className="flex-1 overflow-auto px-4">
               <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                 <Viewer
                   fileUrl={previewUrl}
                   onDocumentLoad={onDocumentLoad}
                   defaultScale={SpecialZoomLevel.PageFit}
                   renderPage={(props) => {
-  const isLocked = props.pageIndex >= allowedPages;
+                    const isLocked = props.pageIndex >= allowedPages;
 
-  if (isLocked) {
-    return (
-      <div className="relative w-full h-[1200px] flex items-center justify-center bg-gray-100 border-b border-gray-300">
-        <div className="text-center px-4">
-          <p className="text-xl font-semibold text-gray-700">Page Locked</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Make a payment to access below pages.
-          </p>
-          {/* Optionally add a payment button here */}
-        </div>
-      </div>
-    );
-  }
+                    if (isLocked) {
+                      return (
+                        <div className="relative w-full h-[1200px] flex items-center justify-center bg-gray-100 border-b border-gray-300">
+                          <div className="text-center px-4">
+                            <p className="text-xl font-semibold text-gray-700">
+                              Page Locked
+                            </p>
+                            <p className="text-sm text-gray-500 mt-2">
+                              Make a payment to access below pages.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
 
-  return (
-    <div className="relative !w-full h-full">
-      {props.canvasLayer.children}
-      {props.textLayer.children}
-      {props.annotationLayer.children}
-    </div>
-  );
-}}
+                    return (
+                      <div className="relative w-full h-full">
+                        {props.canvasLayer.children}
+                        {props.textLayer.children}
+                        {props.annotationLayer.children}
+                      </div>
+                    );
+                  }}
                 />
               </Worker>
             </div>
