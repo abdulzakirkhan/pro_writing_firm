@@ -337,7 +337,7 @@ export default function OrderInitiate() {
             </h2>
             <div className="space-y-1 pb-4">
               <p className="text-[17px] mt-0 pr-6 text-gray-700">
-                Single Copy Price = Rs {singleCopyPrice}
+                Single Copy Price = Rs <span className="font-bold">{singleCopyPrice}</span>
               </p>
               <p className="text-[17px] mt-0 pr-6 text-gray-700">
                 Total Number Of Copies={totalNumberOfCopies}
@@ -369,6 +369,11 @@ export default function OrderInitiate() {
   const [isCreditLimitExceeded, setIsCreditLimitExceeded] = useState(false)
 
   const CreditLimitExceeded = () => {
+
+    useEffect(() => {
+      setShowSummary(false)
+    }, [])
+    
     return (
       <>
         <div className="fixed inset-0 z-[9999] flex items-center justify-center">
@@ -443,7 +448,7 @@ export default function OrderInitiate() {
 
         await agentInitaiteOrder(formData).unwrap();
         
-        toast.success(`${allowedClients.length} orders initiated successfully!`);
+        toast.success(`order initiated successfully!`);
         
         // Handle remaining clients (optional)
         const remainingClients = clients.slice(maxOrders);
@@ -460,7 +465,9 @@ export default function OrderInitiate() {
         setSelectedClientIds([]);
       }
     };
-
+    useEffect(() => {
+      setShowSummary(false)
+    }, [])
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center">
         <div className="absolute inset-0 bg-black opacity-30"></div>
@@ -505,7 +512,7 @@ export default function OrderInitiate() {
       const noOfCopiesNum = clients.length;
       const totalOrderPrice = wordCountNum * rate * noOfCopiesNum;
       setTotalPrice(totalOrderPrice.toString())
-      setShowSummary(true)
+      setShowSummary(!showSummary)
 
       // Rate calculation logic
       const slabRanges = Object.keys(ratesSlabes || {}).sort(
