@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAgentClientRegistarMutation } from "../../redux/agentdashboard/agentApi";
 import { appNameCode } from "../../config/indext";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useSelector } from "react-redux";
@@ -50,9 +50,8 @@ const { setTitle } = useTitle();
       toast.error("Something went wrong");
       return;
     }
-    console.log("respData :", respData);
     if (!error) {
-      toast.success(respData?.result || "Client Added Successfully");
+      toast.success(respData?.result || "Student Added Successfully");
       setForm({
         name: "",
         email: "",
@@ -152,6 +151,7 @@ const { setTitle } = useTitle();
             </form>
         </div>
       </div>
+      <Toaster position="top-right" reverseOrder={false} />
     </>
   );
 }
