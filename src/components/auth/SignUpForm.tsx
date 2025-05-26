@@ -78,7 +78,7 @@ export default function SignUpForm() {
     <>
     <div className="flex flex-col flex-1 lg:justify-center items-center -mt-6">
       <div className="w-[233px]">
-        <img src="/images/logo/favicon.png" alt="Logo" className="w-full" />
+        <img src="/images/favicon.png" alt="Logo" className="w-full" />
       </div>
       <h1 className="text-center text-2xl lg:text-4xl font-bold">Signup to Get Started!</h1>
 
